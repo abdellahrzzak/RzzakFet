@@ -7866,6 +7866,16 @@
             new_version: currentUpdateMeta.latest_version
           })
         });
+
+        if (!res.ok || res.status === 404) {
+          const dlUrl = currentUpdateMeta.download_url || 'https://github.com/abdellahrzzak/RzzakFet/releases';
+          alert('هذا التحديث (v2.0) هو ترقية رئيسية لنواة البرنامج تتطلب تشغيل ملف الإعداد RzzakFet_v2.0_Setup.exe لمرة واحدة فقط لتفعيل محرك التحديثات الفورية في حاسوبك.\n\nاضغط موافق للانتقال لملف التثبيت.');
+          window.open(dlUrl, '_blank');
+          if (btn) btn.disabled = false;
+          if (txt) txt.textContent = 'تحميل مثبت الإصدار الكامل';
+          return;
+        }
+
         const resp = await res.json();
         if (resp.success) {
           if (txt) txt.textContent = 'تم التثبيت بنجاح! جاري التحديث الآن... ✅';
@@ -7878,9 +7888,11 @@
           if (txt) txt.textContent = 'تثبيت التحديث الآن (ثانيتان ⚡)';
         }
       } catch (err) {
-        alert('حدث خطأ أثناء تطبيق التحديث: ' + err.message);
+        const dlUrl = (currentUpdateMeta && currentUpdateMeta.download_url) ? currentUpdateMeta.download_url : 'https://github.com/abdellahrzzak/RzzakFet/releases';
+        alert('يتطلب تفعيل الإصدار الجديد تشغيل ملف الإعداد RzzakFet_v2.0_Setup.exe لمرة واحدة.\n\nاضغط موافق للمتابعة.');
+        window.open(dlUrl, '_blank');
         if (btn) btn.disabled = false;
-        if (txt) txt.textContent = 'تثبيت التحديث الآن (ثانيتان ⚡)';
+        if (txt) txt.textContent = 'تحميل مثبت الإصدار الكامل';
       }
     }
 
