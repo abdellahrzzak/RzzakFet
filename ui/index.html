@@ -509,7 +509,173 @@
       print-color-adjust: exact !important;
     }
 
+    /* =========================================================================
+       THEME SYSTEM (1. الداكن المعتمد | 2. الأبيض الناصع | 3. الأزرق الوزاري الأطلسي)
+       ========================================================================= */
+    /* 1. Light Theme (Executive Pure White / نهاري ناصع) */
+    body.theme-light {
+      background-color: #f1f5f9 !important;
+      color: #0f172a !important;
+    }
+    body.theme-light header {
+      background: #ffffff !important;
+      border-color: #e2e8f0 !important;
+      color: #0f172a !important;
+    }
+    body.theme-light aside {
+      background: #ffffff !important;
+      border-color: #e2e8f0 !important;
+    }
+    body.theme-light aside button.text-slate-400 {
+      color: #475569 !important;
+    }
+    body.theme-light aside button:hover {
+      background-color: #f1f5f9 !important;
+      color: #0f172a !important;
+    }
+    body.theme-light main {
+      background-color: #f8fafc !important;
+    }
+    body.theme-light .bg-slate-950,
+    body.theme-light .bg-slate-900,
+    body.theme-light .bg-slate-900\/95,
+    body.theme-light .bg-slate-900\/90,
+    body.theme-light .bg-slate-900\/80,
+    body.theme-light .bg-slate-900\/70,
+    body.theme-light .bg-slate-900\/60,
+    body.theme-light .bg-slate-900\/40,
+    body.theme-light .bg-slate-950\/70,
+    body.theme-light .bg-slate-950\/60,
+    body.theme-light .bg-slate-950\/50,
+    body.theme-light .bg-slate-950\/40 {
+      background-color: #ffffff !important;
+    }
+    body.theme-light .bg-slate-850,
+    body.theme-light .bg-slate-800,
+    body.theme-light .bg-slate-800\/90,
+    body.theme-light .bg-slate-800\/80,
+    body.theme-light .bg-slate-800\/70,
+    body.theme-light .bg-slate-800\/60,
+    body.theme-light .bg-slate-800\/50,
+    body.theme-light .bg-slate-800\/40 {
+      background-color: #f1f5f9 !important;
+    }
+    body.theme-light .border-slate-800,
+    body.theme-light .border-slate-800\/90,
+    body.theme-light .border-slate-800\/80,
+    body.theme-light .border-slate-800\/70,
+    body.theme-light .border-slate-800\/60,
+    body.theme-light .border-slate-800\/50,
+    body.theme-light .border-slate-700,
+    body.theme-light .border-slate-700\/80,
+    body.theme-light .border-slate-700\/60,
+    body.theme-light .border-slate-700\/50 {
+      border-color: #e2e8f0 !important;
+    }
+    body.theme-light .text-white {
+      color: #0f172a !important;
+    }
+    body.theme-light .text-slate-100,
+    body.theme-light .text-slate-200 {
+      color: #1e293b !important;
+    }
+    body.theme-light .text-slate-300 {
+      color: #334155 !important;
+    }
+    body.theme-light .text-slate-400 {
+      color: #64748b !important;
+    }
+    body.theme-light input:not([type="checkbox"]):not([type="radio"]),
+    body.theme-light select,
+    body.theme-light textarea {
+      background-color: #ffffff !important;
+      color: #0f172a !important;
+      border-color: #cbd5e1 !important;
+    }
+    body.theme-light .shadow-2xl,
+    body.theme-light .shadow-xl {
+      box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.06), 0 2px 6px -1px rgba(0, 0, 0, 0.04) !important;
+    }
+
+    /* 2. Navy Theme (Atlantic Ministerial Sapphire / الأزرق الوزاري الأطلسي) */
+    body.theme-navy {
+      background-color: #04091a !important;
+      color: #f1f5f9 !important;
+    }
+    body.theme-navy header {
+      background: #08122d !important;
+      border-color: #182e63 !important;
+    }
+    body.theme-navy aside {
+      background: #060e24 !important;
+      border-color: #162a5c !important;
+    }
+    body.theme-navy aside button.text-slate-400 {
+      color: #94a3b8 !important;
+    }
+    body.theme-navy aside button:hover {
+      background-color: #0f2356 !important;
+      color: #ffffff !important;
+    }
+    body.theme-navy main {
+      background-color: #04091a !important;
+    }
+    body.theme-navy .bg-slate-950,
+    body.theme-navy .bg-slate-900,
+    body.theme-navy .bg-slate-900\/95,
+    body.theme-navy .bg-slate-900\/90,
+    body.theme-navy .bg-slate-900\/80,
+    body.theme-navy .bg-slate-900\/70,
+    body.theme-navy .bg-slate-900\/60,
+    body.theme-navy .bg-slate-900\/40 {
+      background-color: #0b1a3e !important;
+    }
+    body.theme-navy .bg-slate-950\/70,
+    body.theme-navy .bg-slate-950\/60,
+    body.theme-navy .bg-slate-950\/50,
+    body.theme-navy .bg-slate-950\/40 {
+      background-color: #06102a !important;
+    }
+    body.theme-navy .bg-slate-850,
+    body.theme-navy .bg-slate-800,
+    body.theme-navy .bg-slate-800\/90,
+    body.theme-navy .bg-slate-800\/80,
+    body.theme-navy .bg-slate-800\/70,
+    body.theme-navy .bg-slate-800\/60,
+    body.theme-navy .bg-slate-800\/50,
+    body.theme-navy .bg-slate-800\/40 {
+      background-color: #102456 !important;
+    }
+    body.theme-navy .border-slate-800,
+    body.theme-navy .border-slate-800\/90,
+    body.theme-navy .border-slate-800\/80,
+    body.theme-navy .border-slate-800\/70,
+    body.theme-navy .border-slate-800\/60,
+    body.theme-navy .border-slate-800\/50,
+    body.theme-navy .border-slate-700,
+    body.theme-navy .border-slate-700\/80,
+    body.theme-navy .border-slate-700\/60,
+    body.theme-navy .border-slate-700\/50 {
+      border-color: #193470 !important;
+    }
+    body.theme-navy input:not([type="checkbox"]):not([type="radio"]),
+    body.theme-navy select,
+    body.theme-navy textarea {
+      background-color: #081433 !important;
+      color: #f1f5f9 !important;
+      border-color: #1e3d82 !important;
+    }
+
 </style>
+<script>
+  // Apply saved theme early to prevent layout flicker
+  (function() {
+    try {
+      const saved = localStorage.getItem('rzzakfet_theme') || 'dark';
+      document.documentElement.classList.add('theme-' + saved);
+    } catch(e) {}
+  })();
+</script>
 </head>
 <body class="bg-slate-950 text-slate-100 flex flex-col h-screen overflow-hidden antialiased">
 
@@ -519,36 +685,42 @@
       <img src="/assets/icon.png" class="w-10 h-10 rounded-xl object-contain shadow-md shadow-blue-500/30 border border-blue-500/30" alt="RzzakFet Logo">
       <div>
         <div class="flex items-center gap-2">
-          <h1 class="font-extrabold text-base tracking-wide text-white">برنامج RzzakFet المكتبي</h1>
-          <span class="bg-gradient-to-r from-blue-900 to-indigo-900 text-blue-300 text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-blue-600/60 shadow-sm font-mono">v2.0 المتقدمة (68 قيداً)</span>
+          <h1 class="font-black text-lg tracking-wide text-white flex items-center gap-1.5">
+            <span class="bg-gradient-to-r from-sky-400 via-blue-400 to-indigo-300 bg-clip-text text-transparent">RzzakFet</span>
+          </h1>
           <button id="btn-update-available" onclick="openUpdateModal()" class="hidden bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-[10px] px-2.5 py-0.5 rounded-full border border-emerald-400/50 shadow-sm animate-pulse cursor-pointer flex items-center gap-1">
             <span>✨</span>
             <span>يتوفر تحديث جديد!</span>
           </button>
-          <!-- Developer Quick OTA Deploy Button (Appears ONLY on Developer's Machine) -->
-          <button id="btn-dev-publish-patch" onclick="openDevPublishModal()" class="hidden bg-gradient-to-r from-amber-600 via-rose-600 to-indigo-600 hover:from-amber-500 hover:to-indigo-500 text-white font-bold text-[10.5px] px-3 py-1 rounded-full border border-amber-400/60 shadow-md shadow-amber-950/40 cursor-pointer flex items-center gap-1.5 transition transform active:scale-95" title="نشر التعديلات البرمجية فورياً لجميع المستخدمين">
+          <!-- Developer Quick OTA Deploy Button (Appears ONLY on Developer's Machine - Compacted) -->
+          <button id="btn-dev-publish-patch" onclick="openDevPublishModal()" class="hidden bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 font-bold text-[10px] px-2.5 py-1 rounded-lg shadow-sm cursor-pointer flex items-center gap-1 transition transform active:scale-95" title="نشر التعديلات البرمجية فورياً لجميع المستخدمين">
             <span>🚀</span>
-            <span>نشر التعديلات للمستخدمين</span>
+            <span>نشر التعديلات</span>
           </button>
         </div>
         <p class="text-xs text-slate-400" id="header-institution-title">المعين في إعداد البنية التربوية وجداول الحصص الرسمية</p>
       </div>
     </div>
 
-    <!-- Quick Stats in Header -->
-    <div class="flex items-center gap-4 text-xs">
-      <div class="bg-slate-800/80 border border-slate-700/80 px-3 py-1.5 rounded-xl flex items-center gap-2">
-        <span class="text-slate-400">الأقسام:</span>
-        <span id="quick-classes-count" class="font-bold text-cyan-400 font-mono text-sm">11</span>
+    <!-- Header Actions, Controls & Theme Switcher -->
+    <div class="flex items-center gap-3 text-xs">
+      <!-- Theme Color Selector Widget (3 Themes: Dark, Pure White, Atlantic Navy) -->
+      <div class="flex items-center bg-slate-800/90 border border-slate-700/80 p-0.5 rounded-xl gap-0.5 shadow-inner" id="theme-selector-widget" title="تغيير مظهر ولون التطبيق">
+        <button onclick="setAppTheme('dark')" id="theme-btn-dark" class="px-2 py-1 rounded-lg text-[10.5px] font-bold transition flex items-center gap-1 bg-slate-700 text-white shadow-sm cursor-pointer" title="الوضع الداكن المعتمد (Midnight Dark)">
+          <span>🌙</span>
+          <span class="text-[10px]">الداكن</span>
+        </button>
+        <button onclick="setAppTheme('light')" id="theme-btn-light" class="px-2 py-1 rounded-lg text-[10.5px] font-bold transition flex items-center gap-1 text-slate-300 hover:text-white hover:bg-slate-700/60 cursor-pointer" title="الوضع الأبيض الناصع (Executive Pure White)">
+          <span>☀️</span>
+          <span class="text-[10px]">الأبيض</span>
+        </button>
+        <button onclick="setAppTheme('navy')" id="theme-btn-navy" class="px-2 py-1 rounded-lg text-[10.5px] font-bold transition flex items-center gap-1 text-slate-300 hover:text-white hover:bg-slate-700/60 cursor-pointer" title="الأزرق الوزاري الأطلسي (Ministerial Atlantic Sapphire)">
+          <span>🌊</span>
+          <span class="text-[10px]">الأزرق الوزاري</span>
+        </button>
       </div>
-      <div class="bg-slate-800/80 border border-slate-700/80 px-3 py-1.5 rounded-xl flex items-center gap-2">
-        <span class="text-slate-400">الأساتذة:</span>
-        <span id="quick-teachers-count" class="font-bold text-amber-400 font-mono text-sm">17</span>
-      </div>
-      <div class="bg-slate-800/80 border border-slate-700/80 px-3 py-1.5 rounded-xl flex items-center gap-2">
-        <span class="text-slate-400">القاعات:</span>
-        <span id="quick-rooms-count" class="font-bold text-emerald-400 font-mono text-sm">11</span>
-      </div>
+
+      <!-- Zoom Controls -->
       <div class="flex items-center bg-slate-800/90 border border-slate-700/80 px-2 py-1 rounded-xl gap-1 shadow-inner">
         <button onclick="changeZoom(-0.05)" class="text-slate-300 hover:text-white font-black px-1.5 py-0.5 rounded hover:bg-slate-700 text-xs transition" title="تصغير العرض (Zoom Out)">🔍−</button>
         <span id="zoom-level-label" class="text-xs font-mono font-bold text-cyan-300 px-1 select-none">82%</span>
@@ -761,49 +933,48 @@
     </aside>
 
     <!-- CONTENT AREA -->
-    <main class="flex-1 bg-slate-950 p-5 overflow-y-auto">
+    <main class="flex-1 bg-slate-950 p-3.5 overflow-y-auto">
 
       <!-- ================= TAB 1: DASHBOARD (PROPOSAL 2: BENTO GRID HUB) ================= -->
-      <div id="tab-dashboard" class="tab-content active space-y-4">
+      <div id="tab-dashboard" class="tab-content active space-y-3">
         
         <!-- Bento Grid Main Container (12-Columns Responsive Layout Matching Proposal 2) -->
-        <div class="grid grid-cols-12 gap-4">
+        <div class="grid grid-cols-12 gap-3">
 
           <!-- 1. Hero Bento Card (Col 8) -->
-          <div class="col-span-8 bg-gradient-to-br from-slate-900/95 via-slate-900/90 to-indigo-950/40 border border-slate-800 rounded-3xl p-5 shadow-2xl relative overflow-hidden flex flex-col justify-between">
+          <div class="col-span-8 bg-gradient-to-br from-slate-900/95 via-slate-900/90 to-indigo-950/40 border border-slate-800 rounded-2xl p-4 shadow-xl relative overflow-hidden flex flex-col justify-between">
             <div class="absolute -left-12 -top-12 w-48 h-48 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
             <div>
-              <div class="flex items-center justify-between mb-2.5">
-                <span class="bg-indigo-950/80 text-indigo-300 border border-indigo-700/60 text-[11px] font-bold px-3 py-1 rounded-full shadow-sm">المركز العملياتي للمؤسسة</span>
-                <span class="text-xs font-mono text-emerald-400 font-bold bg-emerald-950/60 border border-emerald-800/60 px-2.5 py-1 rounded-full flex items-center gap-1.5 shadow-sm">
-                  <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span> نظام سليم ومطابق 100%
-                </span>
+              <div class="flex items-center justify-between mb-2">
+                <span class="bg-indigo-950/80 text-indigo-300 border border-indigo-700/60 text-[11px] font-bold px-3 py-0.5 rounded-full shadow-sm">المركز العملياتي للمؤسسة</span>
               </div>
-              <h1 id="dash-hero-institution-title" class="text-xl font-black text-white tracking-tight">الثانوية الإعدادية بئر انزران — الجداول والتدبير الإداري الذكي</h1>
-              <p class="text-xs text-slate-400 mt-1 max-w-2xl leading-relaxed">منظومة ذكية متكاملة لتدبير الإسنادات، وتخصيص القاعات، وتفعيل بنك القيود البيداغوجية (68 قيداً) مع حماية النوافذ الذهبية للمجالس التعليمية وضمان العدالة وتكافؤ الحصص.</p>
+              <h1 id="dash-hero-institution-title" class="text-lg font-black text-white tracking-tight">الثانوية الإعدادية بئر انزران — الجداول والتدبير الإداري الذكي</h1>
+              <p class="text-xs text-slate-400 mt-0.5 max-w-2xl leading-relaxed">منظومة ذكية متكاملة لتدبير الإسنادات، وتخصيص القاعات، وتفعيل بنك القيود البيداغوجية مع حماية النوافذ الذهبية للمجالس التعليمية وضمان العدالة وتكافؤ الحصص.</p>
             </div>
 
-            <!-- Operational Excellence Strip (Exploits previously wasted empty space) -->
-            <div class="grid grid-cols-3 gap-3 my-3.5">
+            <!-- Operational Excellence Strip -->
+            <div class="grid grid-cols-3 gap-2.5 my-2.5">
               <!-- KPI A: الجاهزية البيداغوجية -->
-              <div class="bg-slate-950/70 p-3 rounded-2xl border border-slate-800/90 hover:border-slate-700 transition">
+              <div class="bg-slate-950/70 p-2.5 rounded-xl border border-slate-800/90 hover:border-slate-700 transition">
                 <div class="flex items-center justify-between text-[11px] text-slate-400 mb-1">
                   <span>جاهزية الإسنادات</span>
                   <span class="text-emerald-400 font-bold text-[10px]">100% مكتمل</span>
                 </div>
-                <div class="text-lg font-black text-white font-mono">15 / 15 أستاذاً</div>
+                <div class="text-base font-black text-white font-mono" id="dash-hero-teachers-ratio">
+                  <span id="dash-hero-assigned-teachers">52</span> / <span id="dash-hero-total-teachers">52</span> أستاذاً
+                </div>
                 <div class="text-[10px] text-emerald-300/90 mt-1 flex items-center gap-1 font-medium">
-                  <span>✓</span> <span>كافة الأساتذة بأسمائهم الحقيقية</span>
+                  <span>✓</span> <span id="dash-hero-teachers-sub">كافة الأساتذة مسندون بالأسماء الحقيقية</span>
                 </div>
               </div>
 
               <!-- KPI B: النوافذ الذهبية والمجالس -->
-              <div class="bg-slate-950/70 p-3 rounded-2xl border border-slate-800/90 hover:border-slate-700 transition">
+              <div class="bg-slate-950/70 p-2.5 rounded-xl border border-slate-800/90 hover:border-slate-700 transition">
                 <div class="flex items-center justify-between text-[11px] text-slate-400 mb-1">
                   <span>النوافذ الذهبية</span>
                   <span class="text-sky-400 font-bold text-[10px]">مفرغة ومحمية</span>
                 </div>
-                <div class="text-lg font-black text-white font-mono">أمسيات مخصصة</div>
+                <div class="text-base font-black text-white font-mono">أمسيات مخصصة</div>
                 <div class="text-[10px] text-sky-300/90 mt-1 flex items-center gap-1 font-medium">
                   <span>🛡️</span> <span>تفريغ الأمسيات للمجالس التعليمية</span>
                 </div>
@@ -837,15 +1008,15 @@
           </div>
 
           <!-- 2. Digital Pulse Bento Card (Col 4) -->
-          <div class="col-span-4 bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-xl flex flex-col justify-between">
-            <div class="flex items-center justify-between border-b border-slate-800 pb-2.5">
+          <div class="col-span-4 bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-xl flex flex-col justify-between">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-2">
               <span class="text-xs font-extrabold text-white">النبض الرقمي العام</span>
               <span class="text-xs font-mono font-bold text-sky-400 bg-sky-950/60 px-2 py-0.5 rounded-md border border-sky-800/50">RzzakFet Core</span>
             </div>
             
-            <div class="grid grid-cols-2 gap-2.5 my-2.5">
+            <div class="grid grid-cols-2 gap-2 my-2">
               <!-- KPI 1: Classes -->
-              <div onclick="switchTab('tab-structure')" class="bg-slate-950/70 p-3 rounded-2xl border border-slate-800/80 hover:border-slate-700 cursor-pointer transition">
+              <div onclick="switchTab('tab-structure')" class="bg-slate-950/70 p-2.5 rounded-xl border border-slate-800/80 hover:border-slate-700 cursor-pointer transition">
                 <span class="text-[10px] text-slate-400 block font-medium">الأقسام التربوية</span>
                 <div class="flex items-baseline gap-1 mt-0.5">
                   <span id="dash-total-classes" class="text-2xl font-black text-white font-mono">11</span>
@@ -855,17 +1026,17 @@
               </div>
 
               <!-- KPI 2: Teachers -->
-              <div onclick="switchTab('tab-teachers')" class="bg-slate-950/70 p-3 rounded-2xl border border-slate-800/80 hover:border-slate-700 cursor-pointer transition">
+              <div onclick="switchTab('tab-teachers')" class="bg-slate-950/70 p-2.5 rounded-xl border border-slate-800/80 hover:border-slate-700 cursor-pointer transition">
                 <span class="text-[10px] text-slate-400 block font-medium">هيئة التدريس</span>
                 <div class="flex items-baseline gap-1 mt-0.5">
-                  <span id="dash-total-teachers" class="text-2xl font-black text-emerald-400 font-mono">15</span>
+                  <span id="dash-total-teachers" class="text-2xl font-black text-emerald-400 font-mono">52</span>
                   <span class="text-xs text-emerald-300 font-sans">أستاذاً</span>
                 </div>
                 <span class="text-[9.5px] text-emerald-300/80 block mt-1">أستاذ حقيقي مكتمل</span>
               </div>
 
               <!-- KPI 3: Hours -->
-              <div class="bg-slate-950/70 p-3 rounded-2xl border border-slate-800/80">
+              <div class="bg-slate-950/70 p-2.5 rounded-xl border border-slate-800/80">
                 <span class="text-[10px] text-slate-400 block font-medium">حجم الحصص الأسبوعي</span>
                 <div class="flex items-baseline gap-1 mt-0.5">
                   <span id="dash-total-hours" class="text-2xl font-black text-amber-400 font-mono">276</span>
@@ -875,7 +1046,7 @@
               </div>
 
               <!-- KPI 4: Rooms -->
-              <div onclick="switchTab('tab-rooms-list')" class="bg-slate-950/70 p-3 rounded-2xl border border-slate-800/80 hover:border-slate-700 cursor-pointer transition">
+              <div onclick="switchTab('tab-rooms-list')" class="bg-slate-950/70 p-2.5 rounded-xl border border-slate-800/80 hover:border-slate-700 cursor-pointer transition">
                 <span class="text-[10px] text-slate-400 block font-medium">القاعات والفضاءات</span>
                 <div class="flex items-baseline gap-1 mt-0.5">
                   <span id="dash-total-rooms" class="text-2xl font-black text-indigo-300 font-mono">12</span>
@@ -895,33 +1066,33 @@
           </div>
 
           <!-- 3. Middle Right: Teachers Grid & Load Bento Card (Col 5) -->
-          <div class="col-span-5 bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-xl flex flex-col justify-between">
+          <div class="col-span-5 bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-xl flex flex-col justify-between">
             <div>
-              <div class="flex items-center justify-between border-b border-slate-800 pb-2.5">
+              <div class="flex items-center justify-between border-b border-slate-800 pb-2">
                 <span class="text-xs font-extrabold text-white flex items-center gap-1.5">
-                  <span>👨‍🏫</span> <span>توزيع أعباء هيئة التدريس <span id="dash-bento-teachers-count-badge" class="text-slate-400 font-mono font-normal">(15 أستاذاً)</span></span>
+                  <span>👨‍🏫</span> <span>توزيع أعباء هيئة التدريس <span id="dash-bento-teachers-count-badge" class="text-slate-400 font-mono font-normal">(52 أستاذاً)</span></span>
                 </span>
                 <span class="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-lg shadow-sm">إنصاف تام ✓</span>
               </div>
               
               <!-- Dynamic Teacher List Grid (2 cols x 4 rows = 8 teachers) -->
-              <div id="dash-bento-teachers-container" class="grid grid-cols-2 gap-2 text-xs pt-2.5">
+              <div id="dash-bento-teachers-container" class="grid grid-cols-2 gap-2 text-xs pt-2">
                 <!-- Dynamically populated by JS renderBentoTeachers() -->
               </div>
             </div>
 
-            <div class="flex justify-between items-center text-[11px] text-slate-400 pt-3 border-t border-slate-800/60 mt-2">
+            <div class="flex justify-between items-center text-[11px] text-slate-400 pt-2.5 border-t border-slate-800/60 mt-1.5">
               <span>متوسط الحصص: <span id="dash-teachers-avg-hours" class="text-white font-mono font-bold">18.4</span> ساعة/أستاذ</span>
               <button onclick="switchTab('tab-teachers')" class="text-sky-400 hover:text-sky-300 font-bold transition flex items-center gap-1 cursor-pointer text-xs">
-                <span>عرض الأساتذة بالكامل (15) ←</span>
+                <span>عرض الأساتذة بالكامل (<span id="dash-bento-all-teachers-count">52</span>) ←</span>
               </button>
             </div>
           </div>
 
           <!-- 4. Middle Center: Facilities & Labs Capacity Bento Card (Col 4) -->
-          <div class="col-span-4 bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-xl flex flex-col justify-between">
+          <div class="col-span-4 bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-xl flex flex-col justify-between">
             <div>
-              <div class="flex items-center justify-between border-b border-slate-800 pb-2.5">
+              <div class="flex items-center justify-between border-b border-slate-800 pb-2">
                 <span class="text-xs font-extrabold text-white flex items-center gap-1.5">
                   <span>🏫</span> <span>كفاية واستغلال القاعات والمختبرات</span>
                 </span>
@@ -929,18 +1100,18 @@
               </div>
 
               <!-- Specialty capacity progress bars (dynamic IDs preserved) -->
-              <div class="space-y-2 text-xs pt-2">
+              <div class="space-y-1.5 text-xs pt-2">
                 <div id="dash-pill-gen"></div>
                 <div id="dash-pill-pc"></div>
                 <div id="dash-pill-svt"></div>
                 <div id="dash-pill-it"></div>
                 <div id="dash-pill-eps"></div>
                 <!-- Custom Specialized Rooms Container (Added by Principal) -->
-                <div id="dash-custom-rooms-pills-container" class="space-y-2"></div>
+                <div id="dash-custom-rooms-pills-container" class="space-y-1.5"></div>
               </div>
             </div>
 
-            <div class="flex justify-between items-center text-[10px] text-slate-400 pt-2.5 border-t border-slate-800/60 mt-1">
+            <div class="flex justify-between items-center text-[10px] text-slate-400 pt-2 border-t border-slate-800/60 mt-1">
               <span>السعة الأسبوعية القصوى: 40س لكل فضاء</span>
               <button onclick="switchTab('tab-rooms-list')" class="text-sky-400 hover:text-sky-300 font-bold transition flex items-center gap-1 cursor-pointer">
                 <span>تعديل القاعات ←</span>
@@ -949,41 +1120,41 @@
           </div>
 
           <!-- 5. Middle Left: Exam Center Bento Card (Col 3) -->
-          <div class="col-span-3 bg-slate-900/90 border border-amber-800/40 rounded-3xl p-5 shadow-xl flex flex-col justify-between">
+          <div class="col-span-3 bg-slate-900/90 border border-amber-800/40 rounded-2xl p-4 shadow-xl flex flex-col justify-between">
             <div>
-              <div class="flex items-center justify-between border-b border-slate-800 pb-2.5 mb-3">
+              <div class="flex items-center justify-between border-b border-slate-800 pb-2 mb-2.5">
                 <span class="text-xs font-black text-amber-300 flex items-center gap-1.5">
                   <span>📝</span> <span>مركز الامتحان الموحد</span>
                 </span>
                 <span class="text-[9px] bg-amber-950 text-amber-400 border border-amber-800/70 font-bold px-2 py-0.5 rounded-full font-mono">3APIC</span>
               </div>
               
-              <div class="space-y-2 text-xs">
-                <div class="flex justify-between items-center bg-slate-950/70 p-2 rounded-xl border border-slate-800/80">
-                  <span class="text-slate-400">إجمالي المترشحين:</span>
+              <div class="space-y-1.5 text-xs">
+                <div class="flex justify-between items-center bg-slate-950/70 p-1.5 rounded-lg border border-slate-800/80">
+                  <span class="text-slate-400 text-[11px]">إجمالي المترشحين:</span>
                   <span id="dash-exam-candidates-badge" class="text-white font-mono font-black text-xs">143 تلميذاً</span>
                 </div>
-                <div class="flex justify-between items-center bg-slate-950/70 p-2 rounded-xl border border-slate-800/80">
-                  <span class="text-slate-400">سعة كل قاعة:</span>
+                <div class="flex justify-between items-center bg-slate-950/70 p-1.5 rounded-lg border border-slate-800/80">
+                  <span class="text-slate-400 text-[11px]">سعة كل قاعة:</span>
                   <span id="dash-exam-cap-badge" class="text-amber-300 font-mono font-black text-xs">20 تلميذاً</span>
                 </div>
-                <div class="flex justify-between items-center bg-slate-950/70 p-2 rounded-xl border border-slate-800/80">
-                  <span class="text-slate-400">القاعات المحجوزة:</span>
+                <div class="flex justify-between items-center bg-slate-950/70 p-1.5 rounded-lg border border-slate-800/80">
+                  <span class="text-slate-400 text-[11px]">القاعات المحجوزة:</span>
                   <span id="dash-exam-rooms-badge" class="text-sky-300 font-mono font-black text-xs">8 قاعات</span>
                 </div>
-                <div class="flex justify-between items-center bg-slate-950/70 p-2 rounded-xl border border-slate-800/80">
-                  <span class="text-slate-400">أساتذة الحراسة:</span>
+                <div class="flex justify-between items-center bg-slate-950/70 p-1.5 rounded-lg border border-slate-800/80">
+                  <span class="text-slate-400 text-[11px]">أساتذة الحراسة:</span>
                   <span id="dash-exam-invigilators-badge" class="text-emerald-300 font-mono font-black text-xs">18 أستاذاً</span>
                 </div>
-                <div class="flex justify-between items-center bg-slate-950/70 p-2 rounded-xl border border-slate-800/80">
-                  <span class="text-slate-400">نسبة التغطية:</span>
+                <div class="flex justify-between items-center bg-slate-950/70 p-1.5 rounded-lg border border-slate-800/80">
+                  <span class="text-slate-400 text-[11px]">نسبة التغطية:</span>
                   <span class="text-emerald-400 font-mono font-bold text-xs">100% مستوفاة ✓</span>
                 </div>
               </div>
             </div>
 
-            <div class="mt-3 pt-2.5 border-t border-slate-800 space-y-2">
-              <button onclick="switchTab('tab-exams')" class="w-full bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-600/40 py-2 px-3 rounded-xl font-bold text-xs transition text-center cursor-pointer flex items-center justify-center gap-1.5">
+            <div class="mt-2.5 pt-2 border-t border-slate-800 space-y-1.5">
+              <button onclick="switchTab('tab-exams')" class="w-full bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-600/40 py-1.5 px-2.5 rounded-xl font-bold text-xs transition text-center cursor-pointer flex items-center justify-center gap-1.5">
                 <span>تنظيم وتوزيع القاعات والأساتذة ←</span>
               </button>
               <div class="text-[9.5px] text-slate-500 text-center font-mono">احترام تام لضوابط المذكرة 031X26</div>
@@ -991,7 +1162,7 @@
           </div>
 
           <!-- 6. Bottom Bento Row: Student Mobility Flow Sequence & Pedagogical Structure (Col 12) -->
-          <div class="col-span-12 bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-xl space-y-4">
+          <div class="col-span-12 bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-xl space-y-3">
             
             <!-- Upper Strip: Student Mobility Flow Sequence -->
             <div class="flex items-center justify-between flex-wrap gap-3 pb-3 border-b border-slate-800/80">
@@ -1102,28 +1273,28 @@
         </div>
 
         <!-- Collapsible Quotas Table (COLLAPSED BY DEFAULT) -->
-        <div class="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-xl mt-4">
-          <div onclick="toggleCollapse('dash-quotas-wrapper', 'dash-quotas-chevron')" class="bg-slate-850 px-5 py-3.5 border-b border-slate-800 flex items-center justify-between cursor-pointer hover:bg-slate-800/80 transition">
-            <div class="flex items-center gap-2.5">
-              <span id="dash-quotas-chevron" class="text-blue-400 text-sm transition-transform duration-200 rotate-chevron">▼</span>
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl mt-2.5">
+          <div onclick="toggleCollapse('dash-quotas-wrapper', 'dash-quotas-chevron')" class="bg-slate-850 px-4 py-2.5 border-b border-slate-800 flex items-center justify-between cursor-pointer hover:bg-slate-800/80 transition">
+            <div class="flex items-center gap-2">
+              <span id="dash-quotas-chevron" class="text-blue-400 text-xs transition-transform duration-200 rotate-chevron">▼</span>
               <h2 class="font-bold text-xs text-white">📊 جدول ميزان الموارد البشرية وتغطية الحصص حسب المواد التعليمية</h2>
             </div>
-            <span class="text-[11px] text-slate-400 font-medium">انقر للعرض / الطي</span>
+            <span class="text-[10px] text-slate-400 font-medium">انقر للعرض / الطي</span>
           </div>
 
           <div id="dash-quotas-wrapper" class="overflow-x-auto collapsed">
             <table class="w-full text-right text-xs">
               <thead class="bg-slate-900/90 text-slate-300 font-bold border-b border-slate-700/80">
                 <tr>
-                  <th class="p-3">المادة التعليمية</th>
-                  <th class="p-3 text-center">أولى إعدادي</th>
-                  <th class="p-3 text-center">ثانية إعدادي</th>
-                  <th class="p-3 text-center">ثالثة إعدادي</th>
-                  <th class="p-3 text-center">مجموع الساعات</th>
-                  <th class="p-3 text-center">الأساتذة المطلوبين</th>
-                  <th class="p-3 text-center">الأساتذة المتوفرين فعلياً</th>
-                  <th class="p-3 text-center">الفائض / الخصاص</th>
-                  <th class="p-3 text-center">القاعات المطلوبة</th>
+                  <th class="p-2.5">المادة التعليمية</th>
+                  <th class="p-2.5 text-center">أولى إعدادي</th>
+                  <th class="p-2.5 text-center">ثانية إعدادي</th>
+                  <th class="p-2.5 text-center">ثالثة إعدادي</th>
+                  <th class="p-2.5 text-center">مجموع الساعات</th>
+                  <th class="p-2.5 text-center">الأساتذة المطلوبين</th>
+                  <th class="p-2.5 text-center">الأساتذة المتوفرين فعلياً</th>
+                  <th class="p-2.5 text-center">الفائض / الخصاص</th>
+                  <th class="p-2.5 text-center">القاعات المطلوبة</th>
                 </tr>
               </thead>
               <tbody id="table-quotas-body" class="divide-y divide-slate-800 text-slate-300 font-medium">
@@ -1133,18 +1304,18 @@
         </div>
 
         <!-- Applied Constraints on Timetables (FET 68 Constraints) -->
-        <div class="bg-slate-900 border border-slate-800 rounded-3xl p-4 shadow-xl flex items-center justify-between flex-wrap gap-3">
-          <div class="flex items-center gap-3">
-            <span class="text-2xl p-2.5 bg-amber-950/60 text-amber-400 rounded-2xl border border-amber-800/50">⚙️</span>
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3 shadow-lg flex items-center justify-between flex-wrap gap-2.5">
+          <div class="flex items-center gap-2.5">
+            <span class="text-xl p-2 bg-amber-950/60 text-amber-400 rounded-xl border border-amber-800/50">⚙️</span>
             <div>
               <div class="flex items-center gap-2">
                 <h3 class="font-extrabold text-xs text-white">القيود المطبقة على الجداول المدرسية (FET Constraints)</h3>
-                <span id="dash-applied-constraints-badge" class="bg-amber-950 text-amber-300 border border-amber-800/70 text-[11px] font-bold px-2.5 py-0.5 rounded-full font-mono">11 مفعل / 68 قيداً</span>
+                <span id="dash-applied-constraints-badge" class="bg-amber-950 text-amber-300 border border-amber-800/70 text-[10px] font-bold px-2 py-0.5 rounded-full font-mono">11 مفعل / 68 قيداً</span>
               </div>
-              <p class="text-[11px] text-slate-400 mt-0.5">تم تفعيل ومطابقة 11 قيداً رئيسياً لضمان عدالة الحصص، تفريغ أنصاف الأيام، وحصص الأنشطة دون أي تعارض</p>
+              <p class="text-[10px] text-slate-400 mt-0.5">تم تفعيل ومطابقة 11 قيداً رئيسياً لضمان عدالة الحصص، تفريغ أنصاف الأيام، وحصص الأنشطة دون أي تعارض</p>
             </div>
           </div>
-          <button onclick="switchTab('tab-constraints')" class="bg-slate-800 hover:bg-slate-700 text-amber-300 hover:text-white border border-slate-700 px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow">
+          <button onclick="switchTab('tab-constraints')" class="bg-slate-800 hover:bg-slate-700 text-amber-300 hover:text-white border border-slate-700 px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow">
             <span>⚙️ إدارة وتعديل القيود ←</span>
           </button>
         </div>
@@ -3235,6 +3406,45 @@
     // Initialize Zoom on load
     try {
       applyZoom(currentZoom);
+    } catch(e) {}
+
+    /* =========================================================================
+       THEME MANAGEMENT (Dark, Pure White, Atlantic Sapphire)
+       ========================================================================= */
+    function setAppTheme(theme) {
+      if (!['dark', 'light', 'navy'].includes(theme)) theme = 'dark';
+      document.documentElement.classList.remove('theme-dark', 'theme-light', 'theme-navy');
+      document.body.classList.remove('theme-dark', 'theme-light', 'theme-navy');
+      document.documentElement.classList.add(`theme-${theme}`);
+      document.body.classList.add(`theme-${theme}`);
+      localStorage.setItem('rzzakfet_theme', theme);
+      updateThemeButtonsUI(theme);
+    }
+
+    function updateThemeButtonsUI(theme) {
+      const btnDark = document.getElementById('theme-btn-dark');
+      const btnLight = document.getElementById('theme-btn-light');
+      const btnNavy = document.getElementById('theme-btn-navy');
+
+      const defaultBtnClass = "px-2 py-1 rounded-lg text-[10.5px] font-bold transition flex items-center gap-1 text-slate-300 hover:text-white hover:bg-slate-700/60 cursor-pointer";
+      
+      if (btnDark) btnDark.className = defaultBtnClass;
+      if (btnLight) btnLight.className = defaultBtnClass;
+      if (btnNavy) btnNavy.className = defaultBtnClass;
+
+      if (theme === 'dark' && btnDark) {
+        btnDark.className = "px-2 py-1 rounded-lg text-[10.5px] font-bold transition flex items-center gap-1 bg-slate-700 text-white shadow-sm cursor-pointer";
+      } else if (theme === 'light' && btnLight) {
+        btnLight.className = "px-2 py-1 rounded-lg text-[10.5px] font-bold transition flex items-center gap-1 bg-blue-600 text-white shadow-sm cursor-pointer";
+      } else if (theme === 'navy' && btnNavy) {
+        btnNavy.className = "px-2 py-1 rounded-lg text-[10.5px] font-bold transition flex items-center gap-1 bg-indigo-600 text-white shadow-sm cursor-pointer";
+      }
+    }
+
+    // Initialize theme on load
+    try {
+      const initialTheme = localStorage.getItem('rzzakfet_theme') || 'dark';
+      setAppTheme(initialTheme);
     } catch(e) {}
 
     let appData = null;
@@ -5743,6 +5953,9 @@
       const countBadge = document.getElementById('dash-bento-teachers-count-badge');
       if (countBadge) countBadge.textContent = `(${totalTeachers} أستاذاً)`;
 
+      const allCountEl = document.getElementById('dash-bento-all-teachers-count');
+      if (allCountEl) allCountEl.textContent = totalTeachers;
+
       let totalHours = 0;
       assignments.forEach(a => { totalHours += (parseFloat(a.total_hours) || 0); });
       const avg = assignments.length > 0 ? (totalHours / assignments.length).toFixed(1) : "18.4";
@@ -5820,27 +6033,46 @@
       // Synchronize all constraint badges across Dashboard, Sidebar, and Tab
       updateGlobalConstraintsBadges();
       
-      // Header and Quick Stats
-      document.getElementById('header-institution-title').textContent = `${appData.institution.name} | ${appData.institution.province} | ${appData.institution.academic_year}`;
-      document.getElementById('quick-classes-count').textContent = appData.structure.total_classes;
-      document.getElementById('quick-teachers-count').textContent = appData.summary.total_teachers;
-      document.getElementById('quick-rooms-count').textContent = appData.institution.total_rooms;
-      document.getElementById('room-max-cap-badge').textContent = `${appData.institution.max_room_capacity} ساعة/أسبوع`;
+      // Header and Quick Stats (safe null-checks)
+      const hTitle = document.getElementById('header-institution-title');
+      if (hTitle && appData.institution) {
+        hTitle.textContent = `${appData.institution.name} | ${appData.institution.province} | ${appData.institution.academic_year}`;
+      }
+      const qCls = document.getElementById('quick-classes-count');
+      if (qCls) qCls.textContent = appData.structure.total_classes;
+      const qTch = document.getElementById('quick-teachers-count');
+      if (qTch) qTch.textContent = appData.summary.total_teachers;
+      const qRms = document.getElementById('quick-rooms-count');
+      if (qRms) qRms.textContent = appData.institution.total_rooms;
+      const rCap = document.getElementById('room-max-cap-badge');
+      if (rCap) rCap.textContent = `${appData.institution.max_room_capacity} ساعة/أسبوع`;
 
       // Update Bento Grid Dashboard components
       const heroInst = document.getElementById('dash-hero-institution-title');
       if (heroInst && appData.institution && appData.institution.name) {
         heroInst.textContent = `${appData.institution.name} — الجداول والتدبير الإداري الذكي`;
       }
+      
+      // Dynamic Teachers in Hero Card
+      const heroAssignedT = document.getElementById('dash-hero-assigned-teachers');
+      const heroTotalT = document.getElementById('dash-hero-total-teachers');
+      if (heroAssignedT) heroAssignedT.textContent = appData.summary.total_teachers;
+      if (heroTotalT) heroTotalT.textContent = appData.summary.total_teachers;
+
       renderBentoTeachers();
       updateDashboardExamWidget();
 
       // Dashboard
-      document.getElementById('dash-total-classes').textContent = appData.structure.total_classes;
-      document.getElementById('dash-classes-breakdown').textContent = `${appData.structure.c1} أولى + ${appData.structure.c2} ثانية + ${appData.structure.c3} ثالثة`;
-      document.getElementById('dash-total-teachers').textContent = appData.summary.total_teachers;
-      document.getElementById('dash-total-rooms').textContent = appData.institution.total_rooms;
-      document.getElementById('dash-total-hours').textContent = appData.summary.total_hours;
+      const dCls = document.getElementById('dash-total-classes');
+      if (dCls) dCls.textContent = appData.structure.total_classes;
+      const dBrk = document.getElementById('dash-classes-breakdown');
+      if (dBrk) dBrk.textContent = `${appData.structure.c1} أولى + ${appData.structure.c2} ثانية + ${appData.structure.c3} ثالثة`;
+      const dTch = document.getElementById('dash-total-teachers');
+      if (dTch) dTch.textContent = appData.summary.total_teachers;
+      const dRms = document.getElementById('dash-total-rooms');
+      if (dRms) dRms.textContent = appData.institution.total_rooms;
+      const dHrs = document.getElementById('dash-total-hours');
+      if (dHrs) dHrs.textContent = appData.summary.total_hours;
 
       // Quotas Table
       const quotasBody = document.getElementById('table-quotas-body');
