@@ -57,6 +57,11 @@
       font-weight: 700;
       box-shadow: 0 4px 14px 0 rgba(37, 99, 235, 0.35);
     }
+    .active-nav .nav-num-badge {
+      background-color: rgba(255, 255, 255, 0.25) !important;
+      color: #ffffff !important;
+      border-color: rgba(255, 255, 255, 0.45) !important;
+    }
     .collapsed {
       display: none !important;
     }
@@ -533,6 +538,11 @@
       background-color: #f1f5f9 !important;
       color: #0f172a !important;
     }
+    body.theme-light .nav-num-badge {
+      background-color: #f1f5f9 !important;
+      color: #475569 !important;
+      border-color: #cbd5e1 !important;
+    }
     body.theme-light main {
       background-color: #f8fafc !important;
     }
@@ -616,6 +626,11 @@
     body.theme-navy aside button:hover {
       background-color: #0f2356 !important;
       color: #ffffff !important;
+    }
+    body.theme-navy .nav-num-badge {
+      background-color: #0b1a3e !important;
+      color: #93c5fd !important;
+      border-color: #1e3a78 !important;
     }
     body.theme-navy main {
       background-color: #04091a !important;
@@ -827,57 +842,68 @@
       <div class="space-y-1 flex-1 overflow-y-auto custom-scrollbar pr-1 pb-4">
         <div class="text-[11px] font-bold text-slate-400 px-3 py-1 uppercase tracking-wider">القائمة الرئيسية</div>
         
-        <button id="nav-tab-dashboard" onclick="switchTab('tab-dashboard')" class="w-full text-right px-3 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:bg-slate-800/70 hover:text-white transition flex items-center gap-2.5 active-nav">
+        <button id="nav-tab-dashboard" onclick="switchTab('tab-dashboard')" class="w-full text-right px-3 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:bg-slate-800/70 hover:text-white transition flex items-center gap-2 active-nav">
+          <span class="w-5 h-5 rounded-md bg-slate-800/90 text-slate-400 border border-slate-700/70 flex items-center justify-center text-[10.5px] font-mono font-bold shrink-0 nav-num-badge">1</span>
           <span>📊</span>
           <span>لوحة القيادة والمؤشرات</span>
         </button>
 
-        <button id="nav-tab-institution" onclick="switchTab('tab-institution')" class="w-full text-right px-3 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:bg-slate-800/70 hover:text-white transition flex items-center gap-2.5">
+        <button id="nav-tab-institution" onclick="switchTab('tab-institution')" class="w-full text-right px-3 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:bg-slate-800/70 hover:text-white transition flex items-center gap-2">
+          <span class="w-5 h-5 rounded-md bg-slate-800/90 text-slate-400 border border-slate-700/70 flex items-center justify-center text-[10.5px] font-mono font-bold shrink-0 nav-num-badge">2</span>
           <span>🏫</span>
           <span>معلومات المؤسسة</span>
         </button>
 
-        <button id="nav-tab-structure" onclick="switchTab('tab-structure')" class="w-full text-right px-3 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:bg-slate-800/70 hover:text-white transition flex items-center gap-2.5">
+        <button id="nav-tab-structure" onclick="switchTab('tab-structure')" class="w-full text-right px-3 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:bg-slate-800/70 hover:text-white transition flex items-center gap-2">
+          <span class="w-5 h-5 rounded-md bg-slate-800/90 text-slate-400 border border-slate-700/70 flex items-center justify-center text-[10.5px] font-mono font-bold shrink-0 nav-num-badge">3</span>
           <span>👥</span>
           <span>البنية التربوية (الأقسام)</span>
         </button>
 
-        <button id="nav-tab-teachers" onclick="switchTab('tab-teachers')" class="w-full text-right px-3 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:bg-slate-800/70 hover:text-white transition flex items-center gap-2.5">
+        <button id="nav-tab-teachers" onclick="switchTab('tab-teachers')" class="w-full text-right px-3 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:bg-slate-800/70 hover:text-white transition flex items-center gap-2">
+          <span class="w-5 h-5 rounded-md bg-slate-800/90 text-slate-400 border border-slate-700/70 flex items-center justify-center text-[10.5px] font-mono font-bold shrink-0 nav-num-badge">4</span>
           <span>👨‍🏫</span>
           <span>هيئة التدريس (الأساتذة)</span>
         </button>
 
-        <button id="nav-tab-rooms-list" onclick="switchTab('tab-rooms-list')" class="w-full text-right px-3 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:bg-slate-800/70 hover:text-white transition flex items-center gap-2.5">
+        <button id="nav-tab-rooms-list" onclick="switchTab('tab-rooms-list')" class="w-full text-right px-3 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:bg-slate-800/70 hover:text-white transition flex items-center gap-2">
+          <span class="w-5 h-5 rounded-md bg-slate-800/90 text-slate-400 border border-slate-700/70 flex items-center justify-center text-[10.5px] font-mono font-bold shrink-0 nav-num-badge">5</span>
           <span>🚪</span>
           <span>القاعات المتواجدة بالمؤسسة</span>
         </button>
 
-        <button id="nav-tab-rooms" onclick="switchTab('tab-rooms')" class="w-full text-right px-3 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:bg-slate-800/70 hover:text-white transition flex items-center gap-2.5">
+        <button id="nav-tab-rooms" onclick="switchTab('tab-rooms')" class="w-full text-right px-3 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:bg-slate-800/70 hover:text-white transition flex items-center gap-2">
+          <span class="w-5 h-5 rounded-md bg-slate-800/90 text-slate-400 border border-slate-700/70 flex items-center justify-center text-[10.5px] font-mono font-bold shrink-0 nav-num-badge">6</span>
           <span>📍</span>
           <span>توطين وتوزيع القاعات</span>
         </button>
 
-        <button id="nav-tab-constraints" onclick="switchTab('tab-constraints')" class="w-full text-right px-3 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:bg-slate-800/70 hover:text-white transition flex items-center gap-2.5">
+        <button id="nav-tab-constraints" onclick="switchTab('tab-constraints')" class="w-full text-right px-3 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:bg-slate-800/70 hover:text-white transition flex items-center gap-2">
+          <span class="w-5 h-5 rounded-md bg-slate-800/90 text-slate-400 border border-slate-700/70 flex items-center justify-center text-[10.5px] font-mono font-bold shrink-0 nav-num-badge">7</span>
           <span>⚙️</span>
           <span>إدارة القيود المرنة (FET)</span>
         </button>
 
-        <button id="nav-tab-generator" onclick="switchTab('tab-generator')" class="w-full text-right px-3 py-2.5 rounded-xl text-xs font-black text-amber-300 bg-gradient-to-r from-amber-950/40 via-indigo-950/40 to-slate-900 border border-amber-600/40 hover:border-amber-500 shadow-md transition flex items-center gap-2.5">
+        <button id="nav-tab-generator" onclick="switchTab('tab-generator')" class="w-full text-right px-3 py-2.5 rounded-xl text-xs font-black text-amber-300 bg-gradient-to-r from-amber-950/40 via-indigo-950/40 to-slate-900 border border-amber-600/40 hover:border-amber-500 shadow-md transition flex items-center gap-2">
+          <span class="w-5 h-5 rounded-md bg-amber-950/80 text-amber-300 border border-amber-700/60 flex items-center justify-center text-[10.5px] font-mono font-black shrink-0 nav-num-badge">8</span>
           <span class="text-sm">⚡</span>
           <span>إنتاج الجداول الدراسية</span>
         </button>
 
-        <button id="nav-tab-print" onclick="switchTab('tab-print')" class="w-full text-right px-3 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:bg-slate-800/70 hover:text-white transition flex items-center gap-2.5">
+        <button id="nav-tab-print" onclick="switchTab('tab-print')" class="w-full text-right px-3 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:bg-slate-800/70 hover:text-white transition flex items-center gap-2">
+          <span class="w-5 h-5 rounded-md bg-slate-800/90 text-slate-400 border border-slate-700/70 flex items-center justify-center text-[10.5px] font-mono font-bold shrink-0 nav-num-badge">9</span>
           <span>🖨️</span>
           <span>طباعة الجداول الدراسية</span>
         </button>
 
-        <button id="nav-tab-viewer" onclick="switchTab('tab-viewer')" class="w-full text-right px-3 py-2 rounded-xl text-xs font-bold text-cyan-300 hover:bg-slate-800/70 hover:text-white transition flex items-center gap-2.5">
+        <button id="nav-tab-viewer" onclick="switchTab('tab-viewer')" class="w-full text-right px-3 py-2 rounded-xl text-xs font-bold text-cyan-300 hover:bg-slate-800/70 hover:text-white transition flex items-center gap-2">
+          <span class="w-5 h-5 rounded-md bg-slate-800/90 text-slate-400 border border-slate-700/70 flex items-center justify-center text-[10.5px] font-mono font-bold shrink-0 nav-num-badge">10</span>
           <span>📅</span>
           <span>استعراض وتصفح الجداول</span>
         </button>
 
-        <button id="nav-tab-assignments" onclick="switchTab('tab-assignments')" class="w-full text-right px-3 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:bg-slate-800/70 hover:text-white transition flex items-center gap-2.5">
+        <button id="nav-tab-assignments" onclick="switchTab('tab-assignments')" class="w-full text-right px-3 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:bg-slate-800/70 hover:text-white transition flex items-center gap-2">
+          <span class="w-5 h-5 rounded-md bg-slate-800/90 text-slate-400 border border-slate-700/70 flex items-center justify-center text-[10.5px] font-mono font-bold shrink-0 nav-num-badge">11</span>
           <span>📋</span>
           <span>ورقة الإسناد وتوزيع الحصص</span>
         </button>
@@ -889,22 +915,26 @@
             <span class="text-[9px] bg-amber-950/90 text-amber-300 px-1.5 py-0.5 rounded border border-amber-700/60 font-mono">جديد</span>
           </div>
 
-          <button id="nav-tab-exams" onclick="switchTab('tab-exams')" class="w-full text-right px-3 py-2 rounded-xl text-xs font-bold text-amber-300 hover:bg-slate-800/70 hover:text-white transition flex items-center gap-2.5">
+          <button id="nav-tab-exams" onclick="switchTab('tab-exams')" class="w-full text-right px-3 py-2 rounded-xl text-xs font-bold text-amber-300 hover:bg-slate-800/70 hover:text-white transition flex items-center gap-2">
+            <span class="w-5 h-5 rounded-md bg-amber-950/80 text-amber-300 border border-amber-800/60 flex items-center justify-center text-[10px] font-mono font-bold shrink-0 nav-num-badge">12</span>
             <span>📝</span>
             <span>تنظيم الامتحانات والحراسة</span>
           </button>
 
-          <button id="nav-tab-golden-window" onclick="switchTab('tab-golden-window')" class="w-full text-right px-3 py-2 rounded-xl text-xs font-bold text-emerald-300 hover:bg-slate-800/70 hover:text-white transition flex items-center gap-2.5">
+          <button id="nav-tab-golden-window" onclick="switchTab('tab-golden-window')" class="w-full text-right px-3 py-2 rounded-xl text-xs font-bold text-emerald-300 hover:bg-slate-800/70 hover:text-white transition flex items-center gap-2">
+            <span class="w-5 h-5 rounded-md bg-emerald-950/80 text-emerald-300 border border-emerald-800/60 flex items-center justify-center text-[10px] font-mono font-bold shrink-0 nav-num-badge">13</span>
             <span>🌟</span>
             <span>النافذة الذهبية للمجالس</span>
           </button>
 
-          <button id="nav-tab-surveillance" onclick="switchTab('tab-surveillance')" class="w-full text-right px-3 py-2 rounded-xl text-xs font-bold text-cyan-300 hover:bg-slate-800/70 hover:text-white transition flex items-center gap-2.5">
+          <button id="nav-tab-surveillance" onclick="switchTab('tab-surveillance')" class="w-full text-right px-3 py-2 rounded-xl text-xs font-bold text-cyan-300 hover:bg-slate-800/70 hover:text-white transition flex items-center gap-2">
+            <span class="w-5 h-5 rounded-md bg-cyan-950/80 text-cyan-300 border border-cyan-800/60 flex items-center justify-center text-[10px] font-mono font-bold shrink-0 nav-num-badge">14</span>
             <span>📋</span>
             <span>تقرير الحراسة العامة اليومي</span>
           </button>
 
-          <button id="nav-tab-mobility" onclick="switchTab('tab-mobility')" class="w-full text-right px-3 py-2 rounded-xl text-xs font-bold text-violet-300 hover:bg-slate-800/70 hover:text-white transition flex items-center gap-2.5">
+          <button id="nav-tab-mobility" onclick="switchTab('tab-mobility')" class="w-full text-right px-3 py-2 rounded-xl text-xs font-bold text-violet-300 hover:bg-slate-800/70 hover:text-white transition flex items-center gap-2">
+            <span class="w-5 h-5 rounded-md bg-violet-950/80 text-violet-300 border border-violet-800/60 flex items-center justify-center text-[10px] font-mono font-bold shrink-0 nav-num-badge">15</span>
             <span>🎯</span>
             <span>المعين في ضبط حركية التلاميذ</span>
           </button>
