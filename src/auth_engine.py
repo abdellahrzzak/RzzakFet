@@ -923,8 +923,9 @@ class AuthEngine:
 
         return meta
 
-    def publish_live_patch(self, new_version, release_notes, patch_type="live_patch", download_url=""):
-        patch_url = f"https://raw.githubusercontent.com/abdellahrzzak/RzzakFet/main/ui/index.html?t={int(time.time())}"
+    def publish_live_patch(self, new_version, release_notes, patch_type="live_patch", download_url="", patch_url=""):
+        if not patch_url:
+            patch_url = f"https://raw.githubusercontent.com/abdellahrzzak/RzzakFet/main/ui/index.html?t={int(time.time())}"
         update_data = {
             "latest_version": new_version,
             "patch_type": patch_type,

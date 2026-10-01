@@ -1421,11 +1421,22 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
                 subprocess.run(["git", "commit", "-m", f"feat(ota): v{new_version} - {release_notes}"], capture_output=True, text=True, cwd=BASE_DIR)
                 subprocess.run(["git", "push", "origin", "main"], capture_output=True, text=True, cwd=BASE_DIR)
 
+                commit_sha = "main"
+                try:
+                    p_sha = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True, cwd=BASE_DIR)
+                    if p_sha.returncode == 0 and p_sha.stdout.strip():
+                        commit_sha = p_sha.stdout.strip()
+                except Exception:
+                    pass
+
+                patch_url = f"https://raw.githubusercontent.com/abdellahrzzak/RzzakFet/{commit_sha}/ui/index.html"
+
                 # 3. Publish to Firestore cloud metadata
                 res = APP_STATE.auth_engine.publish_live_patch(
                     new_version=new_version,
                     release_notes=release_notes,
-                    patch_type=patch_type
+                    patch_type=patch_type,
+                    patch_url=patch_url
                 )
 
                 # 4. Save local version to DATA_DIR so developer machine is registered on new version
