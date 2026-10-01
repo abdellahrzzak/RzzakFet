@@ -1216,54 +1216,56 @@
 
             <!-- Lower Strip: Educational Cycles Structure & Weekly Load Balance -->
             <div>
-              <div class="flex items-center justify-between mb-2.5">
+              <div class="flex items-center justify-between mb-2">
                 <span class="text-xs font-bold text-slate-300 flex items-center gap-1.5">
                   <span>📊</span> <span>توزيع البنية التربوية وحصص الأسلاك التعليمية بالمؤسسة</span>
                 </span>
-                <span class="text-[10px] text-slate-400 font-mono">11 فصلاً • 276 ساعة أسبوعية</span>
+                <span id="dash-struct-summary-sub" class="text-[10px] text-slate-400 font-mono">
+                  <span id="dash-struct-total-classes">47</span> فصلاً • <span id="dash-struct-total-hours">1173</span> ساعة أسبوعية
+                </span>
               </div>
 
-              <div class="grid grid-cols-3 gap-3">
+              <div class="grid grid-cols-3 gap-2.5">
                 <!-- Level 1: الأولى إعدادي -->
-                <div class="bg-slate-950/70 p-3 rounded-2xl border border-slate-800/80 flex flex-col justify-between">
+                <div class="bg-slate-950/70 p-2.5 rounded-xl border border-slate-800/80 flex flex-col justify-between">
                   <div class="flex items-center justify-between pb-1.5 border-b border-slate-800/60">
                     <span class="font-bold text-white text-xs">الأولى إعدادي (1APIC)</span>
-                    <span class="text-[10px] bg-blue-950 text-blue-300 px-2 py-0.5 rounded font-bold font-mono">4 فصول</span>
+                    <span id="dash-struct-c1-badge" class="text-[10px] bg-blue-950 text-blue-300 px-2 py-0.5 rounded font-bold font-mono">16 فصلاً</span>
                   </div>
                   <div class="my-2 flex justify-between items-center text-xs">
-                    <span class="text-slate-400">التلاميذ: <strong class="text-white font-mono">444</strong></span>
-                    <span class="text-slate-400">الحصص: <strong class="text-sky-300 font-mono">102س</strong></span>
-                    <span class="text-slate-400">المعدل: <strong class="text-emerald-400 font-mono">25.5س/فصل</strong></span>
+                    <span class="text-slate-400">التلاميذ: <strong id="dash-struct-s1" class="text-white font-mono">560</strong></span>
+                    <span class="text-slate-400">الحصص: <strong id="dash-struct-h1" class="text-sky-300 font-mono">408س</strong></span>
+                    <span class="text-slate-400">المعدل: <strong id="dash-struct-avg1" class="text-emerald-400 font-mono">25.5س/فصل</strong></span>
                   </div>
-                  <div class="text-[9.5px] text-slate-500 pt-1 border-t border-slate-800/50">تغطية تامة: 13 مادة دراسية مقررة</div>
+                  <div class="text-[9.5px] text-slate-500 pt-1 border-t border-slate-800/50">تغطية تامة: تفويج واستيعاب كامل للمواد</div>
                 </div>
 
                 <!-- Level 2: الثانية إعدادي -->
-                <div class="bg-slate-950/70 p-3 rounded-2xl border border-slate-800/80 flex flex-col justify-between">
+                <div class="bg-slate-950/70 p-2.5 rounded-xl border border-slate-800/80 flex flex-col justify-between">
                   <div class="flex items-center justify-between pb-1.5 border-b border-slate-800/60">
                     <span class="font-bold text-white text-xs">الثانية إعدادي (2APIC)</span>
-                    <span class="text-[10px] bg-indigo-950 text-indigo-300 px-2 py-0.5 rounded font-bold font-mono">3 فصول</span>
+                    <span id="dash-struct-c2-badge" class="text-[10px] bg-indigo-950 text-indigo-300 px-2 py-0.5 rounded font-bold font-mono">16 فصلاً</span>
                   </div>
                   <div class="my-2 flex justify-between items-center text-xs">
-                    <span class="text-slate-400">التلاميذ: <strong class="text-white font-mono">372</strong></span>
-                    <span class="text-slate-400">الحصص: <strong class="text-indigo-300 font-mono">78س</strong></span>
-                    <span class="text-slate-400">المعدل: <strong class="text-emerald-400 font-mono">26.0س/فصل</strong></span>
+                    <span class="text-slate-400">التلاميذ: <strong id="dash-struct-s2" class="text-white font-mono">560</strong></span>
+                    <span class="text-slate-400">الحصص: <strong id="dash-struct-h2" class="text-indigo-300 font-mono">416س</strong></span>
+                    <span class="text-slate-400">المعدل: <strong id="dash-struct-avg2" class="text-emerald-400 font-mono">26.0س/فصل</strong></span>
                   </div>
-                  <div class="text-[9.5px] text-slate-500 pt-1 border-t border-slate-800/50">تغطية تامة: تفويج كامل للمختبرات</div>
+                  <div class="text-[9.5px] text-slate-500 pt-1 border-t border-slate-800/50">تغطية تامة: تفويج كامل للمختبرات العلمية</div>
                 </div>
 
                 <!-- Level 3: الثالثة إعدادي -->
-                <div class="bg-slate-950/70 p-3 rounded-2xl border border-slate-800/80 flex flex-col justify-between">
+                <div class="bg-slate-950/70 p-2.5 rounded-xl border border-slate-800/80 flex flex-col justify-between">
                   <div class="flex items-center justify-between pb-1.5 border-b border-slate-800/60">
                     <span class="font-bold text-white text-xs">الثالثة إعدادي (3APIC)</span>
-                    <span class="text-[10px] bg-amber-950 text-amber-300 px-2 py-0.5 rounded font-bold font-mono">4 فصول</span>
+                    <span id="dash-struct-c3-badge" class="text-[10px] bg-amber-950 text-amber-300 px-2 py-0.5 rounded font-bold font-mono">15 فصلاً</span>
                   </div>
                   <div class="my-2 flex justify-between items-center text-xs">
-                    <span class="text-slate-400">التلاميذ: <strong class="text-white font-mono">550</strong></span>
-                    <span class="text-slate-400">الحصص: <strong class="text-amber-300 font-mono">96س</strong></span>
-                    <span class="text-slate-400">المعدل: <strong class="text-emerald-400 font-mono">24.0س/فصل</strong></span>
+                    <span class="text-slate-400">التلاميذ: <strong id="dash-struct-s3" class="text-white font-mono">525</strong></span>
+                    <span class="text-slate-400">الحصص: <strong id="dash-struct-h3" class="text-amber-300 font-mono">360س</strong></span>
+                    <span class="text-slate-400">المعدل: <strong id="dash-struct-avg3" class="text-emerald-400 font-mono">24.0س/فصل</strong></span>
                   </div>
-                  <div class="text-[9.5px] text-slate-500 pt-1 border-t border-slate-800/50">جاهزية الامتحان الموحد واللغات</div>
+                  <div class="text-[9.5px] text-slate-500 pt-1 border-t border-slate-800/50">جاهزية الامتحان الموحد واللغات والمسارات</div>
                 </div>
               </div>
             </div>
@@ -6073,6 +6075,67 @@
       if (dRms) dRms.textContent = appData.institution.total_rooms;
       const dHrs = document.getElementById('dash-total-hours');
       if (dHrs) dHrs.textContent = appData.summary.total_hours;
+
+      // Dynamic Educational Structure Breakdown on Dashboard
+      if (appData.structure) {
+        const c1Val = parseInt(appData.structure.c1) || 0;
+        const c2Val = parseInt(appData.structure.c2) || 0;
+        const c3Val = parseInt(appData.structure.c3) || 0;
+        const totCls = c1Val + c2Val + c3Val || appData.structure.total_classes || 0;
+
+        let r1 = 0, r2 = 0, r3 = 0;
+        if (appData.quotas && Array.isArray(appData.quotas)) {
+          appData.quotas.forEach(q => {
+            r1 += (parseFloat(q.h1) || 0);
+            r2 += (parseFloat(q.h2) || 0);
+            r3 += (parseFloat(q.h3) || 0);
+          });
+        }
+        if (r1 === 0) r1 = 25.5;
+        if (r2 === 0) r2 = 26.0;
+        if (r3 === 0) r3 = 24.0;
+
+        const h1Val = Math.round(r1 * c1Val);
+        const h2Val = Math.round(r2 * c2Val);
+        const h3Val = Math.round(r3 * c3Val);
+        const totHrs = (appData.summary && appData.summary.total_hours) ? appData.summary.total_hours : (h1Val + h2Val + h3Val);
+
+        const s1Val = (appData.structure.s1 || appData.structure.s1_students) || Math.round(c1Val * 35);
+        const s2Val = (appData.structure.s2 || appData.structure.s2_students) || Math.round(c2Val * 35);
+        const s3Val = (appData.structure.s3 || appData.structure.s3_students) || Math.round(c3Val * 35);
+
+        const dStCls = document.getElementById('dash-struct-total-classes');
+        if (dStCls) dStCls.textContent = totCls;
+        const dStHrs = document.getElementById('dash-struct-total-hours');
+        if (dStHrs) dStHrs.textContent = totHrs;
+
+        const dC1Badge = document.getElementById('dash-struct-c1-badge');
+        if (dC1Badge) dC1Badge.textContent = `${c1Val} فصلاً`;
+        const dS1 = document.getElementById('dash-struct-s1');
+        if (dS1) dS1.textContent = s1Val;
+        const dH1 = document.getElementById('dash-struct-h1');
+        if (dH1) dH1.textContent = `${h1Val}س`;
+        const dAvg1 = document.getElementById('dash-struct-avg1');
+        if (dAvg1) dAvg1.textContent = `${r1.toFixed(1)}س/فصل`;
+
+        const dC2Badge = document.getElementById('dash-struct-c2-badge');
+        if (dC2Badge) dC2Badge.textContent = `${c2Val} فصلاً`;
+        const dS2 = document.getElementById('dash-struct-s2');
+        if (dS2) dS2.textContent = s2Val;
+        const dH2 = document.getElementById('dash-struct-h2');
+        if (dH2) dH2.textContent = `${h2Val}س`;
+        const dAvg2 = document.getElementById('dash-struct-avg2');
+        if (dAvg2) dAvg2.textContent = `${r2.toFixed(1)}س/فصل`;
+
+        const dC3Badge = document.getElementById('dash-struct-c3-badge');
+        if (dC3Badge) dC3Badge.textContent = `${c3Val} فصلاً`;
+        const dS3 = document.getElementById('dash-struct-s3');
+        if (dS3) dS3.textContent = s3Val;
+        const dH3 = document.getElementById('dash-struct-h3');
+        if (dH3) dH3.textContent = `${h3Val}س`;
+        const dAvg3 = document.getElementById('dash-struct-avg3');
+        if (dAvg3) dAvg3.textContent = `${r3.toFixed(1)}س/فصل`;
+      }
 
       // Quotas Table
       const quotasBody = document.getElementById('table-quotas-body');
