@@ -989,15 +989,18 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
             return
 
         if parsed.path in ("/", "/index.html"):
-            patched_path = os.path.join(DATA_DIR, "ui", "index.html")
-            if os.path.exists(patched_path) and os.path.getsize(patched_path) > 10000:
-                index_path = patched_path
+            candidates = [
+                os.path.join(DATA_DIR, "ui", "index.html"),
+                os.path.join(UI_DIR, "index.html"),
+                os.path.join(os.getcwd(), "ui", "index.html"),
+                os.path.join(os.environ.get("LOCALAPPDATA", ""), "Programs", "RzzakFet", "ui", "index.html"),
+                os.path.join(os.environ.get("LOCALAPPDATA", ""), "Programs", "RzzakFet", "_internal", "ui", "index.html"),
+            ]
+            valid_candidates = [p for p in candidates if os.path.exists(p) and os.path.getsize(p) > 10000]
+            if valid_candidates:
+                index_path = max(valid_candidates, key=os.path.getmtime)
             else:
                 index_path = os.path.join(UI_DIR, "index.html")
-                if not os.path.exists(index_path):
-                    alt = os.path.join(os.getcwd(), "ui", "index.html")
-                    if os.path.exists(alt):
-                        index_path = alt
             if os.path.exists(index_path):
                 with open(index_path, "rb") as f:
                     content = f.read()
@@ -1495,6 +1498,10 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
                     local_app_ui = os.path.join(os.environ.get("LOCALAPPDATA", ""), "Programs", "RzzakFet", "ui", "index.html")
                     if os.path.exists(os.path.dirname(local_app_ui)):
                         with open(local_app_ui, "wb") as f:
+                            f.write(new_html)
+                    internal_ui = os.path.join(os.environ.get("LOCALAPPDATA", ""), "Programs", "RzzakFet", "_internal", "ui", "index.html")
+                    if os.path.exists(os.path.dirname(internal_ui)):
+                        with open(internal_ui, "wb") as f:
                             f.write(new_html)
                 except Exception:
                     pass
