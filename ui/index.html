@@ -525,6 +525,11 @@
             <span>✨</span>
             <span>يتوفر تحديث جديد!</span>
           </button>
+          <!-- Developer Quick OTA Deploy Button (Appears ONLY on Developer's Machine) -->
+          <button id="btn-dev-publish-patch" onclick="openDevPublishModal()" class="hidden bg-gradient-to-r from-amber-600 via-rose-600 to-indigo-600 hover:from-amber-500 hover:to-indigo-500 text-white font-bold text-[10.5px] px-3 py-1 rounded-full border border-amber-400/60 shadow-md shadow-amber-950/40 cursor-pointer flex items-center gap-1.5 transition transform active:scale-95" title="نشر التعديلات البرمجية فورياً لجميع المستخدمين">
+            <span>🚀</span>
+            <span>نشر التعديلات للمستخدمين</span>
+          </button>
         </div>
         <p class="text-xs text-slate-400" id="header-institution-title">المعين في إعداد البنية التربوية وجداول الحصص الرسمية</p>
       </div>
@@ -7409,6 +7414,16 @@
           logoutBtn.classList.add('hidden');
         }
       }
+
+      // Developer Quick Publish Button (Only on Developer / Super-Admin Machine)
+      const devPublishBtn = document.getElementById('btn-dev-publish-patch');
+      if (devPublishBtn) {
+        if (auth.is_admin || auth.machine_id === 'RZZAK-F4A5-5734-7455') {
+          devPublishBtn.classList.remove('hidden');
+        } else {
+          devPublishBtn.classList.add('hidden');
+        }
+      }
     }
 
     function evaluateAuthGate(auth) {
@@ -7798,13 +7813,32 @@
       const curVerEl = document.getElementById('update-current-ver');
       const latVerEl = document.getElementById('update-latest-ver');
       const notesEl = document.getElementById('update-release-notes');
+      const patchBadgeEl = document.getElementById('update-patch-badge');
+      const liveBtn = document.getElementById('update-apply-live-btn');
       const dlBtn = document.getElementById('update-download-btn');
 
       if (curVerEl) curVerEl.textContent = 'v' + (data.current_version || '1.0.0');
-      if (latVerEl) latVerEl.textContent = 'v' + (data.latest_version || '1.1.0');
-      if (notesEl) notesEl.textContent = data.release_notes || 'تحسينات عامة في الأداء وتوليد الجداول.';
-      if (dlBtn) {
-        dlBtn.href = data.download_url || '#';
+      if (latVerEl) latVerEl.textContent = 'v' + (data.latest_version || '2.0.0');
+      if (notesEl) notesEl.textContent = data.release_notes || 'تحسينات شاملة في الأداء والواجهة وتوليد الجداول.';
+
+      const isLive = (data.patch_type === 'live_patch' || !data.patch_type);
+      if (isLive) {
+        if (patchBadgeEl) {
+          patchBadgeEl.textContent = '⚡ تحديث فوري ذكي (تثبيت تلقائي في ثانيتين)';
+          patchBadgeEl.className = 'inline-block mt-2 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30';
+        }
+        if (liveBtn) liveBtn.classList.remove('hidden');
+        if (dlBtn) dlBtn.classList.add('hidden');
+      } else {
+        if (patchBadgeEl) {
+          patchBadgeEl.textContent = '📦 ترقية رئيسية (حزمة تثبيت Setup.exe كاملة)';
+          patchBadgeEl.className = 'inline-block mt-2 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/10 text-blue-400 border border-blue-500/30';
+        }
+        if (liveBtn) liveBtn.classList.add('hidden');
+        if (dlBtn) {
+          dlBtn.classList.remove('hidden');
+          dlBtn.href = data.download_url || '#';
+        }
       }
 
       if (modal) modal.classList.remove('hidden');
@@ -7813,6 +7847,123 @@
     function closeUpdateModal() {
       const modal = document.getElementById('modal-app-update');
       if (modal) modal.classList.add('hidden');
+    }
+
+    async function applyLivePatchNow() {
+      const btn = document.getElementById('update-apply-live-btn');
+      const txt = document.getElementById('update-apply-btn-text');
+      if (!currentUpdateMeta) return;
+
+      if (btn) btn.disabled = true;
+      if (txt) txt.innerHTML = 'جاري تثبيت التحديث... <span class="animate-spin inline-block">⏳</span>';
+
+      try {
+        const res = await fetch('/api/app/apply_live_patch', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            patch_url: currentUpdateMeta.patch_url,
+            new_version: currentUpdateMeta.latest_version
+          })
+        });
+        const resp = await res.json();
+        if (resp.success) {
+          if (txt) txt.textContent = 'تم التثبيت بنجاح! جاري التحديث الآن... ✅';
+          setTimeout(() => {
+            window.location.reload();
+          }, 1000);
+        } else {
+          alert('تعذر تثبيت التحديث التلقائي: ' + (resp.error || 'خطأ غير معروف'));
+          if (btn) btn.disabled = false;
+          if (txt) txt.textContent = 'تثبيت التحديث الآن (ثانيتان ⚡)';
+        }
+      } catch (err) {
+        alert('حدث خطأ أثناء تطبيق التحديث: ' + err.message);
+        if (btn) btn.disabled = false;
+        if (txt) txt.textContent = 'تثبيت التحديث الآن (ثانيتان ⚡)';
+      }
+    }
+
+    // ================= DEVELOPER QUICK OTA DEPLOY =================
+    function openDevPublishModal() {
+      const modal = document.getElementById('modal-dev-publish-patch');
+      const curVerEl = document.getElementById('dev-cur-version');
+      const newVerEl = document.getElementById('dev-new-version');
+      const notesEl = document.getElementById('dev-release-notes');
+
+      const cur = (currentUpdateMeta && currentUpdateMeta.current_version) ? currentUpdateMeta.current_version : '2.0.0';
+      if (curVerEl) curVerEl.value = 'v' + cur;
+
+      // Suggest next minor patch version (e.g. 2.0.0 -> 2.0.1)
+      const parts = cur.split('.').map(n => parseInt(n) || 0);
+      if (parts.length === 3) {
+        parts[2] += 1;
+      } else {
+        parts.push(1);
+      }
+      if (newVerEl) newVerEl.value = parts.join('.');
+      if (notesEl && !notesEl.value) {
+        notesEl.value = '- تحديث لوحة القيادة الذكية وإدارة القاعات والامتحانات.\n- تحسينات برمجية دقيقة في الخوارزميات وتوليد الجداول.';
+      }
+
+      if (modal) modal.classList.remove('hidden');
+    }
+
+    function closeDevPublishModal() {
+      const modal = document.getElementById('modal-dev-publish-patch');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    async function submitDevPublishPatch() {
+      const newVerEl = document.getElementById('dev-new-version');
+      const notesEl = document.getElementById('dev-release-notes');
+      const patchTypeEls = document.getElementsByName('dev-patch-type');
+      const btn = document.getElementById('btn-submit-dev-publish');
+      const btnTxt = document.getElementById('btn-submit-dev-text');
+
+      const newVersion = newVerEl ? newVerEl.value.trim().replace(/^v/, '') : '';
+      const releaseNotes = notesEl ? notesEl.value.trim() : '';
+      let patchType = 'live_patch';
+      for (const el of patchTypeEls) {
+        if (el.checked) patchType = el.value;
+      }
+
+      if (!newVersion) {
+        alert('يرجى تحديد رقم الإصدار الجديد (مثال: 2.0.1).');
+        return;
+      }
+
+      if (btn) btn.disabled = true;
+      if (btnTxt) btnTxt.innerHTML = 'جاري رفع التعديلات السحابية لجميع المستخدمين... <span class="animate-spin inline-block">⏳</span>';
+
+      try {
+        const res = await fetch('/api/admin/publish_live_patch', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            new_version: newVersion,
+            release_notes: releaseNotes,
+            patch_type: patchType
+          })
+        });
+        const resp = await res.json();
+        if (resp.success) {
+          alert('🎉 تم رفع ونشر التحديث v' + newVersion + ' بنجاح!\n\nسيصل إشعار التحديث التلقائي لجميع المستخدمين عند فتحهم للتطبيق فوراً.');
+          closeDevPublishModal();
+          if (currentUpdateMeta) {
+            currentUpdateMeta.current_version = newVersion;
+          }
+          const curVerBadge = document.getElementById('update-current-ver');
+          if (curVerBadge) curVerBadge.textContent = 'v' + newVersion;
+        } else {
+          alert('فشل نشر التحديث: ' + (resp.error || 'خطأ غير معروف'));
+        }
+      } catch (err) {
+        alert('حدث خطأ أثناء النشر: ' + err.message);
+      } finally {
+        if (btn) btn.disabled = false;
+        if (btnTxt) btnTxt.textContent = 'رفع ونشر التحديث الآن لجميع المستخدمين';
+      }
     }
 
     // Auto-load on start - prioritize instantaneous UI rendering
@@ -9928,13 +10079,16 @@
 
   <!-- ================= APP UPDATE NOTIFICATION MODAL ================= -->
   <div id="modal-app-update" class="fixed inset-0 z-[100001] flex items-center justify-center bg-black/80 backdrop-blur-sm hidden">
-    <div class="bg-slate-900 border border-slate-700 rounded-3xl max-w-md w-full shadow-2xl p-6 mx-4 space-y-5 text-center relative overflow-hidden">
+    <div class="bg-slate-900 border border-slate-700 rounded-3xl max-w-md w-full shadow-2xl p-6 mx-4 space-y-4 text-center relative overflow-hidden">
       <div class="w-14 h-14 mx-auto rounded-2xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-3xl text-emerald-300">
         🚀
       </div>
       <div>
-        <h3 class="text-lg font-black text-white" id="update-modal-title">يتوفر إصدار جديد من برنامج RzzakFet!</h3>
-        <p class="text-xs text-slate-400 mt-1">إصدارك الحالي: <span class="font-mono text-slate-300 font-bold" id="update-current-ver">v1.0.0</span> | الإصدار الأحدث: <span class="font-mono text-emerald-400 font-bold" id="update-latest-ver">v1.1.0</span></p>
+        <h3 class="text-base font-black text-white" id="update-modal-title">يتوفر إصدار وتحديث جديد لبرنامج RzzakFet!</h3>
+        <p class="text-xs text-slate-400 mt-1">إصدارك الحالي: <span class="font-mono text-slate-300 font-bold" id="update-current-ver">v1.0.0</span> | الإصدار الأحدث: <span class="font-mono text-emerald-400 font-bold" id="update-latest-ver">v2.0.1</span></p>
+        <div id="update-patch-badge" class="inline-block mt-2 px-3 py-0.5 rounded-full text-[10.5px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+          ⚡ تحديث فوري ذكي (تثبيت تلقائي في ثانيتين)
+        </div>
       </div>
 
       <div class="bg-slate-950/70 border border-slate-800 rounded-2xl p-4 text-right text-xs space-y-2">
@@ -9948,12 +10102,84 @@
       </div>
 
       <div class="flex items-center gap-2.5 pt-2">
-        <a id="update-download-btn" href="#" target="_blank" class="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold py-2.5 px-4 rounded-xl text-xs transition shadow-lg flex items-center justify-center gap-2 cursor-pointer">
+        <!-- Live Patch Button (Default for OTA) -->
+        <button id="update-apply-live-btn" onclick="applyLivePatchNow()" class="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold py-2.5 px-4 rounded-xl text-xs transition shadow-lg flex items-center justify-center gap-2 cursor-pointer">
+          <span>⚡</span>
+          <span id="update-apply-btn-text">تثبيت التحديث الآن (ثانيتان ⚡)</span>
+        </button>
+
+        <!-- Full Exe Download Button (Alternative fallback) -->
+        <a id="update-download-btn" href="#" target="_blank" class="hidden flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold py-2.5 px-4 rounded-xl text-xs transition shadow-lg flex items-center justify-center gap-2 cursor-pointer">
           <span>📥</span>
-          <span>تحميل التحديث الآن</span>
+          <span>تحميل مثبت الإصدار الكامل</span>
         </a>
+
         <button onclick="closeUpdateModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2.5 rounded-xl text-xs font-bold transition cursor-pointer">
           لاحقاً
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= DEVELOPER QUICK OTA DEPLOY MODAL ================= -->
+  <div id="modal-dev-publish-patch" class="fixed inset-0 z-[100002] flex items-center justify-center bg-black/85 backdrop-blur-md hidden">
+    <div class="bg-slate-900 border border-amber-500/40 rounded-3xl max-w-lg w-full shadow-2xl p-6 mx-4 space-y-4 text-right relative overflow-hidden">
+      <!-- Header -->
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2.5">
+          <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-amber-500 to-rose-600 flex items-center justify-center text-xl text-white shadow-lg shadow-amber-900/30">
+            🚀
+          </div>
+          <div>
+            <h3 class="text-base font-black text-white">مركز المطور: نشر التعديلات البرمجية فورياً</h3>
+            <p class="text-xs text-amber-400 font-medium">نشر التحديث لجميع المستخدمين بضغطة زر واحدة</p>
+          </div>
+        </div>
+        <button onclick="closeDevPublishModal()" class="text-slate-400 hover:text-white text-lg font-bold">✕</button>
+      </div>
+
+      <!-- Version Inputs -->
+      <div class="grid grid-cols-2 gap-3 text-xs">
+        <div>
+          <label class="block text-slate-400 mb-1">الإصدار الحالي:</label>
+          <input type="text" id="dev-cur-version" readonly class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-400 font-mono text-xs cursor-not-allowed">
+        </div>
+        <div>
+          <label class="block text-amber-300 font-bold mb-1">رقم الإصدار الجديد المراد نشره:</label>
+          <input type="text" id="dev-new-version" placeholder="2.0.1" class="w-full bg-slate-950 border border-amber-500/60 rounded-xl px-3 py-2 text-white font-mono text-xs font-bold focus:border-amber-400 focus:outline-none">
+        </div>
+      </div>
+
+      <!-- Patch Type -->
+      <div class="text-xs space-y-1.5">
+        <label class="block text-slate-300 font-bold">نوع التحديث:</label>
+        <div class="grid grid-cols-2 gap-2">
+          <label class="flex items-center gap-2 p-2.5 rounded-xl border border-emerald-500/50 bg-emerald-950/20 cursor-pointer text-emerald-300 font-bold text-xs">
+            <input type="radio" name="dev-patch-type" value="live_patch" checked class="accent-emerald-500">
+            <span>⚡ تحديث فوري خفيف (OTA Live)</span>
+          </label>
+          <label class="flex items-center gap-2 p-2.5 rounded-xl border border-slate-700 bg-slate-950/40 cursor-pointer text-slate-400 text-xs">
+            <input type="radio" name="dev-patch-type" value="full_exe" class="accent-indigo-500">
+            <span>📦 ترقية مثبت كامل (Setup.exe)</span>
+          </label>
+        </div>
+        <p class="text-[11px] text-slate-400 mt-1">💡 التحديث الفوري الخفيف يقوم بنشر ملفات الواجهة والبرمجة فورياً لجميع المستخدمين وتطبيقها في ثانيتين دون الحاجة لملف تثبيت كامل.</p>
+      </div>
+
+      <!-- Release Notes -->
+      <div class="text-xs space-y-1.5">
+        <label class="block text-slate-300 font-bold">ملاحظات التحديث للمستخدمين (ما الجديد في هذا التعديل):</label>
+        <textarea id="dev-release-notes" rows="4" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-200 text-xs focus:border-amber-500 focus:outline-none placeholder-slate-600" placeholder="- تحسينات وتعديلات جديدة في الواجهة...&#10;- تسريع تدقيق القاعات المتخصصة..."></textarea>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex items-center gap-3 pt-2">
+        <button id="btn-submit-dev-publish" onclick="submitDevPublishPatch()" class="flex-1 bg-gradient-to-r from-amber-600 via-rose-600 to-indigo-600 hover:from-amber-500 hover:to-indigo-500 text-white font-bold py-2.5 px-4 rounded-xl text-xs transition shadow-lg flex items-center justify-center gap-2 cursor-pointer">
+          <span>🚀</span>
+          <span id="btn-submit-dev-text">رفع ونشر التحديث الآن لجميع المستخدمين</span>
+        </button>
+        <button onclick="closeDevPublishModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2.5 rounded-xl text-xs font-bold transition">
+          إلغاء
         </button>
       </div>
     </div>

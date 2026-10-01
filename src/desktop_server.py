@@ -988,11 +988,15 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
             return
 
         if parsed.path in ("/", "/index.html"):
-            index_path = os.path.join(UI_DIR, "index.html")
-            if not os.path.exists(index_path):
-                alt = os.path.join(os.getcwd(), "ui", "index.html")
-                if os.path.exists(alt):
-                    index_path = alt
+            patched_path = os.path.join(DATA_DIR, "ui", "index.html")
+            if os.path.exists(patched_path) and os.path.getsize(patched_path) > 10000:
+                index_path = patched_path
+            else:
+                index_path = os.path.join(UI_DIR, "index.html")
+                if not os.path.exists(index_path):
+                    alt = os.path.join(os.getcwd(), "ui", "index.html")
+                    if os.path.exists(alt):
+                        index_path = alt
             if os.path.exists(index_path):
                 with open(index_path, "rb") as f:
                     content = f.read()
@@ -1386,6 +1390,112 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
             force_update = data.get("force_update", False)
             res = APP_STATE.auth_engine.publish_update(new_version, download_url, release_notes, force_update)
             self.send_json_data(res)
+
+        elif parsed.path == "/api/admin/publish_live_patch":
+            auth_info = APP_STATE.auth_engine.get_auth_status()
+            if not (auth_info.get("is_admin") or auth_info.get("machine_id") == "RZZAK-F4A5-5734-7455"):
+                self.send_json_data({"success": False, "error": "غير مصرح لك بنشر التحديثات البرمجية."})
+                return
+
+            new_version = str(data.get("new_version", "")).strip()
+            release_notes = str(data.get("release_notes", "")).strip() or "تحسينات شاملة في الواجهة وتوليد الجداول."
+            patch_type = data.get("patch_type", "live_patch")
+
+            if not new_version:
+                self.send_json_data({"success": False, "error": "يرجى تحديد رقم الإصدار الجديد."})
+                return
+
+            try:
+                import subprocess
+                # 1. Update config/auth_config.json version locally
+                cfg_path = os.path.join(BASE_DIR, "config", "auth_config.json")
+                if os.path.exists(cfg_path):
+                    with open(cfg_path, "r", encoding="utf-8") as f:
+                        cfg_json = json.load(f)
+                    cfg_json.setdefault("app_info", {})["version"] = new_version
+                    with open(cfg_path, "w", encoding="utf-8") as f:
+                        json.dump(cfg_json, f, ensure_ascii=False, indent=2)
+
+                # 2. Push git commit and push to origin main
+                subprocess.run(["git", "add", "ui/", "src/", "config/", ".gitignore", "README.md"], capture_output=True, text=True, cwd=BASE_DIR)
+                subprocess.run(["git", "commit", "-m", f"feat(ota): v{new_version} - {release_notes}"], capture_output=True, text=True, cwd=BASE_DIR)
+                subprocess.run(["git", "push", "origin", "main"], capture_output=True, text=True, cwd=BASE_DIR)
+
+                # 3. Publish to Firestore cloud metadata
+                res = APP_STATE.auth_engine.publish_live_patch(
+                    new_version=new_version,
+                    release_notes=release_notes,
+                    patch_type=patch_type
+                )
+
+                # 4. Save local version to DATA_DIR so developer machine is registered on new version
+                iv_file = os.path.join(DATA_DIR, "installed_version.json")
+                with open(iv_file, "w", encoding="utf-8") as f:
+                    json.dump({"version": new_version, "updated_at": datetime.now().isoformat()}, f, indent=2)
+
+                self.send_json_data({
+                    "success": True,
+                    "version": new_version,
+                    "data": res.get("data", {})
+                })
+            except Exception as e:
+                self.send_json_data({"success": False, "error": str(e)})
+
+        elif parsed.path == "/api/app/apply_live_patch":
+            patch_url = data.get("patch_url") or "https://raw.githubusercontent.com/abdellahrzzak/RzzakFet/main/ui/index.html"
+            new_version = str(data.get("new_version", "")).strip()
+
+            try:
+                fetch_url = patch_url
+                if "?" in fetch_url:
+                    fetch_url += f"&_t={int(time.time())}"
+                else:
+                    fetch_url += f"?_t={int(time.time())}"
+
+                req = urllib.request.Request(fetch_url, headers={
+                    "User-Agent": "RzzakFet-Desktop/2.0",
+                    "Cache-Control": "no-cache"
+                })
+                with urllib.request.urlopen(req, timeout=12) as resp:
+                    new_html = resp.read()
+
+                if len(new_html) < 10000 or b"<!DOCTYPE html" not in new_html:
+                    self.send_json_data({"success": False, "error": "ملف التحديث غير صالح أو لم يكتمل تحميله."})
+                    return
+
+                # Write to DATA_DIR/ui/index.html
+                patch_dir = os.path.join(DATA_DIR, "ui")
+                os.makedirs(patch_dir, exist_ok=True)
+                patch_file = os.path.join(patch_dir, "index.html")
+                with open(patch_file, "wb") as f:
+                    f.write(new_html)
+
+                # Attempt updating UI_DIR/index.html
+                try:
+                    ui_file = os.path.join(UI_DIR, "index.html")
+                    with open(ui_file, "wb") as f:
+                        f.write(new_html)
+                except Exception:
+                    pass
+
+                # Attempt updating LOCALAPPDATA installed program
+                try:
+                    local_app_ui = os.path.join(os.environ.get("LOCALAPPDATA", ""), "Programs", "RzzakFet", "ui", "index.html")
+                    if os.path.exists(os.path.dirname(local_app_ui)):
+                        with open(local_app_ui, "wb") as f:
+                            f.write(new_html)
+                except Exception:
+                    pass
+
+                # Record installed version in DATA_DIR
+                if new_version:
+                    iv_file = os.path.join(DATA_DIR, "installed_version.json")
+                    with open(iv_file, "w", encoding="utf-8") as f:
+                        json.dump({"version": new_version, "updated_at": datetime.now().isoformat()}, f, indent=2)
+
+                self.send_json_data({"success": True, "version": new_version})
+            except Exception as e:
+                self.send_json_data({"success": False, "error": f"فشل تثبيت التحديث: {str(e)}"})
 
         elif parsed.path == "/api/export_to_desktop":
             tt_data = APP_STATE.timetable_engine.get_cached_timetable()

@@ -808,15 +808,29 @@ class AuthEngine:
             return {"success": True}
         return {"success": False, "error": "السجل غير موجود"}
 
-    # ================= IN-APP AUTO-UPDATE CHECKER =================
+    # ================= IN-APP AUTO-UPDATE & OTA LIVE PATCH ENGINE =================
+
+    def get_current_app_version(self):
+        iv_file = os.path.join(get_data_dir(), "installed_version.json")
+        if os.path.exists(iv_file):
+            try:
+                with open(iv_file, "r", encoding="utf-8") as f:
+                    d = json.load(f)
+                    if d.get("version"):
+                        return d["version"]
+            except Exception:
+                pass
+        return self.config.get("app_info", {}).get("version", "2.0.0")
 
     def check_for_updates(self, force_cloud=False):
-        current_version = self.config.get("app_info", {}).get("version", "1.0.0")
+        current_version = self.get_current_app_version()
         meta = {
             "current_version": current_version,
             "latest_version": current_version,
+            "patch_type": "live_patch",
+            "patch_url": "",
             "download_url": "",
-            "release_notes": "النسخة الأولى الرسمية v1.0: إعداد البنية التربوية وجداول الحصص وتوطين القاعات والقيود المرنة.",
+            "release_notes": "النسخة الحالية الرسمية: لوحة القيادة الذكية وإدارة القاعات المتخصصة والامتحانات.",
             "force_update": False,
             "update_available": False
         }
@@ -835,27 +849,38 @@ class AuthEngine:
         if force_cloud:
             return self._fetch_updates_from_cloud(meta, current_version)
         else:
-            # Query Firestore asynchronously in the background so startup is lightning fast
+            # Query cloud asynchronously in the background so startup is lightning fast
             t = threading.Thread(target=self._fetch_updates_from_cloud, args=(meta, current_version), daemon=True)
             t.start()
             return meta
 
     def _fetch_updates_from_cloud(self, meta, current_version):
-        # 1. Primary: Official GitHub Releases API
+        cloud_info = {}
+        # 1. Primary: Firestore Cloud Metadata (Fastest for live patches & versions)
+        url = self._firestore_url("app_meta/version_info")
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": "RzzakFet-Desktop/2.0"})
+            with urllib.request.urlopen(req, timeout=3) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+                fields = data.get("fields", {})
+                cloud_info = {k: from_firestore_value(v) for k, v in fields.items()}
+        except Exception:
+            pass
+
+        # 2. Secondary: GitHub Releases API
+        gh_info = {}
         gh_url = "https://api.github.com/repos/abdellahrzzak/RzzakFet/releases/latest"
         try:
             req = urllib.request.Request(gh_url, headers={
                 "User-Agent": "RzzakFet-Desktop/2.0",
                 "Accept": "application/vnd.github.v3+json"
             })
-            with urllib.request.urlopen(req, timeout=4) as resp:
+            with urllib.request.urlopen(req, timeout=3) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
                 tag_name = data.get("tag_name", "").lstrip("v").strip()
                 if tag_name:
-                    meta["latest_version"] = tag_name
-                    meta["release_notes"] = data.get("body", "") or "تحديث جديد لبرنامج RzzakFet يتضمن تحسينات شاملة."
-                    
-                    # Find executable installer asset (.exe)
+                    gh_info["latest_version"] = tag_name
+                    gh_info["release_notes"] = data.get("body", "") or "تحديث جديد لبرنامج RzzakFet."
                     assets = data.get("assets", [])
                     download_url = ""
                     for a in assets:
@@ -865,44 +890,48 @@ class AuthEngine:
                             break
                     if not download_url:
                         download_url = data.get("html_url", "")
-                    
-                    meta["download_url"] = download_url
-                    meta["update_available"] = self._is_newer_version(tag_name, current_version)
-                    
-                    with open(self.update_cache_file, "w", encoding="utf-8") as f:
-                        json.dump(meta, f, ensure_ascii=False, indent=2)
-                    return meta
+                    gh_info["download_url"] = download_url
+                    gh_info["patch_type"] = "full_exe"
         except Exception:
             pass
 
-        # 2. Secondary: Firestore Cloud Metadata
-        url = self._firestore_url("app_meta/version_info")
-        try:
-            req = urllib.request.Request(url, headers={"User-Agent": "RzzakFet-Desktop/1.0"})
-            with urllib.request.urlopen(req, timeout=3) as resp:
-                data = json.loads(resp.read().decode("utf-8"))
-                fields = data.get("fields", {})
-                cloud_meta = {k: from_firestore_value(v) for k, v in fields.items()}
-                
-                latest_ver = cloud_meta.get("latest_version", current_version)
-                meta["latest_version"] = latest_ver
-                meta["download_url"] = cloud_meta.get("download_url", "")
-                meta["release_notes"] = cloud_meta.get("release_notes", meta.get("release_notes", ""))
-                meta["force_update"] = cloud_meta.get("force_update", False)
-                meta["update_available"] = self._is_newer_version(latest_ver, current_version)
-                
-                with open(self.update_cache_file, "w", encoding="utf-8") as f:
-                    json.dump(meta, f, ensure_ascii=False, indent=2)
-                return meta
-        except Exception:
+        # Pick whichever source reports the newest version
+        chosen = {}
+        cloud_ver = str(cloud_info.get("latest_version", "0.0.0"))
+        gh_ver = str(gh_info.get("latest_version", "0.0.0"))
+
+        if self._is_newer_version(cloud_ver, gh_ver):
+            chosen = cloud_info
+        elif gh_info and gh_info.get("latest_version"):
+            chosen = gh_info
+        elif cloud_info and cloud_info.get("latest_version"):
+            chosen = cloud_info
+
+        if chosen and chosen.get("latest_version"):
+            latest_ver = chosen.get("latest_version")
+            meta["latest_version"] = latest_ver
+            meta["download_url"] = chosen.get("download_url", "")
+            meta["patch_type"] = chosen.get("patch_type", "live_patch" if "raw.githubusercontent" in chosen.get("patch_url", "") else "full_exe")
+            meta["patch_url"] = chosen.get("patch_url", f"https://raw.githubusercontent.com/abdellahrzzak/RzzakFet/main/ui/index.html")
+            meta["release_notes"] = chosen.get("release_notes", meta.get("release_notes", ""))
+            meta["force_update"] = chosen.get("force_update", False)
+            meta["update_available"] = self._is_newer_version(latest_ver, current_version)
+            
+            with open(self.update_cache_file, "w", encoding="utf-8") as f:
+                json.dump(meta, f, ensure_ascii=False, indent=2)
             return meta
 
-    def publish_update(self, new_version, download_url, release_notes, force_update=False):
+        return meta
+
+    def publish_live_patch(self, new_version, release_notes, patch_type="live_patch", download_url=""):
+        patch_url = f"https://raw.githubusercontent.com/abdellahrzzak/RzzakFet/main/ui/index.html?t={int(time.time())}"
         update_data = {
             "latest_version": new_version,
-            "download_url": download_url,
+            "patch_type": patch_type,
+            "patch_url": patch_url,
+            "download_url": download_url or "https://github.com/abdellahrzzak/RzzakFet/releases",
             "release_notes": release_notes,
-            "force_update": force_update,
+            "force_update": False,
             "updated_at": datetime.now().isoformat()
         }
         
@@ -913,25 +942,29 @@ class AuthEngine:
         try:
             req = urllib.request.Request(url, data=payload, headers={
                 "Content-Type": "application/json",
-                "User-Agent": "RzzakFet-Desktop/1.0"
+                "User-Agent": "RzzakFet-Desktop/2.0"
             }, method="PATCH")
-            with urllib.request.urlopen(req, timeout=4) as resp:
+            with urllib.request.urlopen(req, timeout=5) as resp:
                 pass
-        except Exception:
-            pass
+        except Exception as e:
+            print("Notice updating Firestore meta:", e)
 
-        update_data["current_version"] = self.config.get("app_info", {}).get("version", "1.0.0")
-        update_data["update_available"] = self._is_newer_version(new_version, update_data["current_version"])
+        update_data["current_version"] = self.get_current_app_version()
+        update_data["update_available"] = False
         with open(self.update_cache_file, "w", encoding="utf-8") as f:
             json.dump(update_data, f, ensure_ascii=False, indent=2)
 
         return {"success": True, "data": update_data}
 
+    def publish_update(self, new_version, download_url, release_notes, force_update=False):
+        return self.publish_live_patch(new_version, release_notes, patch_type="full_exe", download_url=download_url)
+
     def _is_newer_version(self, latest, current):
         try:
             def parse_ver(v):
-                clean = v.lower().lstrip("v").strip()
+                clean = str(v).lower().lstrip("v").strip()
                 return [int(x) for x in clean.split(".") if x.isdigit()]
             return parse_ver(latest) > parse_ver(current)
         except Exception:
             return False
+
