@@ -22,6 +22,7 @@ from .surveillance_daily_report_engine import SurveillanceDailyReportEngine
 from .student_mobility_engine import mobility_engine
 import sys
 import webbrowser
+from datetime import datetime
 
 LATEST_PRINT_DOC = {"title": "وثيقة رسمية", "html": ""}
 
@@ -1442,7 +1443,7 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
                 # 4. Save local version to DATA_DIR so developer machine is registered on new version
                 iv_file = os.path.join(DATA_DIR, "installed_version.json")
                 with open(iv_file, "w", encoding="utf-8") as f:
-                    json.dump({"version": new_version, "updated_at": datetime.now().isoformat()}, f, indent=2)
+                    json.dump({"version": new_version, "updated_at": time.strftime("%Y-%m-%dT%H:%M:%S")}, f, indent=2)
 
                 self.send_json_data({
                     "success": True,
@@ -1502,7 +1503,7 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
                 if new_version:
                     iv_file = os.path.join(DATA_DIR, "installed_version.json")
                     with open(iv_file, "w", encoding="utf-8") as f:
-                        json.dump({"version": new_version, "updated_at": datetime.now().isoformat()}, f, indent=2)
+                        json.dump({"version": new_version, "updated_at": time.strftime("%Y-%m-%dT%H:%M:%S")}, f, indent=2)
 
                 self.send_json_data({"success": True, "version": new_version})
             except Exception as e:
