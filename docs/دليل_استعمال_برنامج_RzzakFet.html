@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>دليل الاستعمال المبسط لبرنامج RzzakFet v1.0</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap');
+
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --secondary: #0ea5e9;
+      --accent: #8b5cf6;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --dark: #0f172a;
+      --dark-card: #1e293b;
+      --dark-border: #334155;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Cairo', 'Segoe UI', Tahoma, Arial, sans-serif;
+    }
+
+    body {
+      background-color: #0b1120;
+      color: var(--text-main);
+      line-height: 1.7;
+      padding: 30px 15px;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    /* Header & Cover */
+    .header-cover {
+      background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 50%, #082f49 100%);
+      border: 1px solid #3b82f640;
+      border-radius: 24px;
+      padding: 40px 30px;
+      text-align: center;
+      margin-bottom: 35px;
+      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .header-cover::before {
+      content: "";
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(37, 99, 235, 0.1) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .app-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(37, 99, 235, 0.2);
+      border: 1px solid rgba(59, 130, 246, 0.4);
+      color: #93c5fd;
+      padding: 6px 16px;
+      border-radius: 9999px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin-bottom: 18px;
+    }
+
+    .header-cover h1 {
+      font-size: 2.2rem;
+      font-weight: 900;
+      color: #ffffff;
+      margin-bottom: 12px;
+      line-height: 1.3;
+    }
+
+    .header-cover p.subtitle {
+      font-size: 1.15rem;
+      color: #94a3b8;
+      max-width: 750px;
+      margin: 0 auto 20px;
+      font-weight: 600;
+    }
+
+    .meta-tags {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .meta-tag {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 5px 14px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      color: #cbd5e1;
+    }
+
+    /* Navigation TOC */
+    .toc-card {
+      background: #111827;
+      border: 1px solid var(--dark-border);
+      border-radius: 18px;
+      padding: 24px;
+      margin-bottom: 35px;
+    }
+
+    .toc-card h3 {
+      color: #38bdf8;
+      font-size: 1.1rem;
+      font-weight: 800;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .toc-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 10px;
+    }
+
+    .toc-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      color: #e2e8f0;
+      text-decoration: none;
+      font-size: 0.88rem;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+
+    .toc-item:hover {
+      background: #2563eb;
+      color: #ffffff;
+      border-color: #3b82f6;
+      transform: translateY(-2px);
+    }
+
+    .toc-num {
+      width: 22px;
+      height: 22px;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 800;
+    }
+
+    /* Content Cards */
+    .section-card {
+      background: #0f172a;
+      border: 1px solid #1e293b;
+      border-radius: 20px;
+      padding: 30px;
+      margin-bottom: 30px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+      position: relative;
+    }
+
+    .section-card:hover {
+      border-color: #3b82f650;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 20px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid #1e293b;
+    }
+
+    .section-icon {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, #1e3a8a, #2563eb);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      color: #ffffff;
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    }
+
+    .section-title {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: #ffffff;
+    }
+
+    p {
+      color: #cbd5e1;
+      font-size: 0.96rem;
+      margin-bottom: 14px;
+    }
+
+    /* Lists */
+    ul, ol {
+      margin-right: 25px;
+      margin-bottom: 18px;
+      color: #cbd5e1;
+    }
+
+    li {
+      margin-bottom: 8px;
+      font-size: 0.94rem;
+    }
+
+    li strong {
+      color: #f1f5f9;
+    }
+
+    /* Tables */
+    .table-wrapper {
+      overflow-x: auto;
+      margin: 18px 0;
+      border-radius: 12px;
+      border: 1px solid #334155;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: right;
+      font-size: 0.9rem;
+    }
+
+    th {
+      background: #1e293b;
+      color: #38bdf8;
+      padding: 12px 16px;
+      font-weight: 700;
+      border-bottom: 2px solid #334155;
+    }
+
+    td {
+      padding: 12px 16px;
+      border-bottom: 1px solid #1e293b;
+      color: #e2e8f0;
+    }
+
+    tr:nth-child(even) {
+      background: rgba(30, 41, 59, 0.4);
+    }
+
+    tr:hover {
+      background: rgba(59, 130, 246, 0.08);
+    }
+
+    /* Callout Boxes */
+    .callout {
+      padding: 16px 20px;
+      border-radius: 12px;
+      margin: 18px 0;
+      font-size: 0.92rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+    }
+
+    .callout-info {
+      background: rgba(37, 99, 235, 0.12);
+      border-right: 4px solid #3b82f6;
+      color: #93c5fd;
+    }
+
+    .callout-warning {
+      background: rgba(245, 158, 11, 0.12);
+      border-right: 4px solid #f59e0b;
+      color: #fde68a;
+    }
+
+    .callout-success {
+      background: rgba(16, 185, 129, 0.12);
+      border-right: 4px solid #10b981;
+      color: #a7f3d0;
+    }
+
+    .callout-icon {
+      font-size: 1.3rem;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    /* Badges */
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+
+    .badge-blue { background: #1e3a8a; color: #93c5fd; }
+    .badge-green { background: #064e3b; color: #6ee7b7; }
+    .badge-purple { background: #581c87; color: #d8b4fe; }
+    .badge-amber { background: #78350f; color: #fde68a; }
+
+    /* Floating Print Button */
+    .floating-print-btn {
+      position: fixed;
+      bottom: 25px;
+      left: 25px;
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: white;
+      border: none;
+      padding: 12px 22px;
+      border-radius: 50px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 10px 25px rgba(37, 99, 235, 0.4);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.25s ease;
+      z-index: 1000;
+    }
+
+    .floating-print-btn:hover {
+      transform: scale(1.05);
+      background: linear-gradient(135deg, #1d4ed8, #1e40af);
+      box-shadow: 0 15px 30px rgba(37, 99, 235, 0.6);
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 30px 10px;
+      color: #64748b;
+      font-size: 0.85rem;
+      border-top: 1px solid #1e293b;
+      margin-top: 40px;
+    }
+
+    /* Print Styles */
+    @media print {
+      body {
+        background: #ffffff !important;
+        color: #0f172a !important;
+        padding: 0 !important;
+        font-size: 10.5pt;
+      }
+      .container {
+        max-width: 100% !important;
+      }
+      .floating-print-btn, .toc-card {
+        display: none !important;
+      }
+      .header-cover {
+        background: #f8fafc !important;
+        border: 2px solid #cbd5e1 !important;
+        box-shadow: none !important;
+        color: #0f172a !important;
+        padding: 24px !important;
+        page-break-after: avoid;
+      }
+      .header-cover h1 {
+        color: #0f172a !important;
+        font-size: 2rem !important;
+      }
+      .header-cover p.subtitle {
+        color: #475569 !important;
+      }
+      .section-card {
+        background: #ffffff !important;
+        border: 1.5px solid #cbd5e1 !important;
+        box-shadow: none !important;
+        page-break-inside: avoid;
+        margin-bottom: 22px !important;
+        padding: 22px !important;
+      }
+      .section-header {
+        border-bottom: 1.5px solid #e2e8f0 !important;
+      }
+      .section-title {
+        color: #0f172a !important;
+        font-size: 1.3rem !important;
+        font-weight: 800 !important;
+      }
+      p, li, td {
+        color: #1e293b !important;
+      }
+      strong, b {
+        color: #0f172a !important;
+        font-weight: 800 !important;
+      }
+      .table-wrapper {
+        border: 1.5px solid #cbd5e1 !important;
+        background: #ffffff !important;
+      }
+      table {
+        background: #ffffff !important;
+      }
+      th {
+        background: #f1f5f9 !important;
+        color: #0f172a !important;
+        border-bottom: 2px solid #cbd5e1 !important;
+        font-weight: 800 !important;
+      }
+      td {
+        background: #ffffff !important;
+        color: #1e293b !important;
+        border-bottom: 1px solid #e2e8f0 !important;
+      }
+      tr:nth-child(even) td {
+        background: #f8fafc !important;
+      }
+      div[style*="background: #1e293b"], div[style*="background:#1e293b"] {
+        background: #f8fafc !important;
+        border: 1.5px solid #cbd5e1 !important;
+      }
+      h3 {
+        color: #1e40af !important;
+      }
+      .callout {
+        border: 1px solid #cbd5e1 !important;
+      }
+      .callout-info { background: #eff6ff !important; color: #1e3a8a !important; border-right: 4px solid #2563eb !important; }
+      .callout-warning { background: #fffbeb !important; color: #92400e !important; border-right: 4px solid #d97706 !important; }
+      .callout-success { background: #ecfdf5 !important; color: #065f46 !important; border-right: 4px solid #059669 !important; }
+      .meta-tag, .app-badge {
+        border: 1px solid #cbd5e1 !important;
+        background: #f1f5f9 !important;
+        color: #334155 !important;
+      }
+      .badge-blue { background: #dbeafe !important; color: #1e40af !important; border: 1px solid #93c5fd !important; }
+      .badge-green { background: #d1fae5 !important; color: #065f46 !important; border: 1px solid #6ee7b7 !important; }
+      .badge-purple { background: #f3e8ff !important; color: #6b21a8 !important; border: 1px solid #d8b4fe !important; }
+      .badge-amber { background: #fef3c7 !important; color: #92400e !important; border: 1px solid #fcd34d !important; }
+      @page {
+        size: A4;
+        margin: 14mm 12mm;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Floating Print Action -->
+  <button class="floating-print-btn" onclick="window.print()">
+    <span>🖨️</span>
+    <span>طباعة / حفظ كـ PDF</span>
+  </button>
+
+  <div class="container">
+
+    <!-- Header & Cover -->
+    <header class="header-cover">
+      <div class="app-badge">
+        <span>⚡</span>
+        <span>RzzakFet v1.0 الرسمية</span>
+      </div>
+      <h1>دليل الاستعمال المبسط والعملي</h1>
+      <p class="subtitle">المعين في إعداد البنية التربوية وتوطين القاعات وتوليد جداول الحصص المدرسية</p>
+      <div class="meta-tags">
+        <span class="meta-tag">سلك الثانوي الإعدادي والتأهيلي</span>
+        <span class="meta-tag">المملكة المغربية</span>
+        <span class="meta-tag">مطابق لمحرك FET 5.x</span>
+        <span class="meta-tag">الموسم الدراسي 2026-2027</span>
+      </div>
+    </header>
+
+    <!-- Table of Contents -->
+    <nav class="toc-card">
+      <h3><span>📑</span> فهرس محتويات الدليل</h3>
+      <div class="toc-grid">
+        <a href="#sec-1" class="toc-item"><span class="toc-num">1</span> الهدف من البرنامج</a>
+        <a href="#sec-2" class="toc-item"><span class="toc-num">2</span> لوحة القيادة (Dashboard)</a>
+        <a href="#sec-3" class="toc-item"><span class="toc-num">3</span> معلومات المؤسسة والتوقيت</a>
+        <a href="#sec-4" class="toc-item"><span class="toc-num">4</span> البنية التربوية</a>
+        <a href="#sec-5" class="toc-item"><span class="toc-num">5</span> هيئة التدريس والأنصبة</a>
+        <a href="#sec-6" class="toc-item"><span class="toc-num">6</span> القاعات المدرسية والتخصيص</a>
+        <a href="#sec-7" class="toc-item"><span class="toc-num">7</span> توطين القاعات وفترات التوقف</a>
+        <a href="#sec-8" class="toc-item"><span class="toc-num">8</span> إدارة القيود البيداغوجية</a>
+        <a href="#sec-9" class="toc-item"><span class="toc-num">9</span> إنتاج وتوليد الجداول</a>
+        <a href="#sec-10" class="toc-item"><span class="toc-num">10</span> استعراض وطباعة الجداول</a>
+        <a href="#sec-11" class="toc-item"><span class="toc-num">11</span> ورقة الإسناد والموازنة</a>
+        <a href="#sec-12" class="toc-item"><span class="toc-num">12</span> نماذج تطبيقية للتجربة</a>
+      </div>
+    </nav>
+
+    <!-- Section 1 -->
+    <section id="sec-1" class="section-card">
+      <div class="section-header">
+        <div class="section-icon">🎯</div>
+        <h2 class="section-title">1. الهدف من البرنامج (Mission & Objectives)</h2>
+      </div>
+      <p>برنامج <strong>RzzakFet</strong> هو تطبيق مكتبي احترافي متكامل تم تطويره لتلبية الحاجات الحقيقية لأطر الإدارة التربوية ولجان إعداد استعمالات الزمن بالمؤسسات التعليمية المغربية:</p>
+      <ul>
+        <li><strong>أتمتة العمل الإداري</strong>: التخلص من عناء الحسابات الرياضية المرهقة والتوزيع اليدوي للقاعات والأنصبة.</li>
+        <li><strong>مطابقة تامة للمذكرات الوزارية</strong>: إنتاج جداول حصص قانونية تراعي استراحة الظهيرة (ساعتان)، وتفريق حصص التربية البدنية بفاصل 48 ساعة، وجمع حصص المختبرات في ساعتين متصلتين، ومنع الساعات الفارغة (Gaps) للتلاميذ.</li>
+        <li><strong>التوافق مع محرك FET العالمي</strong>: الاعتماد على خوارزميات FET فائقة القوة مع إدماج هيكلة الـ 12 نصف يوم الخاصة بالنظام التعليمي المغربي.</li>
+      </ul>
+    </section>
+
+    <!-- Section 2 -->
+    <section id="sec-2" class="section-card">
+      <div class="section-header">
+        <div class="section-icon">📊</div>
+        <h2 class="section-title">2. لوحة القيادة (Dashboard)</h2>
+      </div>
+      <p>تعتبر لوحة القيادة نافذة المراقبة والإحاطة الشاملة بالمؤسسة، <strong>ووظيفتها حصرية للإحاطة الإحصائية والعرض البصري</strong> دون الحاجة لأي إدخال يدوي:</p>
+      <ul>
+        <li><strong>مؤشرات البنية الإجمالية</strong>: تعرض تلقائياً عدد أقسام الأولى والثانية والثالثة إعدادي ومجموع الأقسام.</li>
+        <li><strong>إحصائيات الموارد البشرية والمادية</strong>: إجمالي الأساتذة المتاحين، عدد القاعات الإجمالي، ومجموع الساعات الأسبوعية المفروض تغطيتها.</li>
+        <li><strong>مؤشر الطاقة الاستيعابية للقاعات</strong>: يحدد بدقة سقف الساعات الأسبوعي المتاح في كل قاعة بناءً على أنصاف أيام العمل المعتمدة بالمؤسسة.</li>
+      </ul>
+      <div class="callout callout-info">
+        <span class="callout-icon">💡</span>
+        <div>لوحة القيادة تتحدث لحظياً وفورياً بمجرد إدخال أو تعديل أي بيان في باقي نوافذ البرنامج.</div>
+      </div>
+    </section>
+
+    <!-- Section 3 -->
+    <section id="sec-3" class="section-card">
+      <div class="section-header">
+        <div class="section-icon">🏛️</div>
+        <h2 class="section-title">3. معلومات المؤسسة وضبط التوقيت (Institution & Time Settings)</h2>
+      </div>
+      <p>في هذه الواجهة، يقوم المستعمل بتسجيل الهوية الإدارية للمؤسسة وضبط جرس الحصص اليومي:</p>
+      <ol>
+        <li><strong>البيانات التعريفية</strong>: اسم المؤسسة، المديرية الإقليمية، الأكاديمية الجهوية، السنة الدراسية، رمز GRESA، واسم رئيس المؤسسة.</li>
+        <li><strong>فترات التوقيت اليومية</strong>:
+          <ul>
+            <li><strong>الفترة الصباحية (4 حصص)</strong>: ح1، ح2، ح3، ح4.</li>
+            <li><strong>الفترة المسائية (4 حصص)</strong>: ح1، ح2، ح3، ح4.</li>
+          </ul>
+        </li>
+      </ol>
+      <div class="callout callout-success">
+        <span class="callout-icon">⚡</span>
+        <div>
+          <strong>ميزة التوليد التلقائي للفترات الزمنية</strong>:
+          لا داعي لكتابة مواقيت الحصص يدوياً؛ يكفي إدخال ساعة انطلاق الصباح (مثل <code>08:00</code>) وساعة انطلاق المساء (مثل <code>14:00</code>)، ثم الضغط على زر <strong>"توليد الفترات تلقائياً"</strong>، ليقوم البرنامج بتقسيم وتسمية الفترات بدقة (08:00 - 09:00، 09:00 - 10:00، إلخ).
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 4 -->
+    <section id="sec-4" class="section-card">
+      <div class="section-header">
+        <div class="section-icon">🏫</div>
+        <h2 class="section-title">4. البنية التربوية (Educational Structure)</h2>
+      </div>
+      <p>يقوم المستخدم بإدخال عدد الأقسام التربوية المعتمدة بالمؤسسة حسب المستويات الثلاثة:</p>
+      <ul>
+        <li><strong>السنة الأولى إعدادي (1APIC)</strong>: عدد الفصول الدراسية وعدد التلاميذ التقريبي.</li>
+        <li><strong>السنة الثانية إعدادي (2APIC)</strong>: عدد الفصول الدراسية وعدد التلاميذ.</li>
+        <li><strong>السنة الثالثة إعدادي (3APIC)</strong>: عدد الفصول الدراسية وعدد التلاميذ.</li>
+      </ul>
+      <p><strong>المواد غير المعممة</strong>: يوفر البرنامج مفاتيح تشغيل/تعطيل للمواد الخاصة حسب توفر أطرها بالمؤسسة: (المعلوميات، التكنولوجيا الصناعية، التربية الأسرية، التربية التشكيلية/الموسيقية، واللغة الإنجليزية). ويقوم البرنامج آلياً بضبط الحصص وفق هذه الاختيارات.</p>
+    </section>
+
+    <!-- Section 5 -->
+    <section id="sec-5" class="section-card">
+      <div class="section-header">
+        <div class="section-icon">👨‍🏫</div>
+        <h2 class="section-title">5. هيئة التدريس والأنصبة (Teaching Staff Quotas)</h2>
+      </div>
+      <p>توفر هذه الشاشة مقارنة ذكية وحسابية دقيقة بين حاجيات المؤسسة والموارد المتوفرة:</p>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>المؤشر</th>
+              <th>آلية العمل</th>
+              <th>الفائدة الإدارية</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>المطلوب نظامياً</strong></td>
+              <td>حساب آلي لعدد الأساتذة بناءً على عدد الأقسام ومقررات المنهاج (24 ساعة أسبوعياً للإعدادي).</td>
+              <td>معرفة الحاجة الحقيقية الدقيقة للمؤسسة وفق المعايير الوزارية.</td>
+            </tr>
+            <tr>
+              <td><strong>المتوفر فعلياً</strong></td>
+              <td>يقوم المستعمل بإدخال عدد الأساتذة المزاولين بالمؤسسة لكل مادة.</td>
+              <td>عكس الواقع الميداني للمؤسسة.</td>
+            </tr>
+            <tr>
+              <td><strong>المقارنة الفورية</strong></td>
+              <td>تحديد الفائض أو الخصاص في كل مادة دراسية على حدة.</td>
+              <td>اتخاذ التدابير الإدارية وتوزيع الحصص التكميلية عند الحاجة.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Section 6 -->
+    <section id="sec-6" class="section-card">
+      <div class="section-header">
+        <div class="section-icon">🚪</div>
+        <h2 class="section-title">6. القاعات المدرسية والتخصيص (Classrooms & Custom Rooms)</h2>
+      </div>
+      <p>يعد التوزيع المنطقي للحجرات المدرسية مفتاحاً أساسياً لضمان سيولة حركة التلاميذ وراحة الأساتذة:</p>
+      <ul>
+        <li><strong>القاعة العامة (General Classroom)</strong>: هي الحجرة الدراسية العادية التي يمكن أن يدرس فيها أي أستاذ لأي مادة أدبية أو علمية نظرية. كما يتيح البرنامج تخصيصها وتوطين أستاذ قار فيها ليعمل بها طوال الأسبوع.</li>
+        <li><strong>المختبرات العلمية المتخصصة</strong>:
+          <ul>
+            <li><strong>مختبرات علوم الحياة والأرض (SVT)</strong>: مجهزة لحصص التجارب والأفواج.</li>
+            <li><strong>مختبرات الفيزياء والكيمياء (PC)</strong>: مجهزة لحصص العلوم الفيزيائية.</li>
+          </ul>
+        </li>
+        <li><strong>قاعات الإعلاميات والوسائط (Multimedia / Info)</strong>: مخصصة لحصص الإعلاميات.</li>
+        <li><strong>ملاعب التربية البدنية (Sports Fields)</strong>: فضاءات مخصصة لحصص الرياضة.</li>
+        <li><strong>تخصيص قاعة جديدة لأستاذ ولمادة</strong>: إمكانية إنشاء قاعة مخصصة (Custom Dedicated Room) مثل إحداث قاعة للاجتماعيات وتخصيصها لأساتذة المادة.</li>
+      </ul>
+    </section>
+
+    <!-- Section 7 -->
+    <section id="sec-7" class="section-card">
+      <div class="section-header">
+        <div class="section-icon">📍</div>
+        <h2 class="section-title">7. توطين القاعات وفترات التوقف (Room Allocation & Half-Days Off)</h2>
+      </div>
+      <p>تضمن هذه الواجهة تثبيت الأساتذة في حجراتهم المخصصة وتحديد سقف الطاقة الاستيعابية:</p>
+      <ol>
+        <li><strong>توطين الأساتذة والقاعة المفضلة (Preferred Teacher Room)</strong>:
+          <p>يقوم البرنامج آلياً بإسناد قاعة قارة لكل أستاذ، حيث يظل الأستاذ في قاعته وينتقل إليه التلاميذ، ولا يغادر قاعته إلا عندما يكون تلاميذه في حصص التربية البدنية أو المختبرات العلمية، مما يمنع تنقل الأستاذ بين الطوابق والأجنحة.</p>
+        </li>
+        <li><strong>تحديد فترات التوقف الرسمية (Unallocated Half-Days)</strong>:
+          <p>يحدد المستخدم أنصاف الأيام التي لا تُجرى فيها دراسة بالمؤسسة (المعتمد في المغرب: <strong>مساء الأربعاء</strong> المخصص لأنشطة الجمعية الرياضية المدرسية، و<strong>مساء السبت</strong>).</p>
+          <div class="callout callout-warning">
+            <span class="callout-icon">⚠️</span>
+            <div>
+              <strong>أهمية فترات التوقف</strong>: بناءً على عدد أنصاف الأيام الفعلية تُحسب الطاقة الاستيعابية الأسبوعية لكل قاعة (مثلاً عند توقف نصفي يوم من أصل 12، تصبح سعة القاعة القصوى = 10 أنصاف أيام × 4 ساعات = <strong>40 ساعة أسبوعياً</strong>).
+            </div>
+          </div>
+        </li>
+      </ol>
+    </section>
+
+    <!-- Section 8 -->
+    <section id="sec-8" class="section-card">
+      <div class="section-header">
+        <div class="section-icon">⚖️</div>
+        <h2 class="section-title">8. إدارة القيود البيداغوجية والوصية الذهبية (Constraints Management)</h2>
+      </div>
+      <p>القيود هي القواعد الرياضية والتربوية التي يلتزم بها محرك التوليد لتفادي العشوائية والتعارضات:</p>
+      <ul>
+        <li><strong>القيود الرئيسية الذهبية (Core Golden Constraints)</strong>:
+          <ol>
+            <li>منع تكرار نفس المادة لنفس القسم في نفس اليوم الحقيقي.</li>
+            <li>تباعد حصص التربية البدنية بفاصل 48 ساعة على الأقل.</li>
+            <li>جمع حصص المختبرات (فيزياء وعلوم) في ساعتين متصلتين بالمختبر.</li>
+            <li>منع الساعات الفارغة (Gaps) للتلاميذ نهائياً لضمان سلامتهم.</li>
+            <li>احترام استراحة الظهيرة (ساعتان بين الصباح والمساء).</li>
+            <li>عدم تجاوز 6 ساعات دراسة يومياً للمتعلم.</li>
+          </ol>
+        </li>
+      </ul>
+      <div class="callout callout-warning">
+        <span class="callout-icon">🌟</span>
+        <div>
+          <strong>الوصية الذهبية لنجاح التوليد</strong>: يُنصح دائماً في بداية إنتاج الجدول <strong>بالاحتفاظ فقط بحزمة القيود الرئيسية المفعلة افتراضياً</strong>، لأن هذه القيود تضمن إنتاج جدول متوافق وقانوني 100% في ثوانٍ معدودة. وتجنب في البداية تفعيل قيود الساعات الصغرى الإجبارية التي قد تسبب تعارضات رياضية مستحيلة مع المواد ذات الساعات الفردية.
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 9 -->
+    <section id="sec-9" class="section-card">
+      <div class="section-header">
+        <div class="section-icon">⚡</div>
+        <h2 class="section-title">9. إنتاج وتوليد الجداول (Generation & Solver)</h2>
+      </div>
+      <p>يقدم البرنامج خيارين متقدمين لمعالجة وتوليد الجداول:</p>
+      <ul>
+        <li><strong>الخيار الذكي المدمج (In-App Fast Solver)</strong>:
+          <p>توليد تدريجي فوري داخل واجهة التطبيق بضغطة زر، مع عداد حي للحصص الموطنة وسرعة الإنجاز (تستغرق العملية عادة من ثانية إلى بضع ثوانٍ لكامل المؤسسة).</p>
+        </li>
+        <li><strong>الخيار المباشر والاحترافي عبر محرك FET</strong>:
+          <p>تصدير ملف رسمي بامتداد <code>.fet</code>، مع زر لفتح مجلد العمل وزر لتشغيل واجهة FET الرسمية مباشرة في حال رغبة المستعمل في إجراء معاينة خارجية أو تعديلات إضافية.</p>
+        </li>
+      </ul>
+    </section>
+
+    <!-- Section 10 -->
+    <section id="sec-10" class="section-card">
+      <div class="section-header">
+        <div class="section-icon">🖨️</div>
+        <h2 class="section-title">10. استعراض وطباعة الجداول (Viewer & Bulk Printing)</h2>
+      </div>
+      <p>واجهة متطورة للمعاينة التفاعلية والطباعة الإدارية الاحترافية:</p>
+      <ul>
+        <li><strong>متصفح الجداول التفاعلي (Timetable Viewer)</strong>:
+          <p>استعراض فوري لجداول الأقسام، جداول الأساتذة، وجدول إشغال القاعات بألوان واضحة ومميزة لكل مادة قبل إرسالها للطباعة.</p>
+        </li>
+        <li><strong>خيارات الطباعة المتنوعة</strong>:
+          <ul>
+            <li>طباعة جدول فردي لأي أستاذ أو قسم بصيغة A4 منسقة.</li>
+            <li><strong>زر طباعة جميع جداول الأقسام دفعة واحدة</strong> (Bulk Print Classes).</li>
+            <li><strong>زر طباعة جميع جداول الأساتذة دفعة واحدة</strong> (Bulk Print Teachers).</li>
+            <li><strong>طباعة الجدول العام للمؤسسة (Master Schedule)</strong>: جدول مجمع وشامل لعرضه في الإدارة وقاعة الأساتذة.</li>
+          </ul>
+        </li>
+      </ul>
+      <div class="callout callout-success">
+        <span class="callout-icon">📦</span>
+        <div>
+          <strong>ميزة الملف الشامل (All-in-One PDF)</strong>:
+          بنقرة زر واحدة، يستخرج البرنامج ملف PDF مجمع ومرتب يضم غلاف المؤسسة وكافة جداول الأقسام والأساتذة والقاعات في مستند واحد عالي الدقة جاهز للأرشفة والتوزيع الورقي والرقمي.
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 11 -->
+    <section id="sec-11" class="section-card">
+      <div class="section-header">
+        <div class="section-icon">📋</div>
+        <h2 class="section-title">11. ورقة الإسناد والموازنة التلقائية (Assignment Sheet & Auto-Balance)</h2>
+      </div>
+      <p>وثيقة إدارية رسمية وأداة موازنة ذكية لتنظيم العمل التربوي:</p>
+      <ul>
+        <li><strong>ورقة الإسناد الإحصائية</strong>: تعرض جدولاً مفصلاً يضم أسماء الأساتذة، المواد، والمستويات المسندة لكل أستاذ، وأسماء الأقسام، ومجموع الساعات الأسبوعية المقررة لكل إطار.</li>
+        <li><strong>زر إعادة الموازنة التلقائية (Auto-Balance Button)</strong>:
+          <p>عند النقر على هذا الزر، تطبق خوارزمية البرنامج توزيعاً عادلاً ومتوازناً للأقسام على أساتذة المادة الواحدة وفقاً لأنصبتهم النظامية، مما يريح الإدارة من الحسابات اليدوية المعقدة ويضمن عدم تكليف أي أستاذ فوق حصته المقررة.</p>
+        </li>
+      </ul>
+    </section>
+
+    <!-- Section 12 -->
+    <section id="sec-12" class="section-card">
+      <div class="section-header">
+        <div class="section-icon">🧪</div>
+        <h2 class="section-title">12. نماذج تطبيقية جاهزة للتجربة الفورية (Case Studies)</h2>
+      </div>
+      <p>لتسهيل تجربة البرنامج والتحقق الفوري من أدائه، تم إعداد هذين النموذجين الواقعيين اللذين يمكنك إدخال معطياتهما والحصول على الجداول في ثوانٍ معدودة:</p>
+
+      <!-- Model 1 -->
+      <div style="background: #1e293b; border: 1px solid #334155; border-radius: 14px; padding: 20px; margin-bottom: 24px;">
+        <h3 style="color: #38bdf8; font-size: 1.15rem; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+          <span>🔹</span> النموذج الأول: مؤسسة متوسطة (11 قسماً)
+        </h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>المجال</th>
+                <th>المعطيات الدقيقة لإدخالها في البرنامج</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>البنية التربوية</strong></td>
+                <td>
+                  <span class="badge badge-blue">الأولى إعدادي: 4 أقسام</span>
+                  <span class="badge badge-purple">الثانية إعدادي: 3 أقسام</span>
+                  <span class="badge badge-green">الثالثة إعدادي: 4 أقسام</span>
+                  <strong>(المجموع = 11 قسماً)</strong>
+                </td>
+              </tr>
+              <tr>
+                <td><strong>هيئة التدريس (22 أستاذاً)</strong></td>
+                <td>العربية: 4 | الفرنسية: 3 | الرياضيات: 3 | الاجتماعيات: 2 | الإسلامية: 2 | التربية البدنية: 2 | علوم الحياة والأرض: 2 | الفيزياء: 2 | الإعلاميات: 1 | الإنجليزية: 1</td>
+              </tr>
+              <tr>
+                <td><strong>القاعات (12 قاعة)</strong></td>
+                <td>7 قاعات عامة (S1 إلى S7) + 1 مختبر علوم (S-SVT1) + 1 مختبر فيزياء (S-PC1) + 1 إعلاميات (S-INFO) + 1 ملعب رياضي + 1 قاعة مخصصة (S-GH)</td>
+              </tr>
+              <tr>
+                <td><strong>فترات التوقف</strong></td>
+                <td>مساء الأربعاء ومساء السبت (10 أنصاف أيام عمل فعلية)</td>
+              </tr>
+              <tr>
+                <td><strong>النتيجة المتوقعة</strong></td>
+                <td><span class="badge badge-green">توليد 100% بنجاح تام في أقل من ثانية واحدة</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Model 2 -->
+      <div style="background: #1e293b; border: 1px solid #334155; border-radius: 14px; padding: 20px;">
+        <h3 style="color: #a855f7; font-size: 1.15rem; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+          <span>🔹</span> النموذج الثاني: مؤسسة كبرى (32 قسماً)
+        </h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>المجال</th>
+                <th>المعطيات الدقيقة لإدخالها في البرنامج</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>البنية التربوية</strong></td>
+                <td>
+                  <span class="badge badge-blue">الأولى إعدادي: 12 قسماً</span>
+                  <span class="badge badge-purple">الثانية إعدادي: 10 أقسام</span>
+                  <span class="badge badge-green">الثالثة إعدادي: 10 أقسام</span>
+                  <strong>(المجموع = 32 قسماً - أكثر من 700 نشاط)</strong>
+                </td>
+              </tr>
+              <tr>
+                <td><strong>هيئة التدريس (39 أستاذاً)</strong></td>
+                <td>العربية: 6 | الفرنسية: 6 | الرياضيات: 7 | الاجتماعيات: 4 | الإسلامية: 3 | التربية البدنية: 3 | علوم الحياة والأرض: 4 | الفيزياء: 4 | الإعلاميات: 1 | الإنجليزية: 1</td>
+              </tr>
+              <tr>
+                <td><strong>القاعات (28 قاعة)</strong></td>
+                <td>14 قاعة عامة (S1 إلى S14) + 4 مختبرات علوم (S-SVT1..4) + 4 مختبرات فيزياء (S-PC1..4) + 1 إعلاميات + 3 ملاعب رياضية + 2 قاعات مخصصة (S-GH1, S-GH2)</td>
+              </tr>
+              <tr>
+                <td><strong>فترات التوقف</strong></td>
+                <td>مساء الأربعاء ومساء السبت</td>
+              </tr>
+              <tr>
+                <td><strong>النتيجة المتوقعة</strong></td>
+                <td><span class="badge badge-green">توطين تام لـ 702 نشاطاً بنسبة 100% في ثانية واحدة مع توطين كامل للأساتذة في قاعاتهم المفضلة</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+      <p>برنامج RzzakFet المكتبي v1.0 | صُمم وطُوّر لخدمة منظومة التربية والتكوين بالمملكة المغربية</p>
+      <p style="margin-top: 5px; color: #475569;">جميع الحقوق محفوظة © 2026 - للتواصل والدعم: alizdihardevlop@gmail.com</p>
+    </footer>
+
+  </div>
+
+</body>
+</html>

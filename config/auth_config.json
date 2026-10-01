@@ -1,0 +1,35 @@
+{
+  "app_info": {
+    "name": "RzzakFet",
+    "version": "1.0.0",
+    "version_label": "v1.0 الرسمية",
+    "release_date": "2026-09-22"
+  },
+  "firebase": {
+    "project_id": "rzzakfet-app",
+    "app_id": "1:767730005679:web:80b98671a88ebdea9b465a",
+    "api_key": "AIzaSyDRAO-ae9rMBFf722p-Jei1UnbtCQ4i0qQ",
+    "auth_domain": "rzzakfet-app.firebaseapp.com",
+    "storage_bucket": "rzzakfet-app.firebasestorage.app",
+    "messaging_sender_id": "767730005679",
+    "firestore_base_url": "https://firestore.googleapis.com/v1/projects/rzzakfet-app/databases/(default)/documents"
+  },
+  "google_oauth": {
+    "client_id": "",
+    "client_secret": "",
+    "redirect_uri": "http://127.0.0.1:8765/auth/callback",
+    "auth_uri": "https://accounts.google.com/o/oauth2/v2/auth",
+    "token_uri": "https://oauth2.googleapis.com/token",
+    "userinfo_uri": "https://www.googleapis.com/oauth2/v2/userinfo"
+  },
+  "licensing": {
+    "default_trial_days": 15,
+    "super_admin_email": "alizdihardevlop@gmail.com",
+    "admin_emails": [
+      "alizdihardevlop@gmail.com",
+      "admin@gmail.com"
+    ],
+    "contact_whatsapp": "+212 600000000",
+    "contact_email": "alizdihardevlop@gmail.com"
+  }
+}
