@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import math
+import re
 from typing import List, Dict, Tuple
 from .models import (
     InstitutionData, EducationalStructure, NonGeneralizedSubjectConfig,
@@ -14,7 +15,7 @@ class CurriculumEngine:
         self.non_generalized_configs = [
             NonGeneralizedSubjectConfig("التكنولوجيا الصناعية", False, 0, 0, 2, "مختبر التكنولوجيا"),
             NonGeneralizedSubjectConfig("التربية الأسرية", False, 0, 2, 0, "ورشة التربية الأسرية"),
-            NonGeneralizedSubjectConfig("المعلوميات", True, 0, 1, 1, "قاعة الإعلاميات المتعددة الوسائط"),
+            NonGeneralizedSubjectConfig("المعلوميات", True, 1, 1, 1, "قاعة الإعلاميات المتعددة الوسائط"),
             NonGeneralizedSubjectConfig("التربية التشكيلية / أو الموسيقية", False, 2, 2, 2, "مرسم التربية التشكيلية"),
             NonGeneralizedSubjectConfig("اللغة الأجنبية الثانية (الإنجليزية)", True, 0, 0, 2, "قاعة عامة"),
         ]
@@ -82,6 +83,8 @@ class CurriculumEngine:
             h1 = cfg.hours_1_apic if cfg.is_active else 0
             h2 = cfg.hours_2_apic if cfg.is_active else 0
             h3 = cfg.hours_3_apic if cfg.is_active else 0
+            if cfg.is_active:
+                h1, h2, h3 = _resolve_subject_hours(cfg.name, h1, h2, h3)
             tot_h1 = n1 * h1
             tot_h2 = n2 * h2
             tot_h3 = n3 * h3
@@ -322,6 +325,66 @@ class CurriculumEngine:
         buckets.sort(key=lambda b: (-sum(1 for x in b if x[2] == 3), sum(x[1] for x in b)))
         return buckets
 
+    def _distribute_it_classes(self, c1_list: List[str], c2_list: List[str], c3_list: List[str], num_teachers: int) -> List[List[Tuple[str, int, int]]]:
+        """
+        Distribute Computer Science (المعلوميات) classes equitably according to ministerial / pedagogical rules:
+        1. First, assign 2APIC (الثانية إعدادي) equitably across teachers.
+        2. If quota is not complete, assign 3APIC (الثالثة إعدادي) equitably across teachers.
+        3. If quota is still not complete, assign 1APIC (الأولى إعدادي) equitably until statutory quota is completed (24h full, or 23h for 3APIC).
+        """
+        if num_teachers <= 0:
+            return []
+
+        if num_teachers == 1:
+            alloc = [[]]
+            for c in c2_list:
+                if sum(x[1] for x in alloc[0]) < 24:
+                    alloc[0].append((c, 1, 2))
+            for c in c3_list:
+                if sum(x[1] for x in alloc[0]) < 24:
+                    alloc[0].append((c, 1, 3))
+            for c in c1_list:
+                if sum(x[1] for x in alloc[0]) < 24:
+                    alloc[0].append((c, 1, 1))
+            return alloc
+
+        alloc = [[] for _ in range(num_teachers)]
+
+        # Priority 1: 2APIC (الثانية إعدادي) - round-robin alternation
+        for i, c in enumerate(c2_list):
+            t = i % num_teachers
+            if sum(x[1] for x in alloc[t]) >= 24:
+                t = min(range(num_teachers), key=lambda k: sum(x[1] for x in alloc[k]))
+            if sum(x[1] for x in alloc[t]) < 24:
+                alloc[t].append((c, 1, 2))
+
+        # Priority 2: 3APIC (الثالثة إعدادي) - round-robin alternation
+        for i, c in enumerate(c3_list):
+            t = i % num_teachers
+            if sum(x[1] for x in alloc[t]) >= 24:
+                t = min(range(num_teachers), key=lambda k: sum(x[1] for x in alloc[k]))
+            if sum(x[1] for x in alloc[t]) < 24:
+                alloc[t].append((c, 1, 3))
+
+        # Priority 3: 1APIC (الأولى إعدادي) - complete statutory quotas
+        for i, c in enumerate(c1_list):
+            pref_t = i % num_teachers
+            has_3ac = any(x[2] == 3 for x in alloc[pref_t])
+            # For 2 teachers with 47 total classes across school, T1 targets 24h, T2 targets 23h (statutory reduced quota for 3APIC)
+            target = 23 if (num_teachers == 2 and pref_t == 1 and has_3ac) else 24
+
+            if sum(x[1] for x in alloc[pref_t]) < target:
+                alloc[pref_t].append((c, 1, 1))
+            else:
+                avail = [k for k in range(num_teachers) if sum(x[1] for x in alloc[k]) < 24]
+                if avail:
+                    best = min(avail, key=lambda k: sum(x[1] for x in alloc[k]))
+                    alloc[best].append((c, 1, 1))
+                else:
+                    break
+
+        return alloc
+
     def calculate_assignments(self) -> List[TeacherAssignment]:
         n1 = self.structure.classes_1_apic
         n2 = self.structure.classes_2_apic
@@ -365,17 +428,21 @@ class CurriculumEngine:
             c2_s = (c2_list[s % len(c2_list):] + c2_list[:s % len(c2_list)]) if c2_list else []
             c3_s = (c3_list[s % len(c3_list):] + c3_list[:s % len(c3_list)]) if c3_list else []
 
-            # Build class items
-            items = []
-            if q.hours_1 > 0:
-                items.extend([(c, q.hours_1, 1) for c in c1_s])
-            if q.hours_2 > 0:
-                items.extend([(c, q.hours_2, 2) for c in c2_s])
-            if q.hours_3 > 0:
-                items.extend([(c, q.hours_3, 3) for c in c3_s])
+            if q.name == "المعلوميات":
+                t_allocations = self._distribute_it_classes(c1_s, c2_s, c3_s, num_teachers)
+                avail_levels_for_subj = {1, 2, 3}
+            else:
+                # Build class items
+                items = []
+                if q.hours_1 > 0:
+                    items.extend([(c, q.hours_1, 1) for c in c1_s])
+                if q.hours_2 > 0:
+                    items.extend([(c, q.hours_2, 2) for c in c2_s])
+                if q.hours_3 > 0:
+                    items.extend([(c, q.hours_3, 3) for c in c3_s])
 
-            t_allocations = self._distribute_subject_classes(items, num_teachers)
-            avail_levels_for_subj = set(it[2] for it in items)
+                t_allocations = self._distribute_subject_classes(items, num_teachers)
+                avail_levels_for_subj = set(it[2] for it in items)
 
             for t_i, t_items in enumerate(t_allocations):
                 if not t_items:
@@ -383,7 +450,11 @@ class CurriculumEngine:
                 def_name = f"أستاذ {q.name} {t_i + 1}"
                 real_name = (self.institution.teacher_custom_names.get(def_name) or "").strip()
                 teacher_name = real_name if real_name else def_name
-                assigned_classes = [it[0] for it in t_items]
+                if q.name == "المعلوميات":
+                    t_items_sorted = sorted(t_items, key=lambda x: (x[2], int(''.join(filter(str.isdigit, x[0])) or 0)))
+                    assigned_classes = [it[0] for it in t_items_sorted]
+                else:
+                    assigned_classes = [it[0] for it in t_items]
                 tot_h = sum(it[1] for it in t_items)
                 c1_cnt = len([it for it in t_items if it[2] == 1])
                 c2_cnt = len([it for it in t_items if it[2] == 2])
