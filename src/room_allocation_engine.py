@@ -13,6 +13,33 @@ class RoomAllocationEngine:
     def clear_all_overrides(self):
         self.manual_overrides.clear()
 
+    def clean_invalid_overrides(self, assignments: List[TeacherAssignment]):
+        teacher_subject_map = {a.teacher_name: a.subject for a in assignments}
+        room_subject_map = {}
+        for crt in self.institution.custom_room_types:
+            c_name = crt.get("name", "")
+            c_subj = crt.get("subject", "")
+            c_count = int(crt.get("count", 1))
+            for k in range(1, c_count + 1):
+                def_name = f"{c_name} {k}" if c_count > 1 else c_name
+                r_name = self.get_room_display_name(def_name)
+                room_subject_map[r_name] = c_subj
+                room_subject_map[def_name] = c_subj
+
+        keys_to_clean = []
+        for rk, sess_dict in list(self.manual_overrides.items()):
+            c_subj = room_subject_map.get(rk)
+            if c_subj and c_subj != "عامة":
+                for sess in ["morning", "afternoon"]:
+                    tname = sess_dict.get(sess)
+                    if tname and "شاغر" not in tname and tname != "-":
+                        if teacher_subject_map.get(tname) != c_subj:
+                            del sess_dict[sess]
+                if not sess_dict:
+                    keys_to_clean.append(rk)
+        for k in keys_to_clean:
+            del self.manual_overrides[k]
+
     def set_teacher(self, room_key: str, session: str, teacher_name: str):
         if teacher_name and "شاغر" not in teacher_name and teacher_name != "-":
             for rk, sess_dict in self.manual_overrides.items():
@@ -27,10 +54,25 @@ class RoomAllocationEngine:
         self.manual_overrides[room_key][session] = teacher_name
 
     def allocate_rooms(self, assignments: List[TeacherAssignment]) -> List[CustomRoom]:
+        self.clean_invalid_overrides(assignments)
         n_gen = self.institution.general_rooms_count
         gen_subjects_allowed = ["اللغة العربية", "اللغة الفرنسية", "التربية الإسلامية", "الاجتماعيات", "الرياضيات", "اللغة الأجنبية الثانية (الإنجليزية)"]
         
-        gen_teachers = [a for a in assignments if a.subject in gen_subjects_allowed and a.total_hours > 0]
+        # Collect teachers assigned to dedicated custom rooms so they are prioritized there and excluded from general rooms
+        dedicated_custom_teachers = set()
+        for crt in self.institution.custom_room_types:
+            c_subj = crt.get("subject")
+            c_count = int(crt.get("count", 1))
+            if c_subj and c_subj != "عامة":
+                c_teachers = [a.teacher_name for a in assignments if a.subject == c_subj and a.total_hours > 0]
+                dedicated_custom_teachers.update(c_teachers[:c_count * 2])
+
+        gen_teachers = [
+            a for a in assignments 
+            if a.subject in gen_subjects_allowed 
+            and a.total_hours > 0 
+            and a.teacher_name not in dedicated_custom_teachers
+        ]
         num_gen = len(gen_teachers)
         max_cap = self.institution.max_room_capacity_hours
         is_float_all = self.institution.float_all_general_teachers
@@ -204,6 +246,7 @@ class RoomAllocationEngine:
             curr_id += 1
 
         # 6. User-added Custom Room Types (e.g. قاعة الاجتماعيات 1, 2...)
+        teacher_subject_map = {a.teacher_name: a.subject for a in assignments}
         for crt in self.institution.custom_room_types:
             c_name = crt.get("name", "قاعة مخصصة")
             c_subj = crt.get("subject", "عامة")
@@ -211,18 +254,33 @@ class RoomAllocationEngine:
             c_count = int(crt.get("count", 1))
 
             subj_teachers = [a.teacher_name for a in assignments if a.subject == c_subj and a.total_hours > 0]
+            num_subj = len(subj_teachers)
 
             for k in range(1, c_count + 1):
                 def_name = f"{c_name} {k}" if c_count > 1 else c_name
                 r_name = self.get_room_display_name(def_name)
                 
-                m_teach = subj_teachers[(k-1)*2] if (k-1)*2 < len(subj_teachers) else "شاغر (صباحي)"
-                e_teach = subj_teachers[(k-1)*2+1] if (k-1)*2+1 < len(subj_teachers) else "شاغر (مسائي)"
+                # Balanced distribution across all custom rooms:
+                # 1..c_count in morning; (c_count + 1).. in afternoon
+                m_idx = k - 1
+                e_idx = c_count + (k - 1)
+                m_teach = subj_teachers[m_idx] if m_idx < num_subj else "شاغر (صباحي)"
+                e_teach = subj_teachers[e_idx] if e_idx < num_subj else "شاغر (مسائي)"
 
                 override_key = r_name if r_name in self.manual_overrides else (def_name if def_name in self.manual_overrides else None)
                 if override_key:
-                    m_teach = self.manual_overrides[override_key].get("morning", m_teach)
-                    e_teach = self.manual_overrides[override_key].get("afternoon", e_teach)
+                    cand_m = self.manual_overrides[override_key].get("morning")
+                    cand_e = self.manual_overrides[override_key].get("afternoon")
+
+                    # Protect dedicated custom room from cross-subject hijacking
+                    if cand_m is not None:
+                        t_subj = teacher_subject_map.get(cand_m)
+                        if "شاغر" in cand_m or cand_m == "-" or t_subj == c_subj or c_subj == "عامة":
+                            m_teach = cand_m
+                    if cand_e is not None:
+                        t_subj = teacher_subject_map.get(cand_e)
+                        if "شاغر" in cand_e or cand_e == "-" or t_subj == c_subj or c_subj == "عامة":
+                            e_teach = cand_e
                 else:
                     if m_teach in occupied_teachers: m_teach = "شاغر (صباحي)"
                     if e_teach in occupied_teachers: e_teach = "شاغر (مسائي)"

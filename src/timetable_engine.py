@@ -207,6 +207,20 @@ class TimetableEngine:
         it_rooms = [r.room_name for r in rooms_list if "INFO" in r.room_name or "إعلام" in r.assigned_subject or "معلوم" in r.assigned_subject] if rooms_list else ["S-INFO"]
         sport_rooms = [r.room_name for r in rooms_list if "Terrain" in r.room_name or "رياض" in r.assigned_subject or "بدن" in r.assigned_subject] if rooms_list else ["Terrain 1", "Terrain  2"]
 
+        # Dedicated Custom Rooms grouped by subject
+        custom_rooms_by_subject: Dict[str, List[str]] = {}
+        all_custom_room_names = set()
+        if rooms_list:
+            for r in rooms_list:
+                if getattr(r, 'is_custom', False) or r.room_type == "قاعة مخصصة":
+                    all_custom_room_names.add(r.room_name)
+                    subj = r.assigned_subject
+                    if subj and subj != "عامة":
+                        if subj not in custom_rooms_by_subject:
+                            custom_rooms_by_subject[subj] = []
+                        if r.room_name not in custom_rooms_by_subject[subj]:
+                            custom_rooms_by_subject[subj].append(r.room_name)
+
         m_teacher_to_room = {}
         e_teacher_to_room = {}
         if rooms_list:
@@ -244,17 +258,55 @@ class TimetableEngine:
                 pool = it_rooms + gen_rooms
             elif any(k in subject for k in ["بدنية", "رياضة", "EPS", "Terrain"]):
                 pool = sport_rooms
+            elif subject in custom_rooms_by_subject:
+                # Custom dedicated rooms for this subject (e.g. الاجتماعيات -> S-GH 1, 2, 3, 4)
+                c_rooms = custom_rooms_by_subject[subject]
+                primary = m_teacher_to_room.get(teacher) if is_morning else e_teacher_to_room.get(teacher)
+                if not primary or primary not in c_rooms:
+                    primary = m_teacher_to_room.get(teacher) or e_teacher_to_room.get(teacher)
+                
+                # Priority:
+                # 1. The teacher's assigned dedicated room first
+                # 2. All other dedicated rooms for this subject
+                # 3. Only if ALL dedicated rooms are occupied in this slot -> fallback to general rooms
+                if primary and primary in c_rooms:
+                    pool = [primary] + [r for r in c_rooms if r != primary] + gen_rooms
+                else:
+                    pool = list(c_rooms) + gen_rooms
             else:
+                # General subjects (الرياضيات, اللغة العربية, اللغة الفرنسية, التربية الإسلامية, etc.)
                 primary = m_teacher_to_room.get(teacher) if is_morning else e_teacher_to_room.get(teacher)
                 if not primary:
                     primary = m_teacher_to_room.get(teacher) or e_teacher_to_room.get(teacher)
+                
+                # Teachers of general subjects must NEVER be placed in dedicated custom rooms of other subjects
+                if primary and (primary in all_custom_room_names or primary not in gen_rooms):
+                    primary = None
+                
                 if primary:
                     pool = [primary] + [r for r in gen_rooms if r != primary]
                 else:
                     pool = gen_rooms
 
             chosen_room = None
+            valid_fet_room = False
             if fet_room and all((fet_room, day, h) not in room_slot_occupied for h in occupied_hours):
+                if subject in custom_rooms_by_subject:
+                    c_rooms = custom_rooms_by_subject[subject]
+                    if fet_room in c_rooms:
+                        valid_fet_room = True
+                    elif fet_room in gen_rooms:
+                        # Allow gen_room from FET ONLY IF all dedicated rooms are full at this slot
+                        has_free_custom = any(all((cr, day, h) not in room_slot_occupied for h in occupied_hours) for cr in c_rooms)
+                        if not has_free_custom:
+                            valid_fet_room = True
+                elif fet_room in all_custom_room_names:
+                    # Reject dedicated custom room assigned to a non-matching general subject (e.g. Math in S-GH)
+                    valid_fet_room = False
+                else:
+                    valid_fet_room = True
+
+            if valid_fet_room:
                 chosen_room = fet_room
             else:
                 for r_cand in pool:

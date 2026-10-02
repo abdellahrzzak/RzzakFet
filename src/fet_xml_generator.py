@@ -1348,13 +1348,22 @@ class FetXmlGenerator:
             seen_teachers = set()
             room_assigned_hours = {r.room_name: 0 for r in rooms}
             teacher_hours_map = actual_teacher_hours
+            teacher_subj_map = {resolve_teacher(a.teacher_name): a.subject for a in assignments if a.teacher_name}
 
             for r in rooms:
                 if r.room_name not in valid_room_names:
                     continue
+                # If custom room, verify teacher belongs to room's assigned_subject
+                is_custom = getattr(r, 'is_custom', False) or r.room_type == "قاعة مخصصة"
+                expected_subj = r.assigned_subject if (is_custom and r.assigned_subject != "عامة") else None
+
                 # 1. Primary (Morning) Teacher Anchor
                 if r.morning_teacher and "-" not in r.morning_teacher and "شاغر" not in r.morning_teacher:
                     m_teacher = resolve_teacher(r.morning_teacher)
+                    t_subj = teacher_subj_map.get(m_teacher)
+                    if expected_subj and t_subj and t_subj != expected_subj:
+                        m_teacher = None
+
                     if m_teacher and m_teacher in all_teachers_set and m_teacher not in seen_teachers:
                         m_h = teacher_hours_map.get(m_teacher, 20)
                         if m_h <= 40:
@@ -1371,6 +1380,10 @@ class FetXmlGenerator:
                 # 2. Secondary (Afternoon) Teacher - only if within room 40h capacity
                 if r.afternoon_teacher and "-" not in r.afternoon_teacher and "شاغر" not in r.afternoon_teacher:
                     e_teacher = resolve_teacher(r.afternoon_teacher)
+                    t_subj = teacher_subj_map.get(e_teacher)
+                    if expected_subj and t_subj and t_subj != expected_subj:
+                        e_teacher = None
+
                     if e_teacher and e_teacher in all_teachers_set and e_teacher not in seen_teachers:
                         e_h = teacher_hours_map.get(e_teacher, 20)
                         if room_assigned_hours[r.room_name] + e_h <= 40:
@@ -1386,11 +1399,16 @@ class FetXmlGenerator:
         elif self.institution.float_all_general_teachers:
             lines.append('<!-- تم تفعيل التعويم الشامل لجميع أساتذة التعليم العام -->')
 
-        # Subject Preferred Rooms - Only for Dedicated Specialty Labs / Sports
+        # Subject Preferred Rooms - Specialty Labs / Sports / Dedicated Custom Rooms
         if "ConstraintSubjectPreferredRooms" in c_map:
             c = c_map["ConstraintSubjectPreferredRooms"]
             w = int(c["def_weight"])
             specialty_subj_names = ["علوم الحياة و الأرض", "علوم الحياة والأرض", "الكيمياء و الفيزياء", "الفيزياء والكيمياء", "المعلوميات", "التربية البدنية"]
+            for crt in self.institution.custom_room_types:
+                c_subj = crt.get("subject")
+                if c_subj and c_subj not in specialty_subj_names:
+                    specialty_subj_names.append(c_subj)
+
             subj_rooms_map = {}
             for r in rooms:
                 subj = r.assigned_subject

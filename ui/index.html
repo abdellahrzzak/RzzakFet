@@ -6427,12 +6427,33 @@
 
       roomsGrid.innerHTML = appData.rooms.map(r => {
         const isOverCap = r.total_hours > r.max_cap && r.e_teacher !== 'شاغر (مسائي)' && r.e_teacher !== '-';
+        
+        let teacherList = allTeachers;
+        if (r.is_custom && r.subject && r.subject !== 'عامة') {
+          const subjTeachers = allTeachers.filter(t => {
+            const td = (appData.teachers_details || []).find(x => x.name === t);
+            return td && td.subject === r.subject;
+          });
+          const otherTeachers = allTeachers.filter(t => !subjTeachers.includes(t));
+          teacherList = subjTeachers.concat(otherTeachers);
+        }
+
         const morningOpts = ['<option value="شاغر (صباحي)">-- شاغر (صباحي) --</option>'].concat(
-          allTeachers.map(t => `<option value="${t}" ${r.m_teacher === t ? 'selected' : ''}>${t}</option>`)
+          teacherList.map(t => {
+            const td = (appData.teachers_details || []).find(x => x.name === t);
+            const isMatch = (r.is_custom && r.subject && r.subject !== 'عامة' && td && td.subject === r.subject);
+            const prefix = isMatch ? '⭐ ' : '';
+            return `<option value="${t}" ${r.m_teacher === t ? 'selected' : ''}>${prefix}${t}</option>`;
+          })
         ).join('');
 
         const eveningOpts = ['<option value="شاغر (مسائي)">-- شاغر (مسائي) --</option>'].concat(
-          allTeachers.map(t => `<option value="${t}" ${r.e_teacher === t ? 'selected' : ''}>${t}</option>`)
+          teacherList.map(t => {
+            const td = (appData.teachers_details || []).find(x => x.name === t);
+            const isMatch = (r.is_custom && r.subject && r.subject !== 'عامة' && td && td.subject === r.subject);
+            const prefix = isMatch ? '⭐ ' : '';
+            return `<option value="${t}" ${r.e_teacher === t ? 'selected' : ''}>${prefix}${t}</option>`;
+          })
         ).join('');
 
         return `
