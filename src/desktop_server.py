@@ -1972,26 +1972,32 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
             res = json.dumps(APP_STATE.get_full_state(), ensure_ascii=False)
             self.wfile.write(res.encode("utf-8"))
 
-        elif parsed.path in ("/api/apply_core_9_constraints", "/api/apply_core_11_constraints"):
+        elif parsed.path in ("/api/apply_core_9_constraints", "/api/apply_core_11_constraints", "/api/apply_core_15_constraints"):
             toggle = data.get("toggle", False)
             core_codes = [
+                "ConstraintMinDaysBetweenActivities",
+                "ConstraintStudentsMaxHoursDaily",
+                "ConstraintStudentsMinHoursDaily",
+                "ConstraintTeachersMinHoursDaily",
                 "ConstraintTeachersMaxHoursDaily",
                 "ConstraintTeachersMaxGapsPerDay",
-                "ConstraintTeachersMaxContinuousHours",
-                "ConstraintStudentsMaxGapsPerDay",
-                "ConstraintStudentsMaxHoursDaily",
-                "ConstraintMinDaysBetweenActivities",
+                "ConstraintTeachersMaxHoursContinuously",
+                "ConstraintStudentsSetMaxGapsPerWeek",
                 "ConstraintBreakTimes",
                 "ConstraintTeacherHomeRoom",
-                "ConstraintSubjectPreferredRooms"
+                "ConstraintSubjectPreferredRooms",
+                "ConstraintBasicCompulsoryTime",
+                "ConstraintTeachersIntervalMaxDaysPerWeek",
+                "ConstraintBasicCompulsorySpace",
+                "ConstraintStudentsMaxGapsPerWeek"
             ]
 
-            # Check if all core are currently active
-            all_active = all(
-                c.get("is_active", False) 
-                for c in APP_STATE.fet_generator.all_available_constraints 
-                if c.get("code") in core_codes and c.get("is_primary", False)
-            )
+            # Check if all active primary constraints are currently active
+            active_primaries = [
+                c for c in APP_STATE.fet_generator.all_available_constraints 
+                if c.get("is_primary", False) and c.get("code") != "ConstraintSubjectPreferredRooms"
+            ]
+            all_active = all(c.get("is_active", False) for c in active_primaries) if active_primaries else False
 
             new_target_state = False if (toggle and all_active) else True
 
@@ -1999,18 +2005,22 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
                 code = c.get("code")
                 if code in core_codes:
                     c["is_primary"] = True
-                    c["is_active"] = new_target_state
+                    c["is_active"] = False if code == "ConstraintSubjectPreferredRooms" else new_target_state
                     c["def_weight"] = 100.0
                     if code in ["ConstraintTeachersMaxHoursDaily", "ConstraintStudentsMaxHoursDaily"]:
                         c["param_val"] = 6
-                    elif code == "ConstraintTeachersMaxContinuousHours":
+                    elif code in ["ConstraintTeachersMinHoursDaily", "ConstraintStudentsMinHoursDaily"]:
+                        c["param_val"] = 2
+                    elif code in ["ConstraintTeachersMaxHoursContinuously"]:
                         c["param_val"] = 4
-                    elif code in ["ConstraintTeachersMaxGapsPerDay", "ConstraintStudentsMaxGapsPerDay"]:
+                    elif code in ["ConstraintTeachersMaxGapsPerDay", "ConstraintStudentsMaxGapsPerDay", "ConstraintStudentsSetMaxGapsPerWeek", "ConstraintStudentsMaxGapsPerWeek"]:
                         c["param_val"] = 0
                     elif code == "ConstraintMinDaysBetweenActivities":
                         c["param_val"] = 1
+                    elif code == "ConstraintTeachersIntervalMaxDaysPerWeek":
+                        c["param_val"] = 4
                     elif code == "ConstraintBreakTimes":
-                        c["param_val"] = len(APP_STATE.institution.break_time_slots)
+                        c["param_val"] = len(APP_STATE.institution.break_time_slots) or 8
 
             APP_STATE.save_to_disk()
 

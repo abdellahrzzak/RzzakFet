@@ -144,7 +144,7 @@ def get_68_constraints() -> List[Dict]:
             "name_en": "Min Hours Daily for All Teachers",
             "code": "ConstraintTeachersMinHoursDaily",
             "code_individual": "ConstraintTeacherMinHoursDaily",
-            "def_weight": 100.0, "is_active": False, "is_primary": False,
+            "def_weight": 100.0, "is_active": True, "is_primary": True,
             "param_name": "min_hours_daily", "param_label": "أدنى ساعات يومية",
             "param_val": 2, "param_min": 1, "param_max": 4, "param_unit": "ساعات",
             "target_type": "teachers", "applies_to": "all", "selected_targets": [],
@@ -216,10 +216,10 @@ def get_68_constraints() -> List[Dict]:
             "name_en": "Max Gaps Per Week for a Students Set",
             "code": "ConstraintStudentsSetMaxGapsPerWeek",
             "code_individual": "ConstraintStudentsSetMaxGapsPerWeek",
-            "def_weight": 100.0, "is_active": False, "is_primary": False,
+            "def_weight": 100.0, "is_active": True, "is_primary": True,
             "param_name": "max_gaps_weekly", "param_label": "أقصى فجوات أسبوعية",
             "param_val": 0, "param_min": 0, "param_max": 4, "param_unit": "فجوات",
-            "target_type": "students", "applies_to": "selected", "selected_targets": [],
+            "target_type": "students", "applies_to": "all", "selected_targets": [],
             "desc": "تقييد الساعات البينية الفارغة لقسم أو فوج معين خلال الأسبوع."
         },
         {
@@ -300,9 +300,9 @@ def get_68_constraints() -> List[Dict]:
             "name_en": "Min Hours Daily for All Students",
             "code": "ConstraintStudentsMinHoursDaily",
             "code_individual": "ConstraintStudentsSetMinHoursDaily",
-            "def_weight": 100.0, "is_active": False, "is_primary": False,
+            "def_weight": 100.0, "is_active": True, "is_primary": True,
             "param_name": "min_hours_daily", "param_label": "أدنى ساعات يومية",
-            "param_val": 3, "param_min": 2, "param_max": 5, "param_unit": "ساعات",
+            "param_val": 2, "param_min": 2, "param_max": 5, "param_unit": "ساعات",
             "target_type": "students", "applies_to": "all", "selected_targets": [],
             "desc": "ضمان توزيع متوازن لحصص اليوم ومنع الدوام من أجل حصة يتيمة."
         },
@@ -738,7 +738,7 @@ def get_68_constraints() -> List[Dict]:
             "name_en": "A Subject Has a Set of Preferred Rooms",
             "code": "ConstraintSubjectPreferredRooms",
             "code_individual": "ConstraintSubjectPreferredRooms",
-            "def_weight": 100.0, "is_active": True, "is_primary": True,
+            "def_weight": 100.0, "is_active": False, "is_primary": True,
             "target_type": "subjects", "applies_to": "all", "selected_targets": [],
             "desc": "تحديد مجموعة قاعات مخصصة للمادة (مختبرات علوم الحياة والأرض، مختبرات الفيزياء، وملاعب الرياضة)."
         },

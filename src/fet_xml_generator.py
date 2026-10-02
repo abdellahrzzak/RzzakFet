@@ -150,17 +150,47 @@ DEFAULT_SUBJECT_ACTIVITY_CONSTRAINTS = [
     }
 ]
 
+PRIMARY_CONSTRAINTS_ORDER = [
+    "tc_a_8",     # 1. ConstraintMinDaysBetweenActivities
+    "tc_s_7",     # 2. ConstraintStudentsMaxHoursDaily
+    "tc_s_9",     # 3. ConstraintStudentsMinHoursDaily
+    "tc_t_10",    # 4. ConstraintTeachersMinHoursDaily
+    "tc_t_8",     # 5. ConstraintTeachersMaxHoursDaily
+    "tc_t_6",     # 6. ConstraintTeachersMaxGapsPerDay
+    "tc_t_12",    # 7. ConstraintTeachersMaxHoursContinuously
+    "tc_s_2",     # 8. ConstraintStudentsSetMaxGapsPerWeek
+    "tc_base_2",  # 9. ConstraintBreakTimes
+    "sc_t_1",     # 10. ConstraintTeacherHomeRoom
+    "sc_sub_2",   # 11. ConstraintSubjectPreferredRooms
+    "tc_base_1",  # 12. ConstraintBasicCompulsoryTime
+    "tc_t_14",    # 13. ConstraintTeachersIntervalMaxDaysPerWeek
+    "sc_base_1",  # 14. ConstraintBasicCompulsorySpace
+    "tc_s_3",     # 15. ConstraintStudentsMaxGapsPerWeek
+]
+
 class FetXmlGenerator:
     def __init__(self, institution: InstitutionData = None, structure: EducationalStructure = None):
         self.institution = institution or InstitutionData()
         self.structure = structure or EducationalStructure()
         
-        # Default 11 Primary Constraints Matching Official Principal Specification
+        # Default 15 Primary Constraints Matching Official Specification
         self.all_available_constraints = self._build_default_constraints()
 
     @staticmethod
     def _build_default_constraints() -> List[Dict]:
-        return [dict(c) for c in get_68_constraints()]
+        all_c = get_68_constraints()
+        c_dict = {c["id"]: dict(c) for c in all_c}
+        primary_list = []
+        for cid in PRIMARY_CONSTRAINTS_ORDER:
+            if cid in c_dict:
+                c = c_dict.pop(cid)
+                c["is_primary"] = True
+                primary_list.append(c)
+        remaining_list = []
+        for c in c_dict.values():
+            c["is_primary"] = False
+            remaining_list.append(c)
+        return primary_list + remaining_list
 
     def get_primary_constraints(self) -> List[Dict]:
         """Returns the primary constraints ordered as set by the principal."""
@@ -175,7 +205,7 @@ class FetXmlGenerator:
         return [c for c in self.all_available_constraints if c.get("is_active", True)]
 
     def reset_to_default_constraints(self):
-        """Restores constraints to the 11 default primary constraints in original order."""
+        """Restores constraints to the 15 default primary constraints in original order."""
         self.all_available_constraints = self._build_default_constraints()
 
     def get_subject_activity_constraints(self) -> List[Dict]:

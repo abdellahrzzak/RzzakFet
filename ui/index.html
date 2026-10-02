@@ -1708,8 +1708,8 @@
           <div>
             <div class="flex items-center gap-2 flex-wrap">
               <h2 class="font-extrabold text-base text-white">⚙️ منظومة القيود الذكية لتوليد جدول الحصص (FET)</h2>
-              <span id="primary-constraints-count" class="bg-blue-950 text-blue-400 border border-blue-800 px-2.5 py-0.5 rounded-full text-xs font-bold font-mono">11 قيود رئيسية</span>
-              <span id="active-constraints-badge" class="bg-emerald-950 text-emerald-400 border border-emerald-800 px-2.5 py-0.5 rounded-full text-xs font-bold font-mono">11 مفعل ✓</span>
+              <span id="primary-constraints-count" class="bg-blue-950 text-blue-400 border border-blue-800 px-2.5 py-0.5 rounded-full text-xs font-bold font-mono">15 قيداً أساسياً</span>
+              <span id="active-constraints-badge" class="bg-emerald-950 text-emerald-400 border border-emerald-800 px-2.5 py-0.5 rounded-full text-xs font-bold font-mono">14 مفعل ✓</span>
             </div>
             <p class="text-xs text-slate-400 mt-1">القيود الرئيسية المعتمدة مع إمكانية التفعيل/التعطيل، الحذف، والسحب والإفلات لإعادة الترتيب (Drag & Drop)</p>
           </div>
@@ -1718,7 +1718,7 @@
             <button onclick="openConstraintsLibraryModal()" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs px-3.5 py-2 rounded-xl shadow-lg shadow-blue-900/40 transition flex items-center gap-1.5 border border-blue-400/30 cursor-pointer">
               <span>➕ إضافة قيد من بنك القيود</span>
             </button>
-            <button onclick="resetDefaultConstraints()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white font-bold text-xs px-3 py-2 rounded-xl border border-slate-700 transition flex items-center gap-1.5 cursor-pointer" title="استعادة الترتيب والقيود الـ 11 الافتراضية الأصلية">
+            <button onclick="resetDefaultConstraints()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white font-bold text-xs px-3 py-2 rounded-xl border border-slate-700 transition flex items-center gap-1.5 cursor-pointer" title="استعادة الترتيب وحزمة الـ 15 قيداً الأساسية الافتراضية">
               <span>🔄 الترتيب الافتراضي</span>
             </button>
             <button onclick="applyCore11Constraints(true)" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs px-3.5 py-2 rounded-xl shadow-lg shadow-emerald-900/40 transition flex items-center gap-1.5 border border-emerald-400/30 cursor-pointer">
@@ -4758,7 +4758,7 @@
                 <p class="text-xs text-slate-500">انقر على "➕ إضافة قيد من بنك القيود" أو "🔄 الترتيب الافتراضي" لإضافة القيود.</p>
                 <div class="flex items-center gap-2 mt-2">
                   <button onclick="openConstraintsLibraryModal()" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-4 py-1.5 rounded-xl shadow transition cursor-pointer">➕ فتح بنك القيود</button>
-                  <button onclick="resetDefaultConstraints()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold px-4 py-1.5 rounded-xl border border-slate-700 transition cursor-pointer">🔄 استعادة القيود الـ 11 الافتراضية</button>
+                  <button onclick="resetDefaultConstraints()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold px-4 py-1.5 rounded-xl border border-slate-700 transition cursor-pointer">🔄 استعادة القيود الـ 15 الأساسية</button>
                 </div>
               </div>
             </td>
@@ -5068,7 +5068,7 @@
     }
 
     async function resetDefaultConstraints() {
-      if (!confirm('هل ترغب في استعادة الترتيب والقيود الـ 11 الافتراضية الأصلية؟')) return;
+      if (!confirm('هل ترغب في استعادة الترتيب وحزمة الـ 15 قيداً الأساسية الافتراضية؟')) return;
       try {
         const res = await fetch('/api/reset_default_constraints', {
           method: 'POST',
@@ -5078,7 +5078,7 @@
         if (res.ok) {
           appData = await res.json();
           renderApp();
-          showToast('✓ تمت استعادة القيود الـ 11 الافتراضية بنجاح', 'success');
+          showToast('✓ تمت استعادة حزمة الـ 15 قيداً الأساسية بنجاح', 'success');
         }
       } catch (err) {
         console.error('Error resetting default constraints:', err);
