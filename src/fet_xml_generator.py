@@ -158,7 +158,7 @@ PRIMARY_CONSTRAINTS_ORDER = [
     "tc_t_8",     # 5. ConstraintTeachersMaxHoursDaily
     "tc_t_6",     # 6. ConstraintTeachersMaxGapsPerDay
     "tc_t_12",    # 7. ConstraintTeachersMaxHoursContinuously
-    "tc_s_2",     # 8. ConstraintStudentsSetMaxGapsPerWeek
+    "tc_s_2",     # 8. ConstraintStudentsMaxGapsPerDay
     "tc_base_2",  # 9. ConstraintBreakTimes
     "sc_t_1",     # 10. ConstraintTeacherHomeRoom
     "sc_sub_2",   # 11. ConstraintSubjectPreferredRooms
@@ -758,7 +758,7 @@ class FetXmlGenerator:
             else:
                 lines.append('<ConstraintTeachersMaxGapsPerWeek>')
                 lines.append(f'	<Weight_Percentage>{w}</Weight_Percentage>')
-                lines.append(f'	<Max_Gaps_Per_Week>{gaps}</Max_Gaps_Per_Week>')
+                lines.append(f'	<Max_Gaps>{gaps}</Max_Gaps>')
                 lines.append('	<Active>true</Active>')
                 lines.append('	<Comments></Comments>')
                 lines.append('</ConstraintTeachersMaxGapsPerWeek>')
@@ -826,31 +826,6 @@ class FetXmlGenerator:
             lines.append('	<Active>true</Active>')
             lines.append('	<Comments></Comments>')
             lines.append('</ConstraintTeachersAfternoonsEarlyMaxBeginningsAtSecondHour>')
-
-        # Teacher Max Building Changes Per Day
-        if "ConstraintTeacherMaxBuildingChangesPerDay" in c_map or "ConstraintTeachersMaxBuildingChangesPerDay" in c_map:
-            c = c_map.get("ConstraintTeacherMaxBuildingChangesPerDay") or c_map.get("ConstraintTeachersMaxBuildingChangesPerDay")
-            w = int(c.get("def_weight", 100))
-            val = c.get("param_val", 0)
-            if c.get("applies_to") == "selected" and c.get("selected_targets"):
-                for t_raw in c["selected_targets"]:
-                    t_name = resolve_teacher(t_raw)
-                    if not t_name:
-                        continue
-                    lines.append('<ConstraintTeacherMaxBuildingChangesPerDay>')
-                    lines.append(f'	<Weight_Percentage>{w}</Weight_Percentage>')
-                    lines.append(f'	<Teacher>{t_name}</Teacher>')
-                    lines.append(f'	<Max_Building_Changes_Per_Day>{val}</Max_Building_Changes_Per_Day>')
-                    lines.append('	<Active>true</Active>')
-                    lines.append('	<Comments></Comments>')
-                    lines.append('</ConstraintTeacherMaxBuildingChangesPerDay>')
-            else:
-                lines.append('<ConstraintTeachersMaxBuildingChangesPerDay>')
-                lines.append(f'	<Weight_Percentage>{w}</Weight_Percentage>')
-                lines.append(f'	<Max_Building_Changes_Per_Day>{val}</Max_Building_Changes_Per_Day>')
-                lines.append('	<Active>true</Active>')
-                lines.append('	<Comments></Comments>')
-                lines.append('</ConstraintTeachersMaxBuildingChangesPerDay>')
 
         # Teacher Max Morning Periods / Half-Days (أقصى الفترات صباحاً للأساتذة)
         # Enforces that teachers work at most N morning half-days across the 6 Moroccan morning half-days
@@ -1073,8 +1048,8 @@ class FetXmlGenerator:
                 lines.append('</ConstraintStudentsMinHoursDaily>')
 
         # Students Max Gaps Daily
-        if "ConstraintStudentsMaxGapsPerDay" in c_map:
-            c = c_map["ConstraintStudentsMaxGapsPerDay"]
+        if "ConstraintStudentsMaxGapsPerDay" in c_map or "ConstraintStudentsSetMaxGapsPerDay" in c_map or "tc_s_2" in c_map:
+            c = c_map.get("ConstraintStudentsMaxGapsPerDay") or c_map.get("ConstraintStudentsSetMaxGapsPerDay") or c_map.get("tc_s_2")
             gaps = c.get("param_val", 0)
             w = int(c.get("def_weight", 100))
             if c.get("applies_to") == "selected" and c.get("selected_targets"):
@@ -1098,8 +1073,8 @@ class FetXmlGenerator:
                 lines.append('</ConstraintStudentsMaxGapsPerDay>')
 
         # Students Max Gaps Weekly
-        if "ConstraintStudentsMaxGapsPerWeek" in c_map:
-            c = c_map["ConstraintStudentsMaxGapsPerWeek"]
+        if "ConstraintStudentsMaxGapsPerWeek" in c_map or "ConstraintStudentsSetMaxGapsPerWeek" in c_map or "tc_s_3" in c_map:
+            c = c_map.get("ConstraintStudentsMaxGapsPerWeek") or c_map.get("ConstraintStudentsSetMaxGapsPerWeek") or c_map.get("tc_s_3")
             gaps = c.get("param_val", 0)
             w = int(c.get("def_weight", 100))
             if c.get("applies_to") == "selected" and c.get("selected_targets"):
@@ -1117,7 +1092,7 @@ class FetXmlGenerator:
             else:
                 lines.append('<ConstraintStudentsMaxGapsPerWeek>')
                 lines.append(f'	<Weight_Percentage>{w}</Weight_Percentage>')
-                lines.append(f'	<Max_Gaps_Per_Week>{gaps}</Max_Gaps_Per_Week>')
+                lines.append(f'	<Max_Gaps>{gaps}</Max_Gaps>')
                 lines.append('	<Active>true</Active>')
                 lines.append('	<Comments></Comments>')
                 lines.append('</ConstraintStudentsMaxGapsPerWeek>')
@@ -1429,6 +1404,31 @@ class FetXmlGenerator:
                     lines.append('	<Active>true</Active>')
                     lines.append('	<Comments></Comments>')
                     lines.append('</ConstraintSubjectPreferredRooms>')
+
+        # Teacher Max Building Changes Per Day (Space Constraint)
+        if "ConstraintTeacherMaxBuildingChangesPerDay" in c_map or "ConstraintTeachersMaxBuildingChangesPerDay" in c_map:
+            c = c_map.get("ConstraintTeacherMaxBuildingChangesPerDay") or c_map.get("ConstraintTeachersMaxBuildingChangesPerDay")
+            w = int(c.get("def_weight", 100))
+            val = c.get("param_val", 0)
+            if c.get("applies_to") == "selected" and c.get("selected_targets"):
+                for t_raw in c["selected_targets"]:
+                    t_name = resolve_teacher(t_raw)
+                    if not t_name:
+                        continue
+                    lines.append('<ConstraintTeacherMaxBuildingChangesPerDay>')
+                    lines.append(f'	<Weight_Percentage>{w}</Weight_Percentage>')
+                    lines.append(f'	<Teacher>{t_name}</Teacher>')
+                    lines.append(f'	<Max_Building_Changes_Per_Day>{val}</Max_Building_Changes_Per_Day>')
+                    lines.append('	<Active>true</Active>')
+                    lines.append('	<Comments></Comments>')
+                    lines.append('</ConstraintTeacherMaxBuildingChangesPerDay>')
+            else:
+                lines.append('<ConstraintTeachersMaxBuildingChangesPerDay>')
+                lines.append(f'	<Weight_Percentage>{w}</Weight_Percentage>')
+                lines.append(f'	<Max_Building_Changes_Per_Day>{val}</Max_Building_Changes_Per_Day>')
+                lines.append('	<Active>true</Active>')
+                lines.append('	<Comments></Comments>')
+                lines.append('</ConstraintTeachersMaxBuildingChangesPerDay>')
 
         lines.append('</Space_Constraints_List>')
         lines.append('')

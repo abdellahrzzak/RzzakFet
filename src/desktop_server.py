@@ -1982,7 +1982,7 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
                 "ConstraintTeachersMaxHoursDaily",
                 "ConstraintTeachersMaxGapsPerDay",
                 "ConstraintTeachersMaxHoursContinuously",
-                "ConstraintStudentsSetMaxGapsPerWeek",
+                "ConstraintStudentsMaxGapsPerDay",
                 "ConstraintBreakTimes",
                 "ConstraintTeacherHomeRoom",
                 "ConstraintSubjectPreferredRooms",

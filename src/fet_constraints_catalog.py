@@ -212,19 +212,19 @@ def get_68_constraints() -> List[Dict]:
         },
         {
             "id": "tc_s_2", "scope": "students", "main_cat": "time", "sub_cat": "students",
-            "name": "العدد الأقصى من الفراغات في الأسبوع لطلاب معينين",
-            "name_en": "Max Gaps Per Week for a Students Set",
-            "code": "ConstraintStudentsSetMaxGapsPerWeek",
-            "code_individual": "ConstraintStudentsSetMaxGapsPerWeek",
+            "name": "العدد الأقصى من الفراغات في الفترة / اليوم للطلاب (أقصى فجوة يومياً)",
+            "name_en": "Max Gaps Per Day for All Students",
+            "code": "ConstraintStudentsMaxGapsPerDay",
+            "code_individual": "ConstraintStudentsSetMaxGapsPerDay",
             "def_weight": 100.0, "is_active": True, "is_primary": True,
-            "param_name": "max_gaps_weekly", "param_label": "أقصى فجوات أسبوعية",
-            "param_val": 0, "param_min": 0, "param_max": 4, "param_unit": "فجوات",
+            "param_name": "max_gaps_daily", "param_label": "أقصى فجوة في الفترة / اليوم",
+            "param_val": 0, "param_min": 0, "param_max": 2, "param_unit": "فجوات",
             "target_type": "students", "applies_to": "all", "selected_targets": [],
-            "desc": "تقييد الساعات البينية الفارغة لقسم أو فوج معين خلال الأسبوع."
+            "desc": "منع الساعات البينية الفارغة في الفترة الصباحية أو المسائية لكافة الفصول لضمان تماسك جدول التلاميذ (افتراضياً 0، ويمكن للمدير ضبطها على 0 أو 1)."
         },
         {
             "id": "tc_s_3", "scope": "students", "main_cat": "time", "sub_cat": "students",
-            "name": "العدد الأقصى من الفراغات في الأسبوع للطلاب (منع الفراغ نهائياً)",
+            "name": "العدد الأقصى من الفراغات في الأسبوع للطلاب (منع الفراغ الأسبوعي نهائياً)",
             "name_en": "Max Gaps Per Week for All Students",
             "code": "ConstraintStudentsMaxGapsPerWeek",
             "code_individual": "ConstraintStudentsSetMaxGapsPerWeek",
@@ -232,7 +232,7 @@ def get_68_constraints() -> List[Dict]:
             "param_name": "max_gaps_weekly", "param_label": "أقصى فجوات أسبوعية",
             "param_val": 0, "param_min": 0, "param_max": 2, "param_unit": "فجوات",
             "target_type": "students", "applies_to": "all", "selected_targets": [],
-            "desc": "منع الفجوات والساعات الفارغة لكافة تلاميذ المؤسسة احتراماً للقانون المدرسي."
+            "desc": "منع الفجوات والساعات الفارغة لكافة تلاميذ المؤسسة على مدار الأسبوع كاملاً احتراماً للقانون المدرسي."
         },
         {
             "id": "tc_s_4", "scope": "students", "main_cat": "time", "sub_cat": "students",
