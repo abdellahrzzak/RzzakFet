@@ -102,10 +102,11 @@ class SurveillanceDailyReportEngine:
         student_stats: Dict[str, Any] = None,
         incidents: str = "",
         supervisor_name: str = "",
-        notes: str = ""
+        notes: str = "",
+        students_attendance: List[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
         """
-        توليد التقرير اليومي الكامل مع المؤشرات الرياضية والإدارية
+        توليد التقرير اليومي الكامل مع المؤشرات الرياضية والإدارية وسجل غيابات وتأخرات التلاميذ
         """
         sched = self.get_scheduled_day_summary(day_base)
         total_scheduled = sched["total_sessions_scheduled"]
@@ -116,19 +117,32 @@ class SurveillanceDailyReportEngine:
 
         cleaned_absences = []
         for ab in absent_teachers:
-            t_name = ab.get("teacher_name", "").strip()
+            entry_type = ab.get("entry_type", "teacher")
+            class_name = ab.get("class_name", "")
+            inferred_teacher = ab.get("inferred_teacher", "").strip()
+            subject = ab.get("subject", "").strip()
+            t_name = ab.get("teacher_name", "").strip() or inferred_teacher
+            if not t_name and class_name:
+                t_name = f"أستاذ(ة) قسم {class_name}"
+            session_hour = ab.get("session_hour", "")
             hours_count = int(ab.get("hours_count", 0))
             reason = ab.get("reason", "غير مبرر")
-            classes_affected = ab.get("classes", [])
+            classes_affected = list(ab.get("classes", []))
+            if class_name and class_name not in classes_affected:
+                classes_affected.append(class_name)
 
             lost_sessions_count += hours_count
             for c in classes_affected:
                 affected_classes.add(c)
 
             cleaned_absences.append({
+                "entry_type": entry_type,
                 "teacher_name": t_name,
-                "subject": ab.get("subject", ""),
-                "period": ab.get("period", "كامل اليوم"),
+                "inferred_teacher": inferred_teacher,
+                "class_name": class_name,
+                "session_hour": session_hour,
+                "subject": subject,
+                "period": ab.get("period", session_hour or "كامل اليوم"),
                 "hours_count": hours_count,
                 "reason": reason,
                 "action_taken": ab.get("action_taken", "توجيه التلاميذ لقاعة المداومة / إشعار الإدارة"),
@@ -144,6 +158,15 @@ class SurveillanceDailyReportEngine:
                 "entry_tickets_count": 0,
                 "late_students_count": 0
             }
+
+        students_att_list = students_attendance or []
+        if students_att_list:
+            calc_abs = sum(1 for s in students_att_list if s.get("absent_sessions_count", 0) > 0)
+            calc_late = sum(1 for s in students_att_list if s.get("late_sessions_count", 0) > 0)
+            if not student_stats.get("absent_students_count"):
+                student_stats["absent_students_count"] = calc_abs
+            if not student_stats.get("late_students_count"):
+                student_stats["late_students_count"] = calc_late
 
         inst_name = getattr(self.institution, "institution_name", "المؤسسة التعليمية") if self.institution else "المؤسسة التعليمية"
         academy = getattr(self.institution, "academy", "الأكاديمية الجهوية للتربية والتكوين") if self.institution else ""
@@ -176,6 +199,7 @@ class SurveillanceDailyReportEngine:
             },
             "absent_teachers": cleaned_absences,
             "student_stats": student_stats,
+            "students_attendance": students_att_list,
             "incidents": incidents or "سير عادي للدراسة بالمؤسسة ولم تسجل أي حوادث تذكر.",
             "notes": notes,
             "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")

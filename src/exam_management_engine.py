@@ -88,6 +88,45 @@ DEFAULT_EXAM_PRESETS = {
             {"id": "slot_2", "day": "الفترة 2", "date": "10 يناير 2027", "start_time": "10:45", "end_time": "12:45", "time": "10:45 - 12:45", "subject": "اللغة الفرنسية", "duration": 2.0},
             {"id": "slot_3", "day": "الفترة 3", "date": "11 يناير 2027", "start_time": "14:30", "end_time": "16:30", "time": "14:30 - 16:30", "subject": "اللغة العربية", "duration": 2.0}
         ]
+    },
+    "national_bac": {
+        "id": "national_bac",
+        "name": "الامتحان الوطني الموحد لنيل شهادة البكالوريا",
+        "session": "الدورة العادية",
+        "exam_dates": "09 و 10 و 11 و 12 يونيو 2027",
+        "day1_date": "09 يونيو 2027",
+        "day2_date": "10 يونيو 2027",
+        "target_level": "السنة الثانية باكالوريا (2BAC)",
+        "available_rooms_count": 13,
+        "capacity_per_room": 20,
+        "invigilators_per_room": 2,
+        "reserve_count": 2,
+        "slots": [
+            {"id": "slot_1", "day": "اليوم الأول (صباحاً)", "date": "09 يونيو 2027", "start_time": "08:00", "end_time": "11:00", "time": "08:00 - 11:00", "subject": "الرياضيات", "duration": 3.0},
+            {"id": "slot_2", "day": "اليوم الأول (مساءً)", "date": "09 يونيو 2027", "start_time": "15:00", "end_time": "17:00", "time": "15:00 - 17:00", "subject": "الفلسفة", "duration": 2.0},
+            {"id": "slot_3", "day": "اليوم الثاني (صباحاً)", "date": "10 يونيو 2027", "start_time": "08:00", "end_time": "11:00", "time": "08:00 - 11:00", "subject": "الفيزياء والكيمياء", "duration": 3.0},
+            {"id": "slot_4", "day": "اليوم الثاني (مساءً)", "date": "10 يونيو 2027", "start_time": "15:00", "end_time": "17:00", "time": "15:00 - 17:00", "subject": "اللغة الإنجليزية", "duration": 2.0},
+            {"id": "slot_5", "day": "اليوم الثالث (صباحاً)", "date": "11 يونيو 2027", "start_time": "08:00", "end_time": "11:00", "time": "08:00 - 11:00", "subject": "علوم الحياة والأرض", "duration": 3.0}
+        ]
+    },
+    "regional_1bac": {
+        "id": "regional_1bac",
+        "name": "الامتحان الجهوي الموحد للسنة الأولى من سلك البكالوريا",
+        "session": "الدورة العادية",
+        "exam_dates": "04 و 05 يونيو 2027",
+        "day1_date": "04 يونيو 2027",
+        "day2_date": "05 يونيو 2027",
+        "target_level": "السنة الأولى باكالوريا (1BAC)",
+        "available_rooms_count": 13,
+        "capacity_per_room": 20,
+        "invigilators_per_room": 2,
+        "reserve_count": 2,
+        "slots": [
+            {"id": "slot_1", "day": "اليوم الأول (صباحاً)", "date": "04 يونيو 2027", "start_time": "08:00", "end_time": "10:00", "time": "08:00 - 10:00", "subject": "اللغة الفرنسية", "duration": 2.0},
+            {"id": "slot_2", "day": "اليوم الأول (مساءً)", "date": "04 يونيو 2027", "start_time": "15:00", "end_time": "16:30", "time": "15:00 - 16:30", "subject": "التربية الإسلامية", "duration": 1.5},
+            {"id": "slot_3", "day": "اليوم الثاني (صباحاً)", "date": "05 يونيو 2027", "start_time": "08:00", "end_time": "10:00", "time": "08:00 - 10:00", "subject": "التاريخ والجغرافيا", "duration": 2.0},
+            {"id": "slot_4", "day": "اليوم الثاني (مساءً)", "date": "05 يونيو 2027", "start_time": "15:00", "end_time": "17:00", "time": "15:00 - 17:00", "subject": "اللغة العربية", "duration": 2.0}
+        ]
     }
 }
 
@@ -98,8 +137,23 @@ class ExamManagementEngine:
         self.structure = structure_data
 
     def estimate_candidates_count(self) -> int:
-        """تقدير عدد المترشحين بناءً على بنية المؤسسة المعتمدة"""
+        """تقدير عدد المترشحين بناءً على بنية المؤسسة المعتمدة (الثانوي الإعدادي أو التأهيلي)"""
         if self.structure:
+            is_qualifying = getattr(self.structure, "cycle", "") == "qualifying" or bool(getattr(self.structure, "high_school_streams", {}))
+            if is_qualifying:
+                hs_students = getattr(self.structure, "high_school_students", {}) or {}
+                hs_streams = getattr(self.structure, "high_school_streams", {}) or {}
+                all_strs = getattr(self.structure, "all_high_school_streams", []) or []
+                s_bac2 = 0
+                for s in all_strs:
+                    if s.get("level") == "2BAC" or s.get("level_num") == 3:
+                        sid = s.get("id")
+                        c_cnt = int(hs_streams.get(sid, 0))
+                        s_cnt = int(hs_students.get(sid, c_cnt * 35))
+                        s_bac2 += s_cnt
+                if s_bac2 > 0:
+                    return s_bac2
+                return 245
             s3 = getattr(self.structure, "students_3_apic", 0)
             if s3 > 0:
                 return s3

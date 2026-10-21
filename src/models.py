@@ -18,15 +18,17 @@ class InstitutionData:
     academic_year: str = "2026-2027"
     gresa_code: str = "045892P"
     principal_name: str = "ذ. محمد الإدريسي"
+    institution_cycle: str = "middle"  # "middle" (الثانوي الإعدادي) or "qualifying" (الثانوي التأهيلي)
+    cycle: str = "middle"
     
     # Session / Period Timing Settings (Editable in Tab 2)
     morning_start_hour: str = "08:30"
     morning_period_times: List[str] = field(default_factory=lambda: [
         "08:30-09:30", "09:30-10:30", "10:30-11:30", "11:30-12:30"
     ])
-    afternoon_start_hour: str = "14:30"
+    afternoon_start_hour: str = "14:00"
     afternoon_period_times: List[str] = field(default_factory=lambda: [
-        "14:30-15:30", "15:30-16:30", "16:30-17:30", "17:30-18:30"
+        "14:00-15:00", "15:00-16:00", "16:00-17:00", "17:00-18:00"
     ])
     
     general_rooms_count: int = 14
@@ -112,12 +114,37 @@ class EducationalStructure:
     students_2_apic: int = 350
     students_3_apic: int = 350
 
+    cycle: str = "middle"
+    high_school_streams: Dict[str, int] = field(default_factory=lambda: {
+        "tc_sc": 3,
+        "tc_sc_biof": 2,
+        "tc_lsh": 2,
+        "tc_tech": 1,
+        "1bac_exp_biof": 3,
+        "1bac_sm_biof": 1,
+        "1bac_lsh": 2,
+        "1bac_seg": 1,
+        "2bac_pc_biof": 2,
+        "2bac_svt_biof": 2,
+        "2bac_sma_biof": 1,
+        "2bac_l": 1,
+        "2bac_sh": 1
+    })
+    high_school_students: Dict[str, int] = field(default_factory=dict)
+    custom_high_school_streams: List[Dict] = field(default_factory=list)
+
     @property
     def total_classes(self) -> int:
+        if self.cycle == "qualifying":
+            return sum(int(v) for v in self.high_school_streams.values() if int(v) > 0)
         return self.classes_1_apic + self.classes_2_apic + self.classes_3_apic
 
     @property
     def total_students(self) -> int:
+        if self.cycle == "qualifying":
+            if self.high_school_students:
+                return sum(int(v) for v in self.high_school_students.values() if int(v) > 0)
+            return self.total_classes * 35
         return self.students_1_apic + self.students_2_apic + self.students_3_apic
 
 @dataclass

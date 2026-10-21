@@ -404,15 +404,15 @@ def get_68_constraints() -> List[Dict]:
         },
         {
             "id": "tc_a_8", "scope": "activities", "main_cat": "time", "sub_cat": "activities",
-            "name": "العدد الأدنى من الأيام بين مهام معينة (التباعد البيداغوجي)",
-            "name_en": "Min n Days Between a Set of Activities",
+            "name": "العدد الأدنى من الأيام بين نفس الحصص (التباعد البيداغوجي ومنع تكرار المادة في اليوم)",
+            "name_en": "Min n Days Between Same Subject Activities (Pedagogical Spacing & No Same-Day Repeat)",
             "code": "ConstraintMinDaysBetweenActivities",
             "code_individual": "ConstraintMinDaysBetweenActivities",
             "def_weight": 100.0, "is_active": True, "is_primary": True,
             "param_name": "min_days", "param_label": "أدنى تباعد بين الحصص",
             "param_val": 1, "param_min": 1, "param_max": 3, "param_unit": "يوم",
             "target_type": "none", "applies_to": "all", "selected_targets": [],
-            "desc": "ضمان نشر حصص المادة الواحدة على أيام متباعدة في الأسبوع وعدم حشرها في يوم واحد."
+            "desc": "ضمان نشر حصص المادة الواحدة على أيام متباعدة في الأسبوع ومنع تدريس المادة مرتين في نفس اليوم (صباحاً ومساءً)."
         },
         {
             "id": "tc_a_9", "scope": "activities", "main_cat": "time", "sub_cat": "activities",
@@ -780,9 +780,11 @@ def get_68_constraints() -> List[Dict]:
             "code_individual": "ConstraintActivityPreferredRooms",
             "def_weight": 100.0, "is_active": False, "is_primary": False,
             "target_type": "activities", "applies_to": "selected", "selected_targets": [],
-            "desc": "إتاحة خيارات من قاعات معينة لحصة واحدة محددة."
         }
     ]
+    for c in constraints:
+        if "target_overrides" not in c:
+            c["target_overrides"] = {}
     return constraints
 
 if __name__ == "__main__":

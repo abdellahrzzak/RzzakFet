@@ -220,8 +220,79 @@ class FetXmlGenerator:
                 res.append(dict(def_item))
         return res
 
-    def get_subject_durations(self, subject: str, level: int, weekly_hours: int) -> List[int]:
+    def _is_qualifying_cycle(self, is_qualifying_param: bool = False) -> bool:
+        if is_qualifying_param:
+            return True
+        inst_cycle = getattr(self.institution, 'institution_cycle', '') or getattr(self.institution, 'cycle', '')
+        struct_cycle = getattr(self.structure, 'cycle', '')
+        if inst_cycle == 'qualifying' or struct_cycle == 'qualifying' or getattr(self.structure, 'is_qualifying', False):
+            return True
+        if inst_cycle == 'middle' or struct_cycle == 'middle':
+            return False
+        hs = getattr(self.structure, 'high_school_streams', {})
+        return bool(hs) and any(int(v) > 0 for v in hs.values())
+
+    def get_subject_durations(self, subject: str, level: int, weekly_hours: int, is_qualifying: bool = False) -> List[int]:
         subj_clean = (subject or "").strip()
+        is_qualifying = self._is_qualifying_cycle(is_qualifying)
+
+        is_science_lab = any(k in subj_clean for k in ["علوم الحياة", "SVT", "svt", "الفيزياء", "الكيمياء", "PC", "pc"])
+        is_pe = any(k in subj_clean for k in ["التربية البدنية", "EPS", "eps"])
+        is_math = any(k in subj_clean for k in ["الرياضيات", "Math", "math"])
+        is_arabic = any(k in subj_clean for k in ["اللغة العربية", "عربية", "العربية"])
+        is_french = any(k in subj_clean for k in ["الفرنسية", "Français", "Francais", "français"])
+
+        if is_qualifying:
+            # Moroccan High School (الثانوي التأهيلي) Pedagogical Distribution Norms
+            if is_science_lab:
+                if weekly_hours == 1:
+                    return [1]
+                elif weekly_hours == 2:
+                    return [2]
+                elif weekly_hours == 3:
+                    return [2, 1]
+                elif weekly_hours == 4:
+                    return [2, 2]
+                elif weekly_hours == 5:
+                    return [2, 2, 1]
+                elif weekly_hours == 6:
+                    return [2, 2, 2]
+                elif weekly_hours >= 7:
+                    return [2, 2, 2, 1]
+                return [1] * weekly_hours
+            elif is_pe:
+                # Official Moroccan standard for Physical Education: 2 continuous hours in sports fields
+                return [2] if weekly_hours == 2 else ([2, 1] if weekly_hours == 3 else [1] * weekly_hours)
+            elif is_math:
+                if weekly_hours <= 5:
+                    return [1] * weekly_hours
+                elif weekly_hours == 6:
+                    return [2, 2, 1, 1]
+                elif weekly_hours == 7:
+                    return [2, 2, 1, 1, 1]
+                elif weekly_hours >= 8:
+                    return [2, 2, 2, 1, 1]
+                return [1] * weekly_hours
+            elif is_french:
+                if weekly_hours <= 5:
+                    return [1] * weekly_hours
+                elif weekly_hours == 6:
+                    return [2, 2, 1, 1]
+                else:
+                    return [2, 2, 2, 1]
+            elif is_arabic:
+                if weekly_hours <= 5:
+                    return [1] * weekly_hours
+                else:
+                    return [2, 2, 1, 1]
+            elif any(k in subj_clean for k in ["المعلوميات", "INF", "inf"]):
+                return [weekly_hours] if weekly_hours <= 2 else [2, 1]
+            elif any(k in subj_clean for k in ["الترجمة", "TR", "tr"]):
+                return [weekly_hours] if weekly_hours <= 2 else [2, 1]
+            else:
+                return [1] * weekly_hours
+
+        # Middle School (الإعدادي) split modes
         splits_cfg = getattr(self.institution, "subject_split_modes", {}) or {}
         
         matched_key = None
@@ -255,17 +326,19 @@ class FetXmlGenerator:
                         return [val]
 
         # Fallback defaults based on official Moroccan Middle School Pedagogical Norms
-        is_science_lab = any(k in subj_clean for k in ["علوم الحياة", "SVT", "svt", "الفيزياء", "الكيمياء", "PC", "pc"])
-        is_pe = any(k in subj_clean for k in ["التربية البدنية", "EPS", "eps"])
-        is_math = any(k in subj_clean for k in ["الرياضيات", "Math", "math"])
-        is_arabic = any(k in subj_clean for k in ["اللغة العربية", "عربية", "العربية"])
-        is_french = any(k in subj_clean for k in ["الفرنسية", "Français", "Francais", "français"])
-
         if is_science_lab:
             if weekly_hours == 2:
                 return [2]
             elif weekly_hours == 3:
                 return [2, 1]
+            elif weekly_hours == 4:
+                return [2, 2]
+            elif weekly_hours == 5:
+                return [2, 2, 1]
+            elif weekly_hours == 6:
+                return [2, 2, 2]
+            elif weekly_hours >= 7:
+                return [2, 2, 2, 1]
             else:
                 return [1] * weekly_hours
         elif is_pe:
@@ -277,7 +350,54 @@ class FetXmlGenerator:
         else:
             return [1] * weekly_hours
 
-    def generate_xml(self, assignments: List[TeacherAssignment], rooms: List[CustomRoom], active_constraints_override: Optional[List[Dict]] = None) -> str:
+    @staticmethod
+    def can_teacher_satisfy_min_daily_hours(groups_durations: List[List[int]], min_h: int) -> bool:
+        """
+        Determines whether a teacher can mathematically satisfy Minimum_Hours_Daily >= min_h
+        on all working days without creating an unsolvable contradiction (Pigeonhole conflict).
+        
+        Each item in groups_durations is a list of durations for one class/subject group
+        that must be scheduled on distinct days due to MinDaysBetweenActivities >= 1.
+        """
+        if not groups_durations or min_h <= 1:
+            return True
+
+        total_hours = sum(sum(g) for g in groups_durations)
+        if total_hours < min_h:
+            return False
+
+        # Teacher needs at least max(len(g)) days to spread activities for their largest class.
+        # If total_hours < min_h * max_days, the average daily hours is < min_h, mathematically impossible!
+        max_days_needed = max(len(g) for g in groups_durations)
+        if total_hours < min_h * max_days_needed:
+            return False
+
+        total_groups = len(groups_durations)
+        if total_groups == 1:
+            # If the teacher only teaches one group/class, every activity is scheduled alone.
+            # If any activity duration < min_h, that day will strictly have < min_h!
+            return all(dur >= min_h for dur in groups_durations[0])
+
+        # Pigeonhole check:
+        # For any group G, its activities must appear on len(G) distinct days.
+        # All other groups combined can cover at most sum(len(H) for H != G) days.
+        # If len(G) > sum(len(H) for H != G), group G must appear ALONE on at least
+        # alone_days = len(G) - sum(len(H) for H != G) days.
+        # If the number of activities in G of duration >= min_h is less than alone_days,
+        # then at least one alone day is forced to have an activity of duration < min_h.
+        # That alone day cannot reach min_h, making ConstraintTeacherMinHoursDaily mathematically impossible!
+        for i, g in enumerate(groups_durations):
+            n_g = len(g)
+            other_acts_count = sum(len(groups_durations[j]) for j in range(total_groups) if j != i)
+            if n_g > other_acts_count:
+                alone_days = n_g - other_acts_count
+                ge_min_in_g = sum(1 for dur in g if dur >= min_h)
+                if alone_days > ge_min_in_g:
+                    return False
+
+        return True
+
+    def generate_xml(self, assignments: List[TeacherAssignment], rooms: List[CustomRoom], active_constraints_override: Optional[List[Dict]] = None, enable_3apic_grouping: bool = False) -> str:
         lines = []
         lines.append('<?xml version="1.0" encoding="UTF-8"?>')
         lines.append('')
@@ -320,38 +440,93 @@ class FetXmlGenerator:
         # Students Year & Classes
         lines.append('<Students_List>')
         
-        # Year 1
-        lines.append('<Year>')
-        lines.append('	<Name>الأولى إعدادي</Name>')
-        lines.append(f'	<Number_of_Students>{self.structure.classes_1_apic * 38}</Number_of_Students>')
-        for i in range(1, self.structure.classes_1_apic + 1):
-            lines.append('	<Group>')
-            lines.append(f'		<Name>1APIC{i}</Name>')
-            lines.append('		<Number_of_Students>38</Number_of_Students>')
-            lines.append('	</Group>')
-        lines.append('</Year>')
+        is_qualifying = self._is_qualifying_cycle()
 
-        # Year 2
-        lines.append('<Year>')
-        lines.append('	<Name>الثانية إعدادي</Name>')
-        lines.append(f'	<Number_of_Students>{self.structure.classes_2_apic * 38}</Number_of_Students>')
-        for i in range(1, self.structure.classes_2_apic + 1):
-            lines.append('	<Group>')
-            lines.append(f'		<Name>2APIC{i}</Name>')
-            lines.append('		<Number_of_Students>38</Number_of_Students>')
-            lines.append('	</Group>')
-        lines.append('</Year>')
+        if is_qualifying:
+            hs_streams = getattr(self.structure, 'high_school_streams', {})
+            try:
+                from .high_school_curriculum import high_school_engine
+            except (ImportError, ValueError):
+                from high_school_curriculum import high_school_engine
+            all_hs_classes = high_school_engine.generate_classes_list(hs_streams)
+            tc_classes = [c for c in all_hs_classes if c["level"] == 1]
+            bac1_classes = [c for c in all_hs_classes if c["level"] == 2]
+            bac2_classes = [c for c in all_hs_classes if c["level"] == 3]
 
-        # Year 3
-        lines.append('<Year>')
-        lines.append('	<Name>الثالثة إعدادي</Name>')
-        lines.append(f'	<Number_of_Students>{self.structure.classes_3_apic * 38}</Number_of_Students>')
-        for i in range(1, self.structure.classes_3_apic + 1):
-            lines.append('	<Group>')
-            lines.append(f'		<Name>3APIC{i}</Name>')
-            lines.append('		<Number_of_Students>38</Number_of_Students>')
-            lines.append('	</Group>')
-        lines.append('</Year>')
+            levels_meta = [
+                ("الجذوع المشتركة", tc_classes),
+                ("الأولى باكالوريا", bac1_classes),
+                ("الثانية باكالوريا", bac2_classes),
+            ]
+            for lvl_name, lvl_cls in levels_meta:
+                if not lvl_cls:
+                    continue
+                tot_stu = len(lvl_cls) * 35
+                lines.append('<Year>')
+                lines.append(f'	<Name>{lvl_name}</Name>')
+                lines.append(f'	<Number_of_Students>{tot_stu}</Number_of_Students>')
+                for c in lvl_cls:
+                    lines.append('	<Group>')
+                    lines.append(f'		<Name>{c["code"]}</Name>')
+                    lines.append('		<Number_of_Students>35</Number_of_Students>')
+                    lines.append('	</Group>')
+                lines.append('</Year>')
+            valid_classes_set = set(c["code"] for c in all_hs_classes)
+            all_students_set = valid_classes_set | {"الجذوع المشتركة", "الأولى باكالوريا", "الثانية باكالوريا", "TC", "1BAC", "2BAC"}
+        else:
+            # Year 1
+            lines.append('<Year>')
+            lines.append('	<Name>الأولى إعدادي</Name>')
+            lines.append(f'	<Number_of_Students>{self.structure.classes_1_apic * 38}</Number_of_Students>')
+            for i in range(1, self.structure.classes_1_apic + 1):
+                lines.append('	<Group>')
+                lines.append(f'		<Name>1APIC{i}</Name>')
+                lines.append('		<Number_of_Students>38</Number_of_Students>')
+                lines.append('	</Group>')
+            lines.append('</Year>')
+
+            # Year 2
+            lines.append('<Year>')
+            lines.append('	<Name>الثانية إعدادي</Name>')
+            lines.append(f'	<Number_of_Students>{self.structure.classes_2_apic * 38}</Number_of_Students>')
+            for i in range(1, self.structure.classes_2_apic + 1):
+                lines.append('	<Group>')
+                lines.append(f'		<Name>2APIC{i}</Name>')
+                lines.append('		<Number_of_Students>38</Number_of_Students>')
+                lines.append('	</Group>')
+            lines.append('</Year>')
+
+            # Year 3
+            lines.append('<Year>')
+            lines.append('	<Name>الثالثة إعدادي</Name>')
+            lines.append(f'	<Number_of_Students>{self.structure.classes_3_apic * 38}</Number_of_Students>')
+            for i in range(1, self.structure.classes_3_apic + 1):
+                lines.append('	<Group>')
+                lines.append(f'		<Name>3APIC{i}</Name>')
+                lines.append('		<Number_of_Students>38</Number_of_Students>')
+                if enable_3apic_grouping:
+                    lines.append('		<Subgroup>')
+                    lines.append(f'			<Name>3APIC{i}-G1</Name>')
+                    lines.append('			<Number_of_Students>19</Number_of_Students>')
+                    lines.append('		</Subgroup>')
+                    lines.append('		<Subgroup>')
+                    lines.append(f'			<Name>3APIC{i}-G2</Name>')
+                    lines.append('			<Number_of_Students>19</Number_of_Students>')
+                    lines.append('		</Subgroup>')
+                lines.append('	</Group>')
+            lines.append('</Year>')
+
+            valid_classes_set = set()
+            for i in range(1, self.structure.classes_1_apic + 1): valid_classes_set.add(f"1APIC{i}")
+            for i in range(1, self.structure.classes_2_apic + 1): valid_classes_set.add(f"2APIC{i}")
+            for i in range(1, self.structure.classes_3_apic + 1):
+                valid_classes_set.add(f"3APIC{i}")
+                if enable_3apic_grouping:
+                    valid_classes_set.add(f"3APIC{i}-G1")
+                    valid_classes_set.add(f"3APIC{i}-G2")
+                    valid_classes_set.add(f"3APIC{i}-F1")
+                    valid_classes_set.add(f"3APIC{i}-F2")
+            all_students_set = valid_classes_set | {"الأولى إعدادي", "الثانية إعدادي", "الثالثة إعدادي"}
 
         lines.append('</Students_List>')
         lines.append('')
@@ -359,12 +534,6 @@ class FetXmlGenerator:
         # Teachers
         all_teachers = sorted(list(set([a.teacher_name for a in assignments if a.teacher_name])))
         all_teachers_set = set(all_teachers)
-        
-        valid_classes_set = set()
-        for i in range(1, self.structure.classes_1_apic + 1): valid_classes_set.add(f"1APIC{i}")
-        for i in range(1, self.structure.classes_2_apic + 1): valid_classes_set.add(f"2APIC{i}")
-        for i in range(1, self.structure.classes_3_apic + 1): valid_classes_set.add(f"3APIC{i}")
-        all_students_set = valid_classes_set | {"الأولى إعدادي", "الثانية إعدادي", "الثالثة إعدادي"}
         
         valid_room_names = set([r.room_name for r in rooms])
         valid_subjects = set([a.subject for a in assignments if a.subject])
@@ -392,6 +561,9 @@ class FetXmlGenerator:
             c_clean = str(c_raw).strip()
             if c_clean in all_students_set:
                 return c_clean
+            c_f = c_clean.replace("-BIOF-", "-F-")
+            if c_f in all_students_set:
+                return c_f
             m = re.match(r'^([123])\s*/\s*([0-9]+)$', c_clean)
             if m:
                 cand = f"{m.group(1)}APIC{m.group(2)}"
@@ -435,11 +607,36 @@ class FetXmlGenerator:
         forbid_first_pm_activities = []
         actual_teacher_hours = {}
         class_all_activities = {}
+        class_total_hours = {}
         teacher_all_activities = {}
         class_subject_activities = {}
+        teacher_activity_groups = {}
 
         subj_cfg_list_early = self.get_subject_activity_constraints()
         subj_cfg_map_early = {item["subject"]: item for item in subj_cfg_list_early}
+
+        grouping_same_start_constraints = []
+        grouping_consecutive_constraints = []
+        c3_pc_teacher = {}
+        c3_svt_teacher = {}
+
+        if enable_3apic_grouping:
+            for a in assignments:
+                s_c = (a.subject or "").strip()
+                is_pc_cand = any(k in s_c for k in ["الفيزياء", "الكيمياء", "PC", "pc"])
+                is_svt_cand = any(k in s_c for k in ["علوم الحياة", "SVT", "svt"])
+                if not (is_pc_cand or is_svt_cand):
+                    continue
+                raw_c = re.split(r'[,،\s]+', (a.assigned_classes_str or "").strip())
+                for rc in raw_c:
+                    rc_clean = resolve_class(rc)
+                    if rc_clean and ("3APIC" in rc_clean or "3_" in rc_clean):
+                        m_cls = re.search(r'3APIC\d+', rc_clean)
+                        cls_key = m_cls.group(0) if m_cls else rc_clean
+                        if is_pc_cand and cls_key not in c3_pc_teacher:
+                            c3_pc_teacher[cls_key] = (a.teacher_name, a.subject)
+                        elif is_svt_cand and cls_key not in c3_svt_teacher:
+                            c3_svt_teacher[cls_key] = (a.teacher_name, a.subject)
 
         # Lookup table for exact ministerial subject weekly hours per level
         level_hours_map = {
@@ -458,6 +655,30 @@ class FetXmlGenerator:
             "التربية التشكيلية / أو الموسيقية": {1: 0, 2: 0, 3: 0},
         }
 
+        hs_class_subj_hours_map = {}
+        if is_qualifying:
+            hs_streams = getattr(self.structure, 'high_school_streams', {})
+            try:
+                from .high_school_curriculum import high_school_engine
+            except (ImportError, ValueError):
+                from high_school_curriculum import high_school_engine
+            all_hs_cls = high_school_engine.generate_classes_list(hs_streams)
+            for c in all_hs_cls:
+                for scode, sinfo in c["subjects"].items():
+                    sname = sinfo["name"].strip()
+                    sh = sinfo["hours"]
+                    hs_class_subj_hours_map[(c["code"], sname)] = sh
+                    if "بدنية" in sname:
+                        hs_class_subj_hours_map[(c["code"], "التربية البدنية")] = sh
+                        hs_class_subj_hours_map[(c["code"], "التربية البدنية والرياضة")] = sh
+                    if "فيزياء" in sname:
+                        hs_class_subj_hours_map[(c["code"], "الفيزياء والكيمياء")] = sh
+                        hs_class_subj_hours_map[(c["code"], "الكيمياء و الفيزياء")] = sh
+                    if "حياة" in sname:
+                        hs_class_subj_hours_map[(c["code"], "علوم الحياة والأرض")] = sh
+                        hs_class_subj_hours_map[(c["code"], "علوم الحياة  والأرض")] = sh
+                        hs_class_subj_hours_map[(c["code"], "علوم الحياة و الأرض")] = sh
+
         for a in assignments:
             if not a.assigned_classes_str or a.assigned_classes_str.strip() in ["-", ""]:
                 continue
@@ -467,50 +688,60 @@ class FetXmlGenerator:
             
             for cls in classes_assigned:
                 lvl = 1
-                if "2_" in cls or "2APIC" in cls or "2 APIC" in cls:
+                if "2_" in cls or "2APIC" in cls or "2 APIC" in cls or "1BAC" in cls or "1bac" in cls:
                     lvl = 2
-                elif "3_" in cls or "3APIC" in cls or "3 APIC" in cls:
+                elif "3_" in cls or "3APIC" in cls or "3 APIC" in cls or "2BAC" in cls or "2bac" in cls:
                     lvl = 3
+                elif "TC" in cls or "tc" in cls:
+                    lvl = 1
 
                 subj_clean = (a.subject or "").strip()
+                is_pc_subj = any(k in subj_clean for k in ["الفيزياء", "الكيمياء", "PC", "pc"])
+                is_svt_subj = any(k in subj_clean for k in ["علوم الحياة", "SVT", "svt"])
+                if enable_3apic_grouping and lvl == 3 and (is_pc_subj or is_svt_subj):
+                    continue  # handled in dedicated 3APIC grouping routine below
+                
                 weekly_h = 2
-                if subj_clean in level_hours_map:
+                if is_qualifying and (cls, subj_clean) in hs_class_subj_hours_map:
+                    weekly_h = hs_class_subj_hours_map[(cls, subj_clean)]
+                elif subj_clean in level_hours_map:
                     weekly_h = level_hours_map[subj_clean].get(lvl, 2)
                 elif a.total_classes > 0:
                     weekly_h = max(1, round(a.total_hours / a.total_classes))
 
-                # Check if subject_split_modes overrides the weekly hours for this subject & level
-                splits_cfg = getattr(self.institution, 'subject_split_modes', {}) or {}
-                s_cfg = None
-                for sk, sv in splits_cfg.items():
-                    if sk == subj_clean or (sk in subj_clean) or (subj_clean in sk):
-                        s_cfg = sv
-                        break
-                if s_cfg:
-                    mode_for_lvl = None
-                    if lvl == 3 and "mode_l3" in s_cfg:
-                        mode_for_lvl = s_cfg.get("mode_l3")
-                    elif lvl == 2 and "mode_l2" in s_cfg:
-                        mode_for_lvl = s_cfg.get("mode_l2")
-                    elif lvl == 1 and "mode_l1" in s_cfg:
-                        mode_for_lvl = s_cfg.get("mode_l1")
-                    elif "mode" in s_cfg:
-                        mode_for_lvl = s_cfg.get("mode")
-                    
-                    if mode_for_lvl:
-                        m_str = str(mode_for_lvl).strip()
-                        if "+" in m_str:
-                            p_parts = [int(p.strip()) for p in m_str.split("+") if p.strip().isdigit()]
-                            if p_parts:
-                                weekly_h = sum(p_parts)
-                        elif m_str.isdigit():
-                            weekly_h = int(m_str)
+                # Check if subject_split_modes overrides the weekly hours for this subject & level (Middle School only)
+                if not is_qualifying:
+                    splits_cfg = getattr(self.institution, 'subject_split_modes', {}) or {}
+                    s_cfg = None
+                    for sk, sv in splits_cfg.items():
+                        if sk == subj_clean or (sk in subj_clean) or (subj_clean in sk):
+                            s_cfg = sv
+                            break
+                    if s_cfg:
+                        mode_for_lvl = None
+                        if lvl == 3 and "mode_l3" in s_cfg:
+                            mode_for_lvl = s_cfg.get("mode_l3")
+                        elif lvl == 2 and "mode_l2" in s_cfg:
+                            mode_for_lvl = s_cfg.get("mode_l2")
+                        elif lvl == 1 and "mode_l1" in s_cfg:
+                            mode_for_lvl = s_cfg.get("mode_l1")
+                        elif "mode" in s_cfg:
+                            mode_for_lvl = s_cfg.get("mode")
+                        
+                        if mode_for_lvl:
+                            m_str = str(mode_for_lvl).strip()
+                            if "+" in m_str:
+                                p_parts = [int(p.strip()) for p in m_str.split("+") if p.strip().isdigit()]
+                                if p_parts:
+                                    weekly_h = sum(p_parts)
+                            elif m_str.isdigit():
+                                weekly_h = int(m_str)
 
                 if weekly_h <= 0:
                     continue
 
                 act_group = []
-                durations = self.get_subject_durations(a.subject, lvl, weekly_h)
+                durations = self.get_subject_durations(a.subject, lvl, weekly_h, is_qualifying=is_qualifying)
 
                 # Check if subject has forbid_first_pm_slot enabled
                 cfg_pe = None
@@ -554,6 +785,7 @@ class FetXmlGenerator:
                     if cls not in class_all_activities:
                         class_all_activities[cls] = []
                     class_all_activities[cls].append(act_id)
+                    class_total_hours[cls] = class_total_hours.get(cls, 0) + dur
 
                     if a.teacher_name not in teacher_all_activities:
                         teacher_all_activities[a.teacher_name] = []
@@ -566,9 +798,130 @@ class FetXmlGenerator:
 
                     act_id += 1
 
+                if a.teacher_name and durations:
+                    if a.teacher_name not in teacher_activity_groups:
+                        teacher_activity_groups[a.teacher_name] = []
+                    teacher_activity_groups[a.teacher_name].append(list(durations))
+
                 if len(act_group) > 1:
                     min_days_constraints.append({"subject": a.subject, "act_ids": act_group})
                 group_id += 1
+
+        # Dedicated 3APIC Grouping Activities Generation
+        if enable_3apic_grouping:
+            for i in range(1, self.structure.classes_3_apic + 1):
+                cls_name = f"3APIC{i}"
+                pc_info = c3_pc_teacher.get(cls_name)
+                svt_info = c3_svt_teacher.get(cls_name)
+
+                # Fallback to any assigned PC / SVT teacher if not explicitly mapped
+                if not pc_info:
+                    all_pc = [a for a in assignments if any(k in (a.subject or "") for k in ["الفيزياء", "الكيمياء", "PC", "pc"])]
+                    avail_pc = [a for a in all_pc if actual_teacher_hours.get(a.teacher_name, 0) + 4 <= 24]
+                    if avail_pc:
+                        t_cand = min(avail_pc, key=lambda a: actual_teacher_hours.get(a.teacher_name, 0))
+                        pc_info = (t_cand.teacher_name, t_cand.subject)
+                    elif all_pc:
+                        t_cand = all_pc[(i - 1) % len(all_pc)]
+                        pc_info = (t_cand.teacher_name, t_cand.subject)
+                if not svt_info:
+                    all_svt = [a for a in assignments if any(k in (a.subject or "") for k in ["علوم الحياة", "SVT", "svt"])]
+                    avail_svt = [a for a in all_svt if actual_teacher_hours.get(a.teacher_name, 0) + 4 <= 24]
+                    if avail_svt:
+                        t_cand = min(avail_svt, key=lambda a: actual_teacher_hours.get(a.teacher_name, 0))
+                        svt_info = (t_cand.teacher_name, t_cand.subject)
+                    elif all_svt:
+                        t_cand = all_svt[(i - 1) % len(all_svt)]
+                        svt_info = (t_cand.teacher_name, t_cand.subject)
+
+                if pc_info and svt_info:
+                    t_pc, s_pc = pc_info
+                    t_svt, s_svt = svt_info
+
+                    # 1. Act 1: PC for G1 (2h - TP block in PC lab)
+                    aid_pc_g1 = act_id
+                    lines.append('<Activity>')
+                    lines.append(f'	<Teacher>{t_pc}</Teacher>')
+                    lines.append(f'	<Subject>{s_pc}</Subject>')
+                    lines.append(f'	<Students>{cls_name}-G1</Students>')
+                    lines.append('	<Duration>2</Duration>')
+                    lines.append('	<Total_Duration>4</Total_Duration>')
+                    lines.append(f'	<Id>{aid_pc_g1}</Id>')
+                    lines.append('	<Activity_Group_Id>0</Activity_Group_Id>')
+                    lines.append('	<Active>true</Active>')
+                    lines.append(f'	<Comments>{cls_name} - فيزياء فوج 1 (ساعتان بمختبر الفيزياء)</Comments>')
+                    lines.append('</Activity>')
+
+                    # 2. Act 2: SVT for G2 (2h - TP block in SVT lab, synchronized with Act 1)
+                    aid_svt_g2 = act_id + 1
+                    lines.append('<Activity>')
+                    lines.append(f'	<Teacher>{t_svt}</Teacher>')
+                    lines.append(f'	<Subject>{s_svt}</Subject>')
+                    lines.append(f'	<Students>{cls_name}-G2</Students>')
+                    lines.append('	<Duration>2</Duration>')
+                    lines.append('	<Total_Duration>4</Total_Duration>')
+                    lines.append(f'	<Id>{aid_svt_g2}</Id>')
+                    lines.append('	<Activity_Group_Id>0</Activity_Group_Id>')
+                    lines.append('	<Active>true</Active>')
+                    lines.append(f'	<Comments>{cls_name} - علوم فوج 2 (ساعتان بمختبر العلوم)</Comments>')
+                    lines.append('</Activity>')
+
+                    # 3. Act 3: PC for G2 (2h - TP block in PC lab, on another day)
+                    aid_pc_g2 = act_id + 2
+                    lines.append('<Activity>')
+                    lines.append(f'	<Teacher>{t_pc}</Teacher>')
+                    lines.append(f'	<Subject>{s_pc}</Subject>')
+                    lines.append(f'	<Students>{cls_name}-G2</Students>')
+                    lines.append('	<Duration>2</Duration>')
+                    lines.append('	<Total_Duration>4</Total_Duration>')
+                    lines.append(f'	<Id>{aid_pc_g2}</Id>')
+                    lines.append('	<Activity_Group_Id>0</Activity_Group_Id>')
+                    lines.append('	<Active>true</Active>')
+                    lines.append(f'	<Comments>{cls_name} - فيزياء فوج 2 (ساعتان بمختبر الفيزياء)</Comments>')
+                    lines.append('</Activity>')
+
+                    # 4. Act 4: SVT for G1 (2h - TP block in SVT lab, synchronized with Act 3)
+                    aid_svt_g1 = act_id + 3
+                    lines.append('<Activity>')
+                    lines.append(f'	<Teacher>{t_svt}</Teacher>')
+                    lines.append(f'	<Subject>{s_svt}</Subject>')
+                    lines.append(f'	<Students>{cls_name}-G1</Students>')
+                    lines.append('	<Duration>2</Duration>')
+                    lines.append('	<Total_Duration>4</Total_Duration>')
+                    lines.append(f'	<Id>{aid_svt_g1}</Id>')
+                    lines.append('	<Activity_Group_Id>0</Activity_Group_Id>')
+                    lines.append('	<Active>true</Active>')
+                    lines.append(f'	<Comments>{cls_name} - علوم فوج 1 (ساعتان بمختبر العلوم)</Comments>')
+                    lines.append('</Activity>')
+
+                    # Record synchronized pair constraints (Duration 2 each)
+                    grouping_same_start_constraints.append({
+                        "act1": aid_pc_g1, "act2": aid_svt_g2,
+                        "comment": f"{cls_name} - تزامن تفويج G1 فيزياء مع G2 علوم (ساعتان)"
+                    })
+                    grouping_same_start_constraints.append({
+                        "act1": aid_pc_g2, "act2": aid_svt_g1,
+                        "comment": f"{cls_name} - تزامن تفويج G2 فيزياء مع G1 علوم (ساعتان)"
+                    })
+
+                    # Spacing constraints: G1 and G2 for same subject on different days
+                    min_days_constraints.append({"subject": s_pc, "act_ids": [aid_pc_g1, aid_pc_g2]})
+                    min_days_constraints.append({"subject": s_svt, "act_ids": [aid_svt_g1, aid_svt_g2]})
+
+                    actual_teacher_hours[t_pc] = actual_teacher_hours.get(t_pc, 0) + 4
+                    actual_teacher_hours[t_svt] = actual_teacher_hours.get(t_svt, 0) + 4
+
+                    teacher_all_activities.setdefault(t_pc, []).extend([aid_pc_g1, aid_pc_g2])
+                    teacher_all_activities.setdefault(t_svt, []).extend([aid_svt_g1, aid_svt_g2])
+                    teacher_activity_groups.setdefault(t_pc, []).append([2, 2])
+                    teacher_activity_groups.setdefault(t_svt, []).append([2, 2])
+
+                    class_all_activities.setdefault(f"{cls_name}-G1", []).extend([aid_pc_g1, aid_svt_g1])
+                    class_all_activities.setdefault(f"{cls_name}-G2", []).extend([aid_pc_g2, aid_svt_g2])
+                    class_total_hours[f"{cls_name}-G1"] = class_total_hours.get(f"{cls_name}-G1", 0) + 2
+                    class_total_hours[f"{cls_name}-G2"] = class_total_hours.get(f"{cls_name}-G2", 0) + 2
+
+                    act_id += 4
 
         lines.append('</Activities_List>')
         lines.append('')
@@ -614,27 +967,57 @@ class FetXmlGenerator:
         lines.append('	<Comments></Comments>')
         lines.append('</ConstraintBasicCompulsoryTime>')
 
+        # 3APIC Grouping Cross-Synchronized Same-Starting-Time Constraints
+        for c_sync in grouping_same_start_constraints:
+            lines.append('<ConstraintActivitiesSameStartingTime>')
+            lines.append('	<Weight_Percentage>100</Weight_Percentage>')
+            lines.append('	<Number_of_Activities>2</Number_of_Activities>')
+            lines.append(f'	<Activity_Id>{c_sync["act1"]}</Activity_Id>')
+            lines.append(f'	<Activity_Id>{c_sync["act2"]}</Activity_Id>')
+            lines.append('	<Active>true</Active>')
+            lines.append(f'	<Comments>{c_sync.get("comment", "")}</Comments>')
+            lines.append('</ConstraintActivitiesSameStartingTime>')
+
+        # 3APIC Grouping Consecutive Practical Hours
+        for c_cons in grouping_consecutive_constraints:
+            lines.append('<ConstraintTwoActivitiesConsecutive>')
+            lines.append('	<Weight_Percentage>100</Weight_Percentage>')
+            lines.append(f'	<First_Activity_Id>{c_cons["first"]}</First_Activity_Id>')
+            lines.append(f'	<Second_Activity_Id>{c_cons["second"]}</Second_Activity_Id>')
+            lines.append('	<Active>true</Active>')
+            lines.append(f'	<Comments>{c_cons.get("comment", "")}</Comments>')
+            lines.append('</ConstraintTwoActivitiesConsecutive>')
+
         # Teacher Max Daily Hours (In 12 half-day FET structure, each half-day has max 4 slots)
-        if "ConstraintTeachersMaxHoursDaily" in c_map:
-            c = c_map["ConstraintTeachersMaxHoursDaily"]
+        if "ConstraintTeachersMaxHoursDaily" in c_map or "tc_t_8" in c_map:
+            c = c_map.get("ConstraintTeachersMaxHoursDaily") or c_map.get("tc_t_8")
             val = c.get("param_val", 6)
-            fet_val = min(4, val) if val <= 4 else 4
             w = int(c.get("def_weight", 100))
-            if c.get("applies_to") == "selected" and c.get("selected_targets"):
-                for t_raw in c["selected_targets"]:
-                    t_name = resolve_teacher(t_raw)
-                    if not t_name:
-                        continue
+            overrides = c.get("target_overrides", {})
+            applies_to = c.get("applies_to", "all")
+            selected_targets = c.get("selected_targets", [])
+
+            if applies_to == "selected" and selected_targets:
+                teachers_to_cap = [resolve_teacher(t) for t in selected_targets if resolve_teacher(t)]
+            elif overrides:
+                teachers_to_cap = sorted(all_teachers_set)
+            else:
+                teachers_to_cap = []
+
+            if teachers_to_cap:
+                for t_name in teachers_to_cap:
+                    t_val = int(overrides.get(t_name, val))
+                    fet_val = min(4, t_val) if t_val <= 4 else 4
                     lines.append('<ConstraintTeacherMaxHoursDaily>')
                     lines.append(f'	<Weight_Percentage>{w}</Weight_Percentage>')
                     lines.append(f'	<Teacher_Name>{t_name}</Teacher_Name>')
                     lines.append(f'	<Maximum_Hours_Daily>{fet_val}</Maximum_Hours_Daily>')
                     lines.append('	<Active>true</Active>')
-                    lines.append('	<Comments></Comments>')
+                    lines.append(f'	<Comments>{t_name} - أقصى {t_val} ساعات يومياً</Comments>')
                     lines.append('</ConstraintTeacherMaxHoursDaily>')
-                    if t_name in teacher_all_activities and val < 8:
+                    if t_name in teacher_all_activities and t_val < 8:
                         t_acts = teacher_all_activities[t_name]
-                        for rd in ["الاثنين", "الثلاثاء", "الخميس", "الجمعة"]:
+                        for rd in ["الاثنين", "الثلاثاء", "الاربعاء", "الخميس", "الجمعة", "السبت"]:
                             lines.append('<ConstraintActivitiesOccupyMaxTimeSlotsFromSelection>')
                             lines.append(f'	<Weight_Percentage>{w}</Weight_Percentage>')
                             lines.append(f'	<Number_of_Activities>{len(t_acts)}</Number_of_Activities>')
@@ -643,18 +1026,19 @@ class FetXmlGenerator:
                             lines.append('	<Number_of_Selected_Time_Slots>8</Number_of_Selected_Time_Slots>')
                             for h in ["ح 1", "ح 2", "ح 3", "ح 4"]:
                                 lines.append('	<Selected_Time_Slot>')
-                                lines.append(f'		<Selected_Day>{rd} ص</Selected_Day>')
-                                lines.append(f'		<Selected_Hour>{h}</Selected_Hour>')
+                                lines.append(f'		<Day>{rd} ص</Day>')
+                                lines.append(f'		<Hour>{h}</Hour>')
                                 lines.append('	</Selected_Time_Slot>')
                                 lines.append('	<Selected_Time_Slot>')
-                                lines.append(f'		<Selected_Day>{rd} م</Selected_Day>')
-                                lines.append(f'		<Selected_Hour>{h}</Selected_Hour>')
+                                lines.append(f'		<Day>{rd} م</Day>')
+                                lines.append(f'		<Hour>{h}</Hour>')
                                 lines.append('	</Selected_Time_Slot>')
-                            lines.append(f'	<Max_Number_of_Occupied_Time_Slots>{val}</Max_Number_of_Occupied_Time_Slots>')
+                            lines.append(f'	<Max_Number_of_Occupied_Time_Slots>{t_val}</Max_Number_of_Occupied_Time_Slots>')
                             lines.append('	<Active>true</Active>')
-                            lines.append(f'	<Comments>{t_name} - أقصى {val} ساعات تدريس يوم {rd}</Comments>')
+                            lines.append(f'	<Comments>{t_name} - أقصى {t_val} ساعات تدريس يوم {rd}</Comments>')
                             lines.append('</ConstraintActivitiesOccupyMaxTimeSlotsFromSelection>')
             else:
+                fet_val = min(4, val) if val <= 4 else 4
                 lines.append('<ConstraintTeachersMaxHoursDaily>')
                 lines.append(f'	<Weight_Percentage>{w}</Weight_Percentage>')
                 lines.append(f'	<Maximum_Hours_Daily>{fet_val}</Maximum_Hours_Daily>')
@@ -665,7 +1049,7 @@ class FetXmlGenerator:
                     for t_name, t_acts in teacher_all_activities.items():
                         if t_name not in all_teachers_set:
                             continue
-                        for rd in ["الاثنين", "الثلاثاء", "الخميس", "الجمعة"]:
+                        for rd in ["الاثنين", "الثلاثاء", "الاربعاء", "الخميس", "الجمعة", "السبت"]:
                             lines.append('<ConstraintActivitiesOccupyMaxTimeSlotsFromSelection>')
                             lines.append(f'	<Weight_Percentage>{w}</Weight_Percentage>')
                             lines.append(f'	<Number_of_Activities>{len(t_acts)}</Number_of_Activities>')
@@ -674,12 +1058,12 @@ class FetXmlGenerator:
                             lines.append('	<Number_of_Selected_Time_Slots>8</Number_of_Selected_Time_Slots>')
                             for h in ["ح 1", "ح 2", "ح 3", "ح 4"]:
                                 lines.append('	<Selected_Time_Slot>')
-                                lines.append(f'		<Selected_Day>{rd} ص</Selected_Day>')
-                                lines.append(f'		<Selected_Hour>{h}</Selected_Hour>')
+                                lines.append(f'		<Day>{rd} ص</Day>')
+                                lines.append(f'		<Hour>{h}</Hour>')
                                 lines.append('	</Selected_Time_Slot>')
                                 lines.append('	<Selected_Time_Slot>')
-                                lines.append(f'		<Selected_Day>{rd} م</Selected_Day>')
-                                lines.append(f'		<Selected_Hour>{h}</Selected_Hour>')
+                                lines.append(f'		<Day>{rd} م</Day>')
+                                lines.append(f'		<Hour>{h}</Hour>')
                                 lines.append('	</Selected_Time_Slot>')
                             lines.append(f'	<Max_Number_of_Occupied_Time_Slots>{val}</Max_Number_of_Occupied_Time_Slots>')
                             lines.append('	<Active>true</Active>')
@@ -687,46 +1071,64 @@ class FetXmlGenerator:
                             lines.append('</ConstraintActivitiesOccupyMaxTimeSlotsFromSelection>')
 
         # Teacher Min Daily Hours
-        if "ConstraintTeachersMinHoursDaily" in c_map:
-            c = c_map["ConstraintTeachersMinHoursDaily"]
-            min_h = c.get("param_val", 2)
+        if "ConstraintTeachersMinHoursDaily" in c_map or "tc_t_10" in c_map:
+            c = c_map.get("ConstraintTeachersMinHoursDaily") or c_map.get("tc_t_10")
+            min_h = int(c.get("param_val", 2) or 2)
             w = int(c.get("def_weight", 100))
-            if c.get("applies_to") == "selected" and c.get("selected_targets"):
-                for t_raw in c["selected_targets"]:
-                    t_name = resolve_teacher(t_raw)
-                    if not t_name:
-                        continue
-                    lines.append('<ConstraintTeacherMinHoursDaily>')
-                    lines.append(f'	<Weight_Percentage>{w}</Weight_Percentage>')
-                    lines.append(f'	<Teacher>{t_name}</Teacher>')
-                    lines.append(f'	<Minimum_Hours_Daily>{min_h}</Minimum_Hours_Daily>')
-                    lines.append('	<Allow_Empty_Days>true</Allow_Empty_Days>')
-                    lines.append('	<Active>true</Active>')
-                    lines.append('	<Comments></Comments>')
-                    lines.append('</ConstraintTeacherMinHoursDaily>')
+            overrides = c.get("target_overrides", {})
+            applies_to = c.get("applies_to", "all")
+            selected_targets = c.get("selected_targets", [])
+
+            if applies_to == "selected" and selected_targets:
+                teachers_list = [resolve_teacher(t) for t in selected_targets if resolve_teacher(t)]
             else:
-                lines.append('<ConstraintTeachersMinHoursDaily>')
+                teachers_list = sorted(teacher_activity_groups.keys())
+
+            for t_name in teachers_list:
+                t_groups = teacher_activity_groups.get(t_name, [])
+                t_min_h = int(overrides.get(t_name, min_h))
+                t_total = sum(sum(g) for g in t_groups)
+                min_weekly_threshold = 12 if t_min_h >= 2 else t_min_h
+                if t_total < min_weekly_threshold:
+                    continue
+                if not self.can_teacher_satisfy_min_daily_hours(t_groups, t_min_h):
+                    continue
+                lines.append('<ConstraintTeacherMinHoursDaily>')
                 lines.append(f'	<Weight_Percentage>{w}</Weight_Percentage>')
-                lines.append(f'	<Minimum_Hours_Daily>{min_h}</Minimum_Hours_Daily>')
+                lines.append(f'	<Teacher_Name>{t_name}</Teacher_Name>')
+                lines.append(f'	<Minimum_Hours_Daily>{t_min_h}</Minimum_Hours_Daily>')
                 lines.append('	<Allow_Empty_Days>true</Allow_Empty_Days>')
                 lines.append('	<Active>true</Active>')
-                lines.append('	<Comments></Comments>')
-                lines.append('</ConstraintTeachersMinHoursDaily>')
+                lines.append(f'	<Comments>{t_name} - نصاب كافٍ وموزع للحصة اليومية الدنيا ({t_min_h} س)</Comments>')
+                lines.append('</ConstraintTeacherMinHoursDaily>')
 
         # Teacher Max Gaps Daily
-        if "ConstraintTeachersMaxGapsPerDay" in c_map:
-            c = c_map["ConstraintTeachersMaxGapsPerDay"]
+        if "ConstraintTeachersMaxGapsPerDay" in c_map or "tc_t_6" in c_map or "tc_t_5" in c_map:
+            c = c_map.get("ConstraintTeachersMaxGapsPerDay") or c_map.get("tc_t_6") or c_map.get("tc_t_5")
             gaps = c.get("param_val", 0)
             w = int(c.get("def_weight", 100))
-            if c.get("applies_to") == "selected" and c.get("selected_targets"):
-                for t_raw in c["selected_targets"]:
-                    t_name = resolve_teacher(t_raw)
-                    if not t_name:
-                        continue
+            overrides = c.get("target_overrides", {})
+            applies_to = c.get("applies_to", "all")
+            selected_targets = c.get("selected_targets", [])
+
+            if applies_to == "selected" and selected_targets:
+                teachers_list = [resolve_teacher(t) for t in selected_targets if resolve_teacher(t)]
+                for t_name in teachers_list:
+                    t_gaps = int(overrides.get(t_name, gaps))
                     lines.append('<ConstraintTeacherMaxGapsPerDay>')
                     lines.append(f'	<Weight_Percentage>{w}</Weight_Percentage>')
                     lines.append(f'	<Teacher_Name>{t_name}</Teacher_Name>')
-                    lines.append(f'	<Max_Gaps>{gaps}</Max_Gaps>')
+                    lines.append(f'	<Max_Gaps>{t_gaps}</Max_Gaps>')
+                    lines.append('	<Active>true</Active>')
+                    lines.append('	<Comments></Comments>')
+                    lines.append('</ConstraintTeacherMaxGapsPerDay>')
+            elif overrides:
+                for t_name in sorted(all_teachers_set):
+                    t_gaps = int(overrides.get(t_name, gaps))
+                    lines.append('<ConstraintTeacherMaxGapsPerDay>')
+                    lines.append(f'	<Weight_Percentage>{w}</Weight_Percentage>')
+                    lines.append(f'	<Teacher_Name>{t_name}</Teacher_Name>')
+                    lines.append(f'	<Max_Gaps>{t_gaps}</Max_Gaps>')
                     lines.append('	<Active>true</Active>')
                     lines.append('	<Comments></Comments>')
                     lines.append('</ConstraintTeacherMaxGapsPerDay>')
@@ -739,19 +1141,32 @@ class FetXmlGenerator:
                 lines.append('</ConstraintTeachersMaxGapsPerDay>')
 
         # Teacher Max Gaps Weekly
-        if "ConstraintTeachersMaxGapsPerWeek" in c_map:
-            c = c_map["ConstraintTeachersMaxGapsPerWeek"]
+        if "ConstraintTeachersMaxGapsPerWeek" in c_map or "tc_t_4" in c_map or "tc_t_3" in c_map:
+            c = c_map.get("ConstraintTeachersMaxGapsPerWeek") or c_map.get("tc_t_4") or c_map.get("tc_t_3")
             gaps = c.get("param_val", 0)
             w = int(c.get("def_weight", 100))
-            if c.get("applies_to") == "selected" and c.get("selected_targets"):
-                for t_raw in c["selected_targets"]:
-                    t_name = resolve_teacher(t_raw)
-                    if not t_name:
-                        continue
+            overrides = c.get("target_overrides", {})
+            applies_to = c.get("applies_to", "all")
+            selected_targets = c.get("selected_targets", [])
+
+            if applies_to == "selected" and selected_targets:
+                teachers_list = [resolve_teacher(t) for t in selected_targets if resolve_teacher(t)]
+                for t_name in teachers_list:
+                    t_gaps = int(overrides.get(t_name, gaps))
                     lines.append('<ConstraintTeacherMaxGapsPerWeek>')
                     lines.append(f'	<Weight_Percentage>{w}</Weight_Percentage>')
                     lines.append(f'	<Teacher_Name>{t_name}</Teacher_Name>')
-                    lines.append(f'	<Max_Gaps>{gaps}</Max_Gaps>')
+                    lines.append(f'	<Max_Gaps>{t_gaps}</Max_Gaps>')
+                    lines.append('	<Active>true</Active>')
+                    lines.append('	<Comments></Comments>')
+                    lines.append('</ConstraintTeacherMaxGapsPerWeek>')
+            elif overrides:
+                for t_name in sorted(all_teachers_set):
+                    t_gaps = int(overrides.get(t_name, gaps))
+                    lines.append('<ConstraintTeacherMaxGapsPerWeek>')
+                    lines.append(f'	<Weight_Percentage>{w}</Weight_Percentage>')
+                    lines.append(f'	<Teacher_Name>{t_name}</Teacher_Name>')
+                    lines.append(f'	<Max_Gaps>{t_gaps}</Max_Gaps>')
                     lines.append('	<Active>true</Active>')
                     lines.append('	<Comments></Comments>')
                     lines.append('</ConstraintTeacherMaxGapsPerWeek>')
@@ -764,25 +1179,39 @@ class FetXmlGenerator:
                 lines.append('</ConstraintTeachersMaxGapsPerWeek>')
 
         # Teacher Max Days Weekly
-        if "ConstraintTeachersMaxDaysPerWeek" in c_map:
-            c = c_map["ConstraintTeachersMaxDaysPerWeek"]
+        if "ConstraintTeachersMaxDaysPerWeek" in c_map or "tc_t_2" in c_map:
+            c = c_map.get("ConstraintTeachersMaxDaysPerWeek") or c_map.get("tc_t_2")
             val = c.get("param_val", 5)
-            fet_days = val * 2 if val <= 6 else val
             w = int(c.get("def_weight", 100))
-            if fet_days * 4 >= 24:
-                if c.get("applies_to") == "selected" and c.get("selected_targets"):
-                    for t_raw in c["selected_targets"]:
-                        t_name = resolve_teacher(t_raw)
-                        if not t_name:
-                            continue
+            overrides = c.get("target_overrides", {})
+            applies_to = c.get("applies_to", "all")
+            selected_targets = c.get("selected_targets", [])
+
+            if applies_to == "selected" and selected_targets:
+                teachers_list = [resolve_teacher(t) for t in selected_targets if resolve_teacher(t)]
+            elif overrides:
+                teachers_list = sorted(all_teachers_set)
+            else:
+                teachers_list = []
+
+            if teachers_list:
+                for t_name in teachers_list:
+                    t_val = int(overrides.get(t_name, val))
+                    t_days = t_val * 2 if t_val <= 6 else t_val
+                    t_hours = actual_teacher_hours.get(t_name, 0)
+                    min_needed = math.ceil(t_hours / 4)
+                    safe_days = max(t_days, min_needed)
+                    if safe_days < 12:
                         lines.append('<ConstraintTeacherMaxDaysPerWeek>')
                         lines.append(f'	<Weight_Percentage>{w}</Weight_Percentage>')
                         lines.append(f'	<Teacher_Name>{t_name}</Teacher_Name>')
-                        lines.append(f'	<Max_Days_Per_Week>{fet_days}</Max_Days_Per_Week>')
+                        lines.append(f'	<Max_Days_Per_Week>{safe_days}</Max_Days_Per_Week>')
                         lines.append('	<Active>true</Active>')
-                        lines.append('	<Comments></Comments>')
+                        lines.append(f'	<Comments>{t_name} - أقصى {safe_days // 2} أيام عمل</Comments>')
                         lines.append('</ConstraintTeacherMaxDaysPerWeek>')
-                else:
+            else:
+                fet_days = val * 2 if val <= 6 else val
+                if fet_days * 4 >= 24:
                     lines.append('<ConstraintTeachersMaxDaysPerWeek>')
                     lines.append(f'	<Weight_Percentage>{w}</Weight_Percentage>')
                     lines.append(f'	<Max_Days_Per_Week>{fet_days}</Max_Days_Per_Week>')
@@ -795,15 +1224,28 @@ class FetXmlGenerator:
             c = c_map.get("ConstraintTeachersMaxHoursContinuously") or c_map.get("ConstraintTeachersMaxContinuousHours") or c_map.get("tc_t_12") or c_map.get("tc_t_11")
             cont_h = c.get("param_val", 4)
             w = int(c.get("def_weight", 100))
-            if c.get("applies_to") == "selected" and c.get("selected_targets"):
-                for t_raw in c["selected_targets"]:
-                    t_name = resolve_teacher(t_raw)
-                    if not t_name:
-                        continue
+            overrides = c.get("target_overrides", {})
+            applies_to = c.get("applies_to", "all")
+            selected_targets = c.get("selected_targets", [])
+
+            if applies_to == "selected" and selected_targets:
+                teachers_list = [resolve_teacher(t) for t in selected_targets if resolve_teacher(t)]
+                for t_name in teachers_list:
+                    t_cont = int(overrides.get(t_name, cont_h))
                     lines.append('<ConstraintTeacherMaxHoursContinuously>')
                     lines.append(f'	<Weight_Percentage>{w}</Weight_Percentage>')
                     lines.append(f'	<Teacher_Name>{t_name}</Teacher_Name>')
-                    lines.append(f'	<Maximum_Hours_Continuously>{cont_h}</Maximum_Hours_Continuously>')
+                    lines.append(f'	<Maximum_Hours_Continuously>{t_cont}</Maximum_Hours_Continuously>')
+                    lines.append('	<Active>true</Active>')
+                    lines.append('	<Comments></Comments>')
+                    lines.append('</ConstraintTeacherMaxHoursContinuously>')
+            elif overrides:
+                for t_name in sorted(all_teachers_set):
+                    t_cont = int(overrides.get(t_name, cont_h))
+                    lines.append('<ConstraintTeacherMaxHoursContinuously>')
+                    lines.append(f'	<Weight_Percentage>{w}</Weight_Percentage>')
+                    lines.append(f'	<Teacher_Name>{t_name}</Teacher_Name>')
+                    lines.append(f'	<Maximum_Hours_Continuously>{t_cont}</Maximum_Hours_Continuously>')
                     lines.append('	<Active>true</Active>')
                     lines.append('	<Comments></Comments>')
                     lines.append('</ConstraintTeacherMaxHoursContinuously>')
@@ -895,6 +1337,7 @@ class FetXmlGenerator:
                 val_raw = getattr(self.institution, "max_morning_half_days_per_teacher", 4) or 4
             val_all = int(val_raw)
             w_all = int(c_all.get("def_weight", 100))
+            overrides = c_all.get("target_overrides", {})
 
             if c_all.get("applies_to") == "selected" and c_all.get("selected_targets"):
                 for t_raw in c_all["selected_targets"]:
@@ -903,7 +1346,8 @@ class FetXmlGenerator:
                         continue
                     t_hours = actual_teacher_hours.get(t_name, 0)
                     min_mornings = max(1, math.ceil(max(0, t_hours - 16) / 4)) if t_hours > 0 else 1
-                    safe_val = min(6, max(val_all, min_mornings))
+                    t_val = int(overrides.get(t_name, overrides.get(t_raw, val_all)))
+                    safe_val = min(6, max(t_val, min_mornings))
 
                     lines.append('<ConstraintTeacherOccupiesMaxSetsOfTimeSlotsFromSelection>')
                     lines.append(f'	<Weight_Percentage>{w_all}</Weight_Percentage>')
@@ -928,7 +1372,8 @@ class FetXmlGenerator:
                         continue
                     t_hours = actual_teacher_hours.get(t_name, 0)
                     min_mornings = max(1, math.ceil(max(0, t_hours - 16) / 4)) if t_hours > 0 else 1
-                    safe_val = min(6, max(val_all, min_mornings))
+                    t_val = int(overrides.get(t_name, val_all))
+                    safe_val = min(6, max(t_val, min_mornings))
 
                     lines.append('<ConstraintTeacherOccupiesMaxSetsOfTimeSlotsFromSelection>')
                     lines.append(f'	<Weight_Percentage>{w_all}</Weight_Percentage>')
@@ -949,16 +1394,25 @@ class FetXmlGenerator:
                     lines.append('</ConstraintTeacherOccupiesMaxSetsOfTimeSlotsFromSelection>')
 
         # Students Max Daily Hours (In 12 half-day FET structure, each half-day has max 4 slots)
-        if "ConstraintStudentsMaxHoursDaily" in c_map:
-            c = c_map["ConstraintStudentsMaxHoursDaily"]
+        if "ConstraintStudentsMaxHoursDaily" in c_map or "ConstraintStudentsSetMaxHoursDaily" in c_map or "tc_s_7" in c_map or "tc_s_6" in c_map:
+            c = c_map.get("ConstraintStudentsMaxHoursDaily") or c_map.get("ConstraintStudentsSetMaxHoursDaily") or c_map.get("tc_s_7") or c_map.get("tc_s_6")
             val = c.get("param_val", 6)
-            fet_val = min(4, val) if val <= 4 else 4
             w = int(c.get("def_weight", 100))
-            if c.get("applies_to") == "selected" and c.get("selected_targets"):
-                for cls_raw in c["selected_targets"]:
-                    cls = resolve_class(cls_raw)
-                    if not cls:
-                        continue
+            overrides = c.get("target_overrides", {})
+            applies_to = c.get("applies_to", "all")
+            selected_targets = c.get("selected_targets", [])
+
+            if applies_to == "selected" and selected_targets:
+                classes_list = [resolve_class(cls_raw) for cls_raw in selected_targets if resolve_class(cls_raw)]
+            elif overrides:
+                classes_list = sorted(valid_classes_set)
+            else:
+                classes_list = []
+
+            if classes_list:
+                for cls in classes_list:
+                    cls_val = int(overrides.get(cls, val))
+                    fet_val = min(4, cls_val) if cls_val <= 4 else 4
                     lines.append('<ConstraintStudentsSetMaxHoursDaily>')
                     lines.append(f'	<Weight_Percentage>{w}</Weight_Percentage>')
                     lines.append(f'	<Students>{cls}</Students>')
@@ -966,9 +1420,13 @@ class FetXmlGenerator:
                     lines.append('	<Active>true</Active>')
                     lines.append('	<Comments></Comments>')
                     lines.append('</ConstraintStudentsSetMaxHoursDaily>')
-                    if cls in class_all_activities and val < 8:
+                    if cls in class_all_activities and cls_val < 8:
                         c_acts = class_all_activities[cls]
-                        for rd in ["الاثنين", "الثلاثاء", "الخميس", "الجمعة"]:
+                        cls_hours = class_total_hours.get(cls, 0)
+                        eff_val = cls_val
+                        if cls_hours > 32 and cls_val < 7:
+                            eff_val = 7
+                        for rd in ["الاثنين", "الثلاثاء", "الاربعاء", "الخميس", "الجمعة", "السبت"]:
                             lines.append('<ConstraintActivitiesOccupyMaxTimeSlotsFromSelection>')
                             lines.append(f'	<Weight_Percentage>{w}</Weight_Percentage>')
                             lines.append(f'	<Number_of_Activities>{len(c_acts)}</Number_of_Activities>')
@@ -977,18 +1435,19 @@ class FetXmlGenerator:
                             lines.append('	<Number_of_Selected_Time_Slots>8</Number_of_Selected_Time_Slots>')
                             for h in ["ح 1", "ح 2", "ح 3", "ح 4"]:
                                 lines.append('	<Selected_Time_Slot>')
-                                lines.append(f'		<Selected_Day>{rd} ص</Selected_Day>')
-                                lines.append(f'		<Selected_Hour>{h}</Selected_Hour>')
+                                lines.append(f'		<Day>{rd} ص</Day>')
+                                lines.append(f'		<Hour>{h}</Hour>')
                                 lines.append('	</Selected_Time_Slot>')
                                 lines.append('	<Selected_Time_Slot>')
-                                lines.append(f'		<Selected_Day>{rd} م</Selected_Day>')
-                                lines.append(f'		<Selected_Hour>{h}</Selected_Hour>')
+                                lines.append(f'		<Day>{rd} م</Day>')
+                                lines.append(f'		<Hour>{h}</Hour>')
                                 lines.append('	</Selected_Time_Slot>')
-                            lines.append(f'	<Max_Number_of_Occupied_Time_Slots>{val}</Max_Number_of_Occupied_Time_Slots>')
+                            lines.append(f'	<Max_Number_of_Occupied_Time_Slots>{eff_val}</Max_Number_of_Occupied_Time_Slots>')
                             lines.append('	<Active>true</Active>')
-                            lines.append(f'	<Comments>{cls} - أقصى {val} ساعات دراسة يوم {rd}</Comments>')
+                            lines.append(f'	<Comments>{cls} - أقصى {eff_val} ساعات دراسة يوم {rd}</Comments>')
                             lines.append('</ConstraintActivitiesOccupyMaxTimeSlotsFromSelection>')
             else:
+                fet_val = min(4, val) if val <= 4 else 4
                 lines.append('<ConstraintStudentsMaxHoursDaily>')
                 lines.append(f'	<Weight_Percentage>{w}</Weight_Percentage>')
                 lines.append(f'	<Maximum_Hours_Daily>{fet_val}</Maximum_Hours_Daily>')
@@ -999,7 +1458,11 @@ class FetXmlGenerator:
                     for cls, c_acts in class_all_activities.items():
                         if cls not in valid_classes_set:
                             continue
-                        for rd in ["الاثنين", "الثلاثاء", "الخميس", "الجمعة"]:
+                        cls_hours = class_total_hours.get(cls, 0)
+                        cls_val = val
+                        if cls_hours > 32 and val < 7:
+                            cls_val = 7
+                        for rd in ["الاثنين", "الثلاثاء", "الاربعاء", "الخميس", "الجمعة", "السبت"]:
                             lines.append('<ConstraintActivitiesOccupyMaxTimeSlotsFromSelection>')
                             lines.append(f'	<Weight_Percentage>{w}</Weight_Percentage>')
                             lines.append(f'	<Number_of_Activities>{len(c_acts)}</Number_of_Activities>')
@@ -1008,32 +1471,41 @@ class FetXmlGenerator:
                             lines.append('	<Number_of_Selected_Time_Slots>8</Number_of_Selected_Time_Slots>')
                             for h in ["ح 1", "ح 2", "ح 3", "ح 4"]:
                                 lines.append('	<Selected_Time_Slot>')
-                                lines.append(f'		<Selected_Day>{rd} ص</Selected_Day>')
-                                lines.append(f'		<Selected_Hour>{h}</Selected_Hour>')
+                                lines.append(f'		<Day>{rd} ص</Day>')
+                                lines.append(f'		<Hour>{h}</Hour>')
                                 lines.append('	</Selected_Time_Slot>')
                                 lines.append('	<Selected_Time_Slot>')
-                                lines.append(f'		<Selected_Day>{rd} م</Selected_Day>')
-                                lines.append(f'		<Selected_Hour>{h}</Selected_Hour>')
+                                lines.append(f'		<Day>{rd} م</Day>')
+                                lines.append(f'		<Hour>{h}</Hour>')
                                 lines.append('	</Selected_Time_Slot>')
-                            lines.append(f'	<Max_Number_of_Occupied_Time_Slots>{val}</Max_Number_of_Occupied_Time_Slots>')
+                            lines.append(f'	<Max_Number_of_Occupied_Time_Slots>{cls_val}</Max_Number_of_Occupied_Time_Slots>')
                             lines.append('	<Active>true</Active>')
-                            lines.append(f'	<Comments>{cls} - أقصى {val} ساعات دراسة يوم {rd}</Comments>')
+                            lines.append(f'	<Comments>{cls} - أقصى {cls_val} ساعات دراسة يوم {rd}</Comments>')
                             lines.append('</ConstraintActivitiesOccupyMaxTimeSlotsFromSelection>')
 
         # Students Min Daily Hours
-        if "ConstraintStudentsMinHoursDaily" in c_map:
-            c = c_map["ConstraintStudentsMinHoursDaily"]
+        if "ConstraintStudentsMinHoursDaily" in c_map or "tc_s_9" in c_map:
+            c = c_map.get("ConstraintStudentsMinHoursDaily") or c_map.get("tc_s_9")
             min_h = c.get("param_val", 2)
             w = int(c.get("def_weight", 100))
-            if c.get("applies_to") == "selected" and c.get("selected_targets"):
-                for cls_raw in c["selected_targets"]:
-                    cls = resolve_class(cls_raw)
-                    if not cls:
-                        continue
+            overrides = c.get("target_overrides", {})
+            applies_to = c.get("applies_to", "all")
+            selected_targets = c.get("selected_targets", [])
+
+            if applies_to == "selected" and selected_targets:
+                classes_list = [resolve_class(cls_raw) for cls_raw in selected_targets if resolve_class(cls_raw)]
+            elif overrides:
+                classes_list = sorted(valid_classes_set)
+            else:
+                classes_list = []
+
+            if classes_list:
+                for cls in classes_list:
+                    cls_min_h = int(overrides.get(cls, min_h))
                     lines.append('<ConstraintStudentsSetMinHoursDaily>')
                     lines.append(f'	<Weight_Percentage>{w}</Weight_Percentage>')
                     lines.append(f'	<Students>{cls}</Students>')
-                    lines.append(f'	<Minimum_Hours_Daily>{min_h}</Minimum_Hours_Daily>')
+                    lines.append(f'	<Minimum_Hours_Daily>{cls_min_h}</Minimum_Hours_Daily>')
                     lines.append('	<Allow_Empty_Days>true</Allow_Empty_Days>')
                     lines.append('	<Active>true</Active>')
                     lines.append('	<Comments></Comments>')
@@ -1052,15 +1524,24 @@ class FetXmlGenerator:
             c = c_map.get("ConstraintStudentsMaxGapsPerDay") or c_map.get("ConstraintStudentsSetMaxGapsPerDay") or c_map.get("tc_s_2")
             gaps = c.get("param_val", 0)
             w = int(c.get("def_weight", 100))
-            if c.get("applies_to") == "selected" and c.get("selected_targets"):
-                for cls_raw in c["selected_targets"]:
-                    cls = resolve_class(cls_raw)
-                    if not cls:
-                        continue
+            overrides = c.get("target_overrides", {})
+            applies_to = c.get("applies_to", "all")
+            selected_targets = c.get("selected_targets", [])
+
+            if applies_to == "selected" and selected_targets:
+                classes_list = [resolve_class(cls_raw) for cls_raw in selected_targets if resolve_class(cls_raw)]
+            elif overrides:
+                classes_list = sorted(valid_classes_set)
+            else:
+                classes_list = []
+
+            if classes_list:
+                for cls in classes_list:
+                    cls_gaps = int(overrides.get(cls, gaps))
                     lines.append('<ConstraintStudentsSetMaxGapsPerDay>')
                     lines.append(f'	<Weight_Percentage>{w}</Weight_Percentage>')
                     lines.append(f'	<Students>{cls}</Students>')
-                    lines.append(f'	<Max_Gaps>{gaps}</Max_Gaps>')
+                    lines.append(f'	<Max_Gaps>{cls_gaps}</Max_Gaps>')
                     lines.append('	<Active>true</Active>')
                     lines.append('	<Comments></Comments>')
                     lines.append('</ConstraintStudentsSetMaxGapsPerDay>')
@@ -1077,14 +1558,23 @@ class FetXmlGenerator:
             c = c_map.get("ConstraintStudentsMaxGapsPerWeek") or c_map.get("ConstraintStudentsSetMaxGapsPerWeek") or c_map.get("tc_s_3")
             gaps = c.get("param_val", 0)
             w = int(c.get("def_weight", 100))
-            if c.get("applies_to") == "selected" and c.get("selected_targets"):
-                for cls_raw in c["selected_targets"]:
-                    cls = resolve_class(cls_raw)
-                    if not cls:
-                        continue
+            overrides = c.get("target_overrides", {})
+            applies_to = c.get("applies_to", "all")
+            selected_targets = c.get("selected_targets", [])
+
+            if applies_to == "selected" and selected_targets:
+                classes_list = [resolve_class(cls_raw) for cls_raw in selected_targets if resolve_class(cls_raw)]
+            elif overrides:
+                classes_list = sorted(valid_classes_set)
+            else:
+                classes_list = []
+
+            if classes_list:
+                for cls in classes_list:
+                    cls_gaps = int(overrides.get(cls, gaps))
                     lines.append('<ConstraintStudentsSetMaxGapsPerWeek>')
                     lines.append(f'	<Weight_Percentage>{w}</Weight_Percentage>')
-                    lines.append(f'	<Max_Gaps>{gaps}</Max_Gaps>')
+                    lines.append(f'	<Max_Gaps>{cls_gaps}</Max_Gaps>')
                     lines.append(f'	<Students>{cls}</Students>')
                     lines.append('	<Active>true</Active>')
                     lines.append('	<Comments></Comments>')
@@ -1184,6 +1674,8 @@ class FetXmlGenerator:
                 # Consecutive_If_Same_Day is strictly false to prevent repeating sessions on the same day!
                 consec = "true" if (cfg and cfg.get("consecutive_if_same_day", False)) else "false"
 
+                is_c_active = "true" if (cfg is None or cfg.get("is_active", True)) else "false"
+
                 lines.append('<ConstraintMinDaysBetweenActivities>')
                 lines.append(f'	<Weight_Percentage>{w}</Weight_Percentage>')
                 lines.append(f'	<Consecutive_If_Same_Day>{consec}</Consecutive_If_Same_Day>')
@@ -1191,7 +1683,7 @@ class FetXmlGenerator:
                 for aid in act_ids:
                     lines.append(f'	<Activity_Id>{aid}</Activity_Id>')
                 lines.append(f'	<MinDays>{min_d}</MinDays>')
-                lines.append('	<Active>true</Active>')
+                lines.append(f'	<Active>{is_c_active}</Active>')
                 lines.append(f'	<Comments>{s_name} - تباعد {min_d} يوم</Comments>')
                 lines.append('</ConstraintMinDaysBetweenActivities>')
 
@@ -1206,22 +1698,25 @@ class FetXmlGenerator:
                     for aid in act_ids:
                         lines.append(f'	<Activity_Id>{aid}</Activity_Id>')
                     lines.append(f'	<MaxDays>{max_d}</MaxDays>')
-                    lines.append('	<Active>true</Active>')
+                    lines.append(f'	<Active>{is_c_active}</Active>')
                     lines.append(f'	<Comments>{s_name} - أقصى تباعد {max_d} أيام</Comments>')
                     lines.append('</ConstraintMaxDaysBetweenActivities>')
 
             # Strict Moroccan Real-Day Non-Repetition: Prevent having 1 session in morning and 1 session in afternoon on the same real day
             # Applies to ALL classes and ALL subjects with >= 2 activities across all institutions
+            all_real_days = ["الاثنين", "الثلاثاء", "الاربعاء", "الخميس", "الجمعة", "السبت"]
             for (cls_k, s_k), act_info_list in class_subject_activities.items():
-                if len(act_info_list) > 1 and "بدن" not in s_k and "EPS" not in s_k:
+                if len(act_info_list) > 1:
                     cfg_s = None
                     for k, v in subj_cfg_map.items():
                         if k == s_k or (k in s_k) or (s_k in k):
                             cfg_s = v
                             break
+                    if cfg_s and not cfg_s.get("is_active", True):
+                        continue
                     w_s = int(cfg_s.get("weight", global_w)) if (cfg_s and "weight" in cfg_s) else global_w
                     max_dur = max(d for _, d in act_info_list)
-                    for rd in ["الاثنين", "الثلاثاء", "الخميس", "الجمعة"]:
+                    for rd in all_real_days:
                         lines.append('<ConstraintActivitiesOccupyMaxTimeSlotsFromSelection>')
                         lines.append(f'	<Weight_Percentage>{w_s}</Weight_Percentage>')
                         lines.append(f'	<Number_of_Activities>{len(act_info_list)}</Number_of_Activities>')
@@ -1230,27 +1725,58 @@ class FetXmlGenerator:
                         lines.append('	<Number_of_Selected_Time_Slots>8</Number_of_Selected_Time_Slots>')
                         for h in ["ح 1", "ح 2", "ح 3", "ح 4"]:
                             lines.append('	<Selected_Time_Slot>')
-                            lines.append(f'		<Selected_Day>{rd} ص</Selected_Day>')
-                            lines.append(f'		<Selected_Hour>{h}</Selected_Hour>')
+                            lines.append(f'		<Day>{rd} ص</Day>')
+                            lines.append(f'		<Hour>{h}</Hour>')
                             lines.append('	</Selected_Time_Slot>')
                             lines.append('	<Selected_Time_Slot>')
-                            lines.append(f'		<Selected_Day>{rd} م</Selected_Day>')
-                            lines.append(f'		<Selected_Hour>{h}</Selected_Hour>')
+                            lines.append(f'		<Day>{rd} م</Day>')
+                            lines.append(f'		<Hour>{h}</Hour>')
                             lines.append('	</Selected_Time_Slot>')
                         lines.append(f'	<Max_Number_of_Occupied_Time_Slots>{max_dur}</Max_Number_of_Occupied_Time_Slots>')
                         lines.append('	<Active>true</Active>')
                         lines.append(f'	<Comments>{cls_k} - {s_k} - منع التكرار يوم {rd}</Comments>')
                         lines.append('</ConstraintActivitiesOccupyMaxTimeSlotsFromSelection>')
 
+                    # If subject has multiple 1-hour sessions alongside a 2-hour session (e.g. 2+1+1),
+                    # prevent the two 1-hour sessions from landing on the same day as well
+                    single_hour_acts = [aid for aid, d in act_info_list if d == 1]
+                    if len(single_hour_acts) > 1 and max_dur > 1:
+                        for rd in all_real_days:
+                            lines.append('<ConstraintActivitiesOccupyMaxTimeSlotsFromSelection>')
+                            lines.append(f'	<Weight_Percentage>{w_s}</Weight_Percentage>')
+                            lines.append(f'	<Number_of_Activities>{len(single_hour_acts)}</Number_of_Activities>')
+                            for aid in single_hour_acts:
+                                lines.append(f'	<Activity_Id>{aid}</Activity_Id>')
+                            lines.append('	<Number_of_Selected_Time_Slots>8</Number_of_Selected_Time_Slots>')
+                            for h in ["ح 1", "ح 2", "ح 3", "ح 4"]:
+                                lines.append('	<Selected_Time_Slot>')
+                                lines.append(f'		<Day>{rd} ص</Day>')
+                                lines.append(f'		<Hour>{h}</Hour>')
+                                lines.append('	</Selected_Time_Slot>')
+                                lines.append('	<Selected_Time_Slot>')
+                                lines.append(f'		<Day>{rd} م</Day>')
+                                lines.append(f'		<Hour>{h}</Hour>')
+                                lines.append('	</Selected_Time_Slot>')
+                            lines.append('	<Max_Number_of_Occupied_Time_Slots>1</Max_Number_of_Occupied_Time_Slots>')
+                            lines.append('	<Active>true</Active>')
+                            lines.append(f'	<Comments>{cls_k} - {s_k} - منع تكرار الحصص الفردية يوم {rd}</Comments>')
+                            lines.append('</ConstraintActivitiesOccupyMaxTimeSlotsFromSelection>')
+
         # Break Times Constraint
         if "ConstraintBreakTimes" in c_map:
             c = c_map["ConstraintBreakTimes"]
-            break_slots = self.institution.break_time_slots
-            if break_slots:
+            break_slots = self.institution.break_time_slots or []
+            normalized_breaks = []
+            for s in break_slots:
+                d_norm = s.get("day", "").replace("الأربعاء", "الاربعاء").replace("الإثنين", "الاثنين")
+                h_norm = s.get("hour", "")
+                if d_norm and h_norm:
+                    normalized_breaks.append({"day": d_norm, "hour": h_norm})
+            if normalized_breaks:
                 lines.append('<ConstraintBreakTimes>')
-                lines.append(f'	<Weight_Percentage>{int(c["def_weight"])}</Weight_Percentage>')
-                lines.append(f'	<Number_of_Break_Times>{len(break_slots)}</Number_of_Break_Times>')
-                for slot in break_slots:
+                lines.append(f'	<Weight_Percentage>{int(c.get("def_weight", 100))}</Weight_Percentage>')
+                lines.append(f'	<Number_of_Break_Times>{len(normalized_breaks)}</Number_of_Break_Times>')
+                for slot in normalized_breaks:
                     lines.append('	<Break_Time>')
                     lines.append(f'		<Day>{slot["day"]}</Day>')
                     lines.append(f'		<Hour>{slot["hour"]}</Hour>')
@@ -1260,7 +1786,9 @@ class FetXmlGenerator:
                 lines.append('</ConstraintBreakTimes>')
         # Activity Preferred Starting Times (Strictly forbid Afternoon 1st slot for Physical Education / selected subjects)
         m_days = ["الاثنين ص", "الثلاثاء ص", "الاربعاء ص", "الخميس ص", "الجمعة ص", "السبت ص"]
-        e_days = ["الاثنين م", "الثلاثاء م", "الخميس م", "الجمعة م"]
+        all_e_days = ["الاثنين م", "الثلاثاء م", "الاربعاء م", "الخميس م", "الجمعة م"]
+        break_days_set = set(s.get("day", "").replace("الأربعاء", "الاربعاء").replace("الإثنين", "الاثنين") for s in (self.institution.break_time_slots or []))
+        e_days = [d for d in all_e_days if d not in break_days_set]
 
         for item in forbid_first_pm_activities:
             aid = item["act_id"]
@@ -1335,10 +1863,6 @@ class FetXmlGenerator:
                 # 1. Primary (Morning) Teacher Anchor
                 if r.morning_teacher and "-" not in r.morning_teacher and "شاغر" not in r.morning_teacher:
                     m_teacher = resolve_teacher(r.morning_teacher)
-                    t_subj = teacher_subj_map.get(m_teacher)
-                    if expected_subj and t_subj and t_subj != expected_subj:
-                        m_teacher = None
-
                     if m_teacher and m_teacher in all_teachers_set and m_teacher not in seen_teachers:
                         m_h = teacher_hours_map.get(m_teacher, 20)
                         if m_h <= 40:
@@ -1355,17 +1879,15 @@ class FetXmlGenerator:
                 # 2. Secondary (Afternoon) Teacher - only if within room 40h capacity
                 if r.afternoon_teacher and "-" not in r.afternoon_teacher and "شاغر" not in r.afternoon_teacher:
                     e_teacher = resolve_teacher(r.afternoon_teacher)
-                    t_subj = teacher_subj_map.get(e_teacher)
-                    if expected_subj and t_subj and t_subj != expected_subj:
-                        e_teacher = None
-
                     if e_teacher and e_teacher in all_teachers_set and e_teacher not in seen_teachers:
                         e_h = teacher_hours_map.get(e_teacher, 20)
                         if room_assigned_hours[r.room_name] + e_h <= 40:
                             seen_teachers.add(e_teacher)
+                            has_primary = (room_assigned_hours[r.room_name] > 0)
+                            sec_w = min(w, 85) if has_primary else w
                             room_assigned_hours[r.room_name] += e_h
                             lines.append('<ConstraintTeacherHomeRoom>')
-                            lines.append(f'	<Weight_Percentage>{w}</Weight_Percentage>')
+                            lines.append(f'	<Weight_Percentage>{sec_w}</Weight_Percentage>')
                             lines.append(f'	<Teacher>{e_teacher}</Teacher>')
                             lines.append(f'	<Room>{r.room_name}</Room>')
                             lines.append('	<Active>true</Active>')

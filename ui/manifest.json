@@ -1,0 +1,21 @@
+{
+  "name": "مسك الغياب — الرزق فت",
+  "short_name": "مسك الغياب",
+  "description": "نظام رقمي ذكي لمسك غياب التلاميذ وتتبع المواظبة داخل المؤسسات التعليمية",
+  "start_url": "/prof",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#0f766e",
+  "orientation": "portrait-primary",
+  "dir": "rtl",
+  "lang": "ar",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

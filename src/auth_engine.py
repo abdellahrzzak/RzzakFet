@@ -676,7 +676,9 @@ class AuthEngine:
 
         items = []
         for key, rec in db.items():
-            email = rec.get("bound_email") or rec.get("email") or key
+            if not isinstance(rec, dict):
+                continue
+            email = str(rec.get("bound_email") or rec.get("email") or key or "")
             is_admin = (email.lower() == super_admin_email)
             expires_at_str = rec.get("expires_at")
             remaining_days = 0
@@ -684,7 +686,7 @@ class AuthEngine:
 
             if expires_at_str:
                 try:
-                    exp = datetime.fromisoformat(expires_at_str)
+                    exp = datetime.fromisoformat(str(expires_at_str))
                     diff = exp - now
                     remaining_days = max(0, diff.days)
                     if exp < now:
@@ -693,15 +695,15 @@ class AuthEngine:
                     pass
 
             items.append({
-                "machine_id": rec.get("machine_id", key),
+                "machine_id": str(rec.get("machine_id", key)),
                 "email": email,
-                "name": rec.get("user_name") or rec.get("name", email.split("@")[0]),
+                "name": str(rec.get("user_name") or rec.get("name") or (email.split("@")[0] if "@" in email else "مستخدم")),
                 "status": rec.get("status", "trial"),
                 "subscription_type": rec.get("subscription_type", "trial"),
                 "role": "admin" if is_admin else "user",
                 "is_admin": is_admin,
-                "created_at": rec.get("first_activation_date") or rec.get("created_at"),
-                "expires_at": expires_at_str,
+                "created_at": rec.get("first_activation_date") or rec.get("created_at") or "",
+                "expires_at": str(expires_at_str) if expires_at_str else "",
                 "remaining_days": remaining_days,
                 "is_expired": is_expired,
                 "trial_consumed": rec.get("trial_consumed", True)

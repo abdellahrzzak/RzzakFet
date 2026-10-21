@@ -5,6 +5,9 @@ import json
 import time
 from typing import Dict, List, Any, Optional
 from concurrent.futures import ThreadPoolExecutor
+import openpyxl
+from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+from openpyxl.utils import get_column_letter
 
 DAYS_ORDER = [
     {"name": "الإثنين", "m": "الاثنين ص", "e": "الاثنين م"},
@@ -106,6 +109,45 @@ def abbreviate_room_name(s: str) -> str:
     if num:
         return f'ق{num}'
     return s[:4]
+
+def split_class_name_for_single_cell(s: str):
+    if not s:
+        return "", ""
+    s = str(s).strip()
+    parts = re.split(r'[-_\s]+', s)
+    if len(parts) >= 3:
+        if len(parts) >= 4:
+            p1 = "-".join(parts[:-2])
+            p2 = "-".join(parts[-2:])
+        else:
+            p1 = "-".join(parts[:-1])
+            p2 = parts[-1]
+        return p1, p2
+    elif len(parts) == 2:
+        return parts[0], parts[1]
+    
+    m = re.match(r'^([0-9]?[A-Za-z]+)[-_]?([0-9]+)$', s)
+    if m:
+        return m.group(1), m.group(2)
+        
+    return s, ""
+
+def format_master_cell_class(stds: str, rm: str, span: int = 1) -> str:
+    if not stds:
+        return ""
+    stds = str(stds).strip()
+    short_rm = abbreviate_room_name(rm)
+    rm_html = f'<div class="r-code">{short_rm}</div>' if short_rm else ""
+
+    if span >= 2:
+        return f'<div class="c-code full-span" title="{stds}">{stds}</div>{rm_html}'
+    
+    p1, p2 = split_class_name_for_single_cell(stds)
+    if p2:
+        return f'<div class="c-code single-span" title="{stds}"><span class="c-line1">{p1}</span><span class="c-line2">{p2}</span></div>{rm_html}'
+    else:
+        return f'<div class="c-code single-span" title="{stds}"><span class="c-line1">{p1}</span></div>{rm_html}'
+
 
 
 def get_base_css() -> str:
@@ -395,6 +437,35 @@ class ExportEngine:
         os.makedirs(self.teachers_dir, exist_ok=True)
         os.makedirs(self.master_dir, exist_ok=True)
 
+    def _are_cells_mergeable(self, c1: Optional[Dict[str, Any]], c2: Optional[Dict[str, Any]], category: str) -> bool:
+        if not c1 or not c2:
+            return False
+        if c1.get("is_grouped") or c2.get("is_grouped"):
+            if c1.get("is_grouped") and c2.get("is_grouped"):
+                sg1 = c1.get("subgroups", {})
+                sg2 = c2.get("subgroups", {})
+                g1_a = sg1.get("G1") or sg1.get("F1", {})
+                g1_b = sg2.get("G1") or sg2.get("F1", {})
+                g2_a = sg1.get("G2") or sg1.get("F2", {})
+                g2_b = sg2.get("G2") or sg2.get("F2", {})
+                return (g1_a.get("subject") == g1_b.get("subject") and
+                        g1_a.get("room") == g1_b.get("room") and
+                        g2_a.get("subject") == g2_b.get("subject") and
+                        g2_a.get("room") == g2_b.get("room"))
+            return False
+        if category == "class":
+            return (c1.get("subject") == c2.get("subject") and
+                    c1.get("teacher") == c2.get("teacher") and
+                    c1.get("room") == c2.get("room"))
+        elif category == "teacher":
+            return (c1.get("students") == c2.get("students") and
+                    c1.get("subject") == c2.get("subject") and
+                    c1.get("room") == c2.get("room"))
+        else:
+            return (c1.get("teacher") == c2.get("teacher") and
+                    c1.get("students") == c2.get("students") and
+                    c1.get("subject") == c2.get("subject"))
+
     def render_single_sheet_html(
         self,
         category: str,
@@ -433,29 +504,51 @@ class ExportEngine:
             all_8 = m_slots + e_slots
 
             cells_html = ""
-            for slot_day, slot_h in all_8:
+            k = 0
+            while k < len(all_8):
+                slot_day, slot_h = all_8[k]
                 is_break = any(s.get("day") == slot_day and s.get("hour") == slot_h for s in break_slots)
                 cell = (grid_data.get(slot_day) or {}).get(slot_h)
 
-                if category == "teacher" and slot_day == "الاربعاء م" and wed_settings and wed_settings.get("enabled", True) and not cell:
-                    pe_label = wed_settings.get("pe_label", "أنشطة الجمعية الرياضية (ASS)")
-                    gen_label = wed_settings.get("general_label", "الأنشطة الموازية والدعم")
-                    is_pe = "بدن" in target_name or "EPS" in target_name
+                if category == "teacher" and (slot_day == "الاربعاء م" or slot_day == "الأربعاء م") and wed_settings and wed_settings.get("enabled", True) and not cell:
+                    pe_label = wed_settings.get("pe_label", "أنشطة الجمعية الرياضية المدرسية (ASS)")
+                    gen_label = wed_settings.get("general_label", "الأنشطة الموازية والدعم التربوي")
+                    is_pe = ("بدن" in target_name or "EPS" in target_name or
+                             any("بدن" in str(c.get("subject", "")) or "EPS" in str(c.get("subject", ""))
+                                 for d in grid_data.values() for c in d.values() if isinstance(c, dict)))
                     if is_pe:
-                        cells_html += f'<td class="cell-ass"><div>{pe_label}</div><div style="font-size:7.5pt;opacity:0.85;">أنشطة النخبة</div></td>'
+                        cells_html += f'<td class="cell-ass"><div>{pe_label}</div><div style="font-size:7.5pt;opacity:0.85;">رياضة الكم والنخبة</div></td>'
                     else:
-                        cells_html += f'<td class="cell-support"><div>{gen_label}</div><div style="font-size:7.5pt;opacity:0.85;">تأطير ودعم</div></td>'
+                        cells_html += f'<td class="cell-support"><div>{gen_label}</div><div style="font-size:7.5pt;opacity:0.85;">مواكبة وتأطير تربوي</div></td>'
+                    k += 1
+                    continue
+
+                if category == "class" and (slot_day == "الاربعاء م" or slot_day == "الأربعاء م") and wed_settings and wed_settings.get("enabled", True) and not cell:
+                    cells_html += '<td class="cell-break" style="background:#eff6ff;color:#1e40af;font-size:7.5pt;font-weight:bold;text-align:center;"><div>أنشطة الجمعية الرياضية (ASS)</div><div style="font-size:6.5pt;color:#3b82f6;">أنشطة موازية ودعم</div></td>'
+                    k += 1
                     continue
 
                 if is_break:
                     cells_html += '<td class="cell-break"></td>'
+                    k += 1
                     continue
 
                 if not cell:
                     cells_html += '<td class="cell-empty"></td>'
+                    k += 1
                     continue
 
-                total_hours += 1
+                # Check if this cell can merge with next slot within the same half-day (0..3 morning, 4..7 afternoon)
+                span = 1
+                half_day_end = 4 if k < 4 else 8
+                if k + 1 < half_day_end:
+                    next_day, next_h = all_8[k + 1]
+                    next_is_break = any(s.get("day") == next_day and s.get("hour") == next_h for s in break_slots)
+                    next_cell = (grid_data.get(next_day) or {}).get(next_h)
+                    if not next_is_break and next_cell and self._are_cells_mergeable(cell, next_cell, category):
+                        span = 2
+
+                total_hours += span
                 subj = cell.get("subject", "")
                 teach = cell.get("teacher", "")
                 stds = cell.get("students", "")
@@ -468,30 +561,61 @@ class ExportEngine:
                 bg_col = style["print_bg"]
                 txt_col = style["print_text"]
 
+                colspan_attr = f' colspan="{span}"' if span > 1 else ''
+
                 if category == "class":
-                    cells_html += f'''
-                    <td style="background-color: {bg_col}; color: {txt_col};">
-                        <div class="subj-cell">{subj}</div>
-                        <div class="sub-info">{room}</div>
-                    </td>
-                    '''
+                    if cell.get("is_grouped") and cell.get("subgroups"):
+                        g1_inf = cell["subgroups"].get("G1") or cell["subgroups"].get("F1", {})
+                        g2_inf = cell["subgroups"].get("G2") or cell["subgroups"].get("F2", {})
+                        s1 = g1_inf.get("subject", "فيزياء")
+                        r1 = abbreviate_room_name(g1_inf.get("room", "PC"))
+                        s2 = g2_inf.get("subject", "علوم")
+                        r2 = abbreviate_room_name(g2_inf.get("room", "SVT"))
+                        cells_html += f'''
+                        <td{colspan_attr} style="padding: 2px !important; background-color: #f8fafc; color: #0f172a; vertical-align: middle;">
+                            <div style="background:#e0f2fe; color:#0369a1; border-radius:3px; padding:2px 4px; margin-bottom:2px; font-size:7.5pt; font-weight:800; border: 1px solid #7dd3fc; line-height:1.2; display:flex; justify-content:space-between;">
+                                <span>G1: {s1}</span> <span style="font-size:6.5pt; opacity:0.85;">({r1})</span>
+                            </div>
+                            <div style="background:#fef3c7; color:#b45309; border-radius:3px; padding:2px 4px; font-size:7.5pt; font-weight:800; border: 1px solid #fde68a; line-height:1.2; display:flex; justify-content:space-between;">
+                                <span>G2: {s2}</span> <span style="font-size:6.5pt; opacity:0.85;">({r2})</span>
+                            </div>
+                        </td>
+                        '''
+                    else:
+                        cells_html += f'''
+                        <td{colspan_attr} style="background-color: {bg_col}; color: {txt_col};">
+                            <div class="subj-cell">{subj}</div>
+                            <div class="sub-info">{room}</div>
+                        </td>
+                        '''
                 elif category == "teacher":
+                    std_display = stds
+                    if "-G1" in stds:
+                        std_display = stds.replace("-G1", " (G1)")
+                    elif "-G2" in stds:
+                        std_display = stds.replace("-G2", " (G2)")
+                    elif "-F1" in stds:
+                        std_display = stds.replace("-F1", " (G1)")
+                    elif "-F2" in stds:
+                        std_display = stds.replace("-F2", " (G2)")
                     cls_style = get_class_style(stds)
                     bg_col = cls_style["print_bg"]
                     txt_col = cls_style["print_text"]
                     cells_html += f'''
-                    <td style="background-color: {bg_col} !important; color: {txt_col} !important;">
-                        <div class="subj-cell" style="color: {txt_col} !important; font-weight:900;">{stds}</div>
+                    <td{colspan_attr} style="background-color: {bg_col} !important; color: {txt_col} !important;">
+                        <div class="subj-cell" style="color: {txt_col} !important; font-weight:900;">{std_display}</div>
                         <div class="sub-info" style="color: {txt_col} !important; opacity:0.95;">{room}</div>
                     </td>
                     '''
                 else:
                     cells_html += f'''
-                    <td style="background-color: {bg_col}; color: {txt_col};">
+                    <td{colspan_attr} style="background-color: {bg_col}; color: {txt_col};">
                         <div class="subj-cell">{teach}</div>
                         <div class="sub-info">{stds}</div>
                     </td>
                     '''
+
+                k += span
 
             rows_html += f'''
             <tr>
@@ -615,25 +739,51 @@ class ExportEngine:
 
             cells = ""
             for day in DAYS_12:
-                for h in HOURS_4:
+                h_idx = 0
+                while h_idx < len(HOURS_4):
+                    h = HOURS_4[h_idx]
                     is_break = any(s.get("day") == day and s.get("hour") == h for s in break_slots)
                     cell = (schedule.get(day) or {}).get(h)
 
-                    if is_break:
-                        cells += '<td class="break-cell" style="background:#cbd5e1; color:#475569; font-size:6pt; font-weight:900;">✕</td>'
+                    if is_break and not cell:
+                        span = 1
+                        while (h_idx + span < len(HOURS_4)):
+                            next_h = HOURS_4[h_idx + span]
+                            next_break = any(s.get("day") == day and s.get("hour") == next_h for s in break_slots)
+                            next_c = (schedule.get(day) or {}).get(next_h)
+                            if next_break and not next_c:
+                                span += 1
+                            else:
+                                break
+                        colspan_attr = f' colspan="{span}"' if span > 1 else ''
+                        cells += f'<td class="break-cell"{colspan_attr} style="background:#cbd5e1; color:#475569; font-size:6pt; font-weight:900;">✕</td>'
+                        h_idx += span
                     elif not cell:
                         cells += '<td class="empty-cell" style="background:#f8fafc;"></td>'
+                        h_idx += 1
                     else:
                         stds = cell.get("students", "")
                         rm = cell.get("room", "")
-                        short_stds = abbreviate_class_name(stds)
-                        short_rm = abbreviate_room_name(rm)
+                        span = 1
+                        while (h_idx + span < len(HOURS_4)):
+                            next_h = HOURS_4[h_idx + span]
+                            next_is_break = any(s.get("day") == day and s.get("hour") == next_h for s in break_slots)
+                            if next_is_break:
+                                break
+                            next_cell = (schedule.get(day) or {}).get(next_h)
+                            if next_cell and next_cell.get("students", "") == stds and next_cell.get("room", "") == rm:
+                                span += 1
+                            else:
+                                break
+
+                        colspan_attr = f' colspan="{span}"' if span > 1 else ''
+                        cell_content = format_master_cell_class(stds, rm, span)
                         cells += f'''
-                        <td class="m-cell" style="background:{bg_subj};" title="{teacher} | {subject} | {stds} ({rm})">
-                            <div class="c-code">{short_stds}</div>
-                            <div class="r-code">{short_rm}</div>
+                        <td class="m-cell"{colspan_attr} style="background:{bg_subj};" title="{teacher} | {subject} | {stds} ({rm})">
+                            {cell_content}
                         </td>
                         '''
+                        h_idx += span
 
             short_home_room = abbreviate_room_name(room)
             rows_html += f'''
@@ -699,19 +849,16 @@ class ExportEngine:
 
         .master-table td {{
             border: 0.5px solid #64748b;
-            padding: 0;
-            height: 20px;
-            max-height: 20px;
-            overflow: hidden !important;
-            white-space: nowrap !important;
-            text-overflow: clip !important;
+            padding: 1px 0.5px;
+            height: 25px;
+            min-height: 25px;
             vertical-align: middle;
             text-align: center;
             box-sizing: border-box;
         }}
 
         .master-table td.m-cell {{
-            padding: 0.5px 0 !important;
+            padding: 1px 0.5px !important;
             color: #ffffff !important;
         }}
 
@@ -724,26 +871,57 @@ class ExportEngine:
         }}
 
         .c-code {{
-            font-size: 6.5pt;
-            font-weight: 900;
+            font-size: 5.6pt;
+            font-weight: 800;
             line-height: 1.0;
-            white-space: nowrap !important;
-            overflow: hidden !important;
-            text-overflow: clip !important;
-            letter-spacing: -0.2px;
             color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }}
+
+        .c-code.full-span {{
+            font-size: 6.8pt;
+            font-weight: 900;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding: 0 1px;
+            letter-spacing: -0.2px;
+        }}
+
+        .c-code.single-span {{
+            font-size: 5pt;
+            line-height: 0.95;
+        }}
+
+        .c-line1 {{
+            font-size: 5.1pt;
+            font-weight: 800;
+            white-space: nowrap;
+            letter-spacing: -0.2px;
+        }}
+
+        .c-line2 {{
+            font-size: 5.3pt;
+            font-weight: 900;
+            white-space: nowrap;
+            background: rgba(0, 0, 0, 0.28);
+            border-radius: 2px;
+            padding: 0 2px;
+            margin-top: 1px;
         }}
 
         .r-code {{
-            font-size: 4.8pt;
+            font-size: 4.5pt;
             font-weight: 700;
             line-height: 1.0;
             opacity: 0.92;
-            white-space: nowrap !important;
-            overflow: hidden !important;
-            text-overflow: clip !important;
             color: #ffffff;
             margin-top: 1px;
+            white-space: nowrap;
         }}
 
         @media print {{
@@ -770,9 +948,19 @@ class ExportEngine:
     </style>
 </head>
 <body>
-    <div class="print-btn-bar">
-        <button onclick="printA3()" class="btn-action">🖨️ طباعة الجدول العام (A3 - حجم كامل)</button>
-        <button onclick="printA4()" class="btn-action" style="background:#0284c7;">🖨️ طباعة الجدول العام (A4 - مكيف تلقائياً)</button>
+    <div class="print-btn-bar" style="display:flex; flex-wrap:wrap; gap:8px; align-items:center; justify-content:center; padding:8px; background:#0f172a; border-radius:8px; margin-bottom:10px;">
+        <button onclick="window.location.href='/export/master_excel'" class="btn-action" style="background:#16a34a; font-weight:800; display:flex; align-items:center; gap:5px;">
+            <span>📊 تحميل ملف إكسيل (Excel .xlsx)</span>
+        </button>
+        <button onclick="window.location.href='/export/master_pdf'" class="btn-action" style="background:#dc2626; font-weight:800; display:flex; align-items:center; gap:5px;">
+            <span>📄 تحميل ملف (PDF)</span>
+        </button>
+        <button onclick="window.location.href='/export/master_html'" class="btn-action" style="background:#0284c7; font-weight:800; display:flex; align-items:center; gap:5px;">
+            <span>🌐 تحميل ملف (HTML)</span>
+        </button>
+        <div style="width:1px; height:24px; background:#334155; margin:0 4px;"></div>
+        <button onclick="printA3()" class="btn-action" style="background:#4f46e5; font-weight:800;">🖨️ طباعة الجدول العام (A3 - حجم كامل)</button>
+        <button onclick="printA4()" class="btn-action" style="background:#0891b2; font-weight:800;">🖨️ طباعة الجدول العام (A4 - مكيف تلقائياً)</button>
         <button onclick="window.close()" class="btn-action" style="background:#475569;">✕ إغلاق</button>
     </div>
 
@@ -867,6 +1055,228 @@ class ExportEngine:
 </html>
 '''
 
+    def generate_master_table_excel(
+        self,
+        master_data: List[Dict[str, Any]],
+        inst_info: Dict[str, Any],
+        break_slots: List[Dict[str, str]],
+        output_path: Optional[str] = None
+    ) -> str:
+        if not output_path:
+            self.ensure_directories()
+            output_path = os.path.join(self.master_dir, "الجدول_العام_لاستعمالات_الزمن_للمدرسين.xlsx")
+
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "الجدول العام للمدرسين"
+        ws.views.sheetView[0].rightToLeft = True
+
+        inst_name = inst_info.get("name", "الثانوية الإعدادية")
+        prov_name = inst_info.get("province", "المديرية الإقليمية")
+        acad_name = inst_info.get("academy", "الأكاديمية الجهوية")
+        acad_year = inst_info.get("academic_year") or inst_info.get("year", "2026-2027")
+        gresa_code = inst_info.get("gresa_code") or inst_info.get("gresa", "045892P")
+        principal = inst_info.get("principal_name") or inst_info.get("principal", "رئيس المؤسسة")
+
+        thin_side = Side(style='thin', color='64748B')
+        cell_border = Border(left=thin_side, right=thin_side, top=thin_side, bottom=thin_side)
+
+        # 1. Official Header
+        ws.cell(row=1, column=1, value="المملكة المغربية").font = Font(name="Calibri", size=11, bold=True, color="0F172A")
+        ws.cell(row=1, column=1).alignment = Alignment(horizontal="right", vertical="center")
+        
+        ws.merge_cells(start_row=1, start_column=10, end_row=1, end_column=42)
+        c_title = ws.cell(row=1, column=10, value="📋 الجدول العام لاستعمالات الزمن للمدرسين")
+        c_title.font = Font(name="Calibri", size=13, bold=True, color="FFFFFF")
+        c_title.fill = PatternFill(start_color="0F172A", end_color="0F172A", fill_type="solid")
+        c_title.alignment = Alignment(horizontal="center", vertical="center")
+
+        ws.cell(row=1, column=45, value=f"الموسم الدراسي: {acad_year}").font = Font(name="Calibri", size=10, bold=True)
+        ws.cell(row=1, column=45).alignment = Alignment(horizontal="left", vertical="center")
+
+        ws.cell(row=2, column=1, value="وزارة التربية الوطنية والتعليم الأولي والرياضة").font = Font(name="Calibri", size=9, bold=True, color="334155")
+        ws.cell(row=2, column=1).alignment = Alignment(horizontal="right", vertical="center")
+
+        ws.merge_cells(start_row=2, start_column=10, end_row=2, end_column=42)
+        c_inst = ws.cell(row=2, column=10, value=inst_name)
+        c_inst.font = Font(name="Calibri", size=11, bold=True, color="1E293B")
+        c_inst.alignment = Alignment(horizontal="center", vertical="center")
+
+        ws.cell(row=2, column=45, value=f"رمز المؤسسة: {gresa_code}").font = Font(name="Calibri", size=9.5, bold=True, color="475569")
+        ws.cell(row=2, column=45).alignment = Alignment(horizontal="left", vertical="center")
+
+        ws.cell(row=3, column=1, value=f"{acad_name} | {prov_name}").font = Font(name="Calibri", size=8.5, color="475569")
+        ws.cell(row=3, column=1).alignment = Alignment(horizontal="right", vertical="center")
+
+        ws.merge_cells(start_row=3, start_column=10, end_row=3, end_column=42)
+        c_stats = ws.cell(row=3, column=10, value=f"مجموع المدرسين: {len(master_data)} أستاذ(ة)")
+        c_stats.font = Font(name="Calibri", size=9.5, bold=True, color="334155")
+        c_stats.alignment = Alignment(horizontal="center", vertical="center")
+
+        ws.cell(row=3, column=45, value=f"رئيس المؤسسة: {principal}").font = Font(name="Calibri", size=9, bold=True, color="475569")
+        ws.cell(row=3, column=45).alignment = Alignment(horizontal="left", vertical="center")
+
+        # 2. Table Header
+        for col_idx, col_name in [(1, "الأستاذ(ة)"), (2, "المادة"), (3, "القاعة")]:
+            c = ws.cell(row=5, column=col_idx, value=col_name)
+            c.font = Font(name="Calibri", size=10, bold=True, color="FFFFFF")
+            c.fill = PatternFill(start_color="1E293B", end_color="1E293B", fill_type="solid")
+            c.alignment = Alignment(horizontal="center", vertical="center")
+            c.border = cell_border
+            ws.merge_cells(start_row=5, start_column=col_idx, end_row=6, end_column=col_idx)
+
+        DAYS_12 = [
+            "الاثنين ص", "الاثنين م",
+            "الثلاثاء ص", "الثلاثاء م",
+            "الاربعاء ص", "الاربعاء م",
+            "الخميس ص", "الخميس م",
+            "الجمعة ص", "الجمعة م",
+            "السبت ص", "السبت م"
+        ]
+
+        col_pointer = 4
+        for d_idx, day in enumerate(DAYS_12):
+            is_morning = "ص" in day
+            day_bg = "0C4A6E" if is_morning else "1E293B"
+            c_day = ws.cell(row=5, column=col_pointer, value=day)
+            c_day.font = Font(name="Calibri", size=10, bold=True, color="FFFFFF")
+            c_day.fill = PatternFill(start_color=day_bg, end_color=day_bg, fill_type="solid")
+            c_day.alignment = Alignment(horizontal="center", vertical="center")
+            c_day.border = cell_border
+            ws.merge_cells(start_row=5, start_column=col_pointer, end_row=5, end_column=col_pointer + 3)
+
+            for p_num in range(1, 5):
+                col_curr = col_pointer + p_num - 1
+                c_p = ws.cell(row=6, column=col_curr, value=p_num)
+                c_p.font = Font(name="Calibri", size=9, bold=True, color="FFFFFF")
+                c_p.fill = PatternFill(start_color="334155", end_color="334155", fill_type="solid")
+                c_p.alignment = Alignment(horizontal="center", vertical="center")
+                c_p.border = cell_border
+
+            col_pointer += 4
+
+        # 3. Data Rows
+        current_row = 7
+        for t_idx, t_row in enumerate(master_data):
+            teacher = t_row.get("teacher", "")
+            subject = t_row.get("subject", "")
+            room = t_row.get("room", "")
+            schedule = t_row.get("schedule", {})
+            style = get_subj_style(subject)
+            bg_hex = style["print_bg"].lstrip("#").upper()
+
+            c_t = ws.cell(row=current_row, column=1, value=teacher)
+            c_t.font = Font(name="Calibri", size=9.5, bold=True, color="0F172A")
+            c_t.fill = PatternFill(start_color="F1F5F9", end_color="F1F5F9", fill_type="solid")
+            c_t.alignment = Alignment(horizontal="right", vertical="center")
+            c_t.border = cell_border
+
+            c_s = ws.cell(row=current_row, column=2, value=subject)
+            c_s.font = Font(name="Calibri", size=9, bold=True, color="1E293B")
+            c_s.fill = PatternFill(start_color="FFFFFF", end_color="FFFFFF", fill_type="solid")
+            c_s.alignment = Alignment(horizontal="right", vertical="center")
+            c_s.border = cell_border
+
+            c_r = ws.cell(row=current_row, column=3, value=abbreviate_room_name(room))
+            c_r.font = Font(name="Calibri", size=8.5, bold=True, color="334155")
+            c_r.fill = PatternFill(start_color="F8FAFC", end_color="F8FAFC", fill_type="solid")
+            c_r.alignment = Alignment(horizontal="center", vertical="center")
+            c_r.border = cell_border
+
+            col_curr = 4
+            for day in DAYS_12:
+                h_idx = 0
+                while h_idx < len(HOURS_4):
+                    h = HOURS_4[h_idx]
+                    is_break = any(s.get("day") == day and s.get("hour") == h for s in break_slots)
+                    cell = (schedule.get(day) or {}).get(h)
+
+                    if is_break and not cell:
+                        span = 1
+                        while (h_idx + span < len(HOURS_4)):
+                            next_h = HOURS_4[h_idx + span]
+                            next_break = any(s.get("day") == day and s.get("hour") == next_h for s in break_slots)
+                            next_c = (schedule.get(day) or {}).get(next_h)
+                            if next_break and not next_c:
+                                span += 1
+                            else:
+                                break
+                        c_cell = ws.cell(row=current_row, column=col_curr, value="✕")
+                        c_cell.font = Font(name="Calibri", size=9, bold=True, color="475569")
+                        c_cell.fill = PatternFill(start_color="CBD5E1", end_color="CBD5E1", fill_type="solid")
+                        c_cell.alignment = Alignment(horizontal="center", vertical="center")
+                        c_cell.border = cell_border
+                        if span > 1:
+                            ws.merge_cells(start_row=current_row, start_column=col_curr, end_row=current_row, end_column=col_curr + span - 1)
+                            for extra_col in range(col_curr, col_curr + span):
+                                ws.cell(row=current_row, column=extra_col).border = cell_border
+                        col_curr += span
+                        h_idx += span
+                    elif not cell:
+                        c_cell = ws.cell(row=current_row, column=col_curr, value="")
+                        c_cell.fill = PatternFill(start_color="F8FAFC", end_color="F8FAFC", fill_type="solid")
+                        c_cell.border = cell_border
+                        col_curr += 1
+                        h_idx += 1
+                    else:
+                        stds = cell.get("students", "")
+                        rm = cell.get("room", "")
+                        span = 1
+                        while (h_idx + span < len(HOURS_4)):
+                            next_h = HOURS_4[h_idx + span]
+                            next_is_break = any(s.get("day") == day and s.get("hour") == next_h for s in break_slots)
+                            if next_is_break:
+                                break
+                            next_cell = (schedule.get(day) or {}).get(next_h)
+                            if next_cell and next_cell.get("students", "") == stds and next_cell.get("room", "") == rm:
+                                span += 1
+                            else:
+                                break
+                        
+                        cell_text = f"{stds}\n({abbreviate_room_name(rm)})" if rm else stds
+                        c_cell = ws.cell(row=current_row, column=col_curr, value=cell_text)
+                        c_cell.font = Font(name="Calibri", size=8.5 if span == 1 else 9.5, bold=True, color="FFFFFF")
+                        c_cell.fill = PatternFill(start_color=bg_hex, end_color=bg_hex, fill_type="solid")
+                        c_cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+                        c_cell.border = cell_border
+                        if span > 1:
+                            ws.merge_cells(start_row=current_row, start_column=col_curr, end_row=current_row, end_column=col_curr + span - 1)
+                            for extra_col in range(col_curr, col_curr + span):
+                                ws.cell(row=current_row, column=extra_col).border = cell_border
+                        col_curr += span
+                        h_idx += span
+
+            ws.row_dimensions[current_row].height = 28
+            current_row += 1
+
+        # Column widths
+        ws.column_dimensions["A"].width = 20
+        ws.column_dimensions["B"].width = 14
+        ws.column_dimensions["C"].width = 9
+        for c_idx in range(4, 52):
+            col_letter = get_column_letter(c_idx)
+            ws.column_dimensions[col_letter].width = 6.2
+
+        ws.row_dimensions[1].height = 24
+        ws.row_dimensions[2].height = 20
+        ws.row_dimensions[3].height = 18
+        ws.row_dimensions[4].height = 8
+        ws.row_dimensions[5].height = 22
+        ws.row_dimensions[6].height = 18
+
+        # Footer
+        ws.cell(row=current_row + 1, column=1, value=f"حرر في: {time.strftime('%Y-%m-%d')}").font = Font(name="Calibri", size=9, bold=True)
+        ws.cell(row=current_row + 1, column=45, value="خاتم وتأشيرة رئيس المؤسسة").font = Font(name="Calibri", size=9, bold=True)
+
+        ws.page_setup.orientation = ws.ORIENTATION_LANDSCAPE
+        ws.page_setup.paperSize = ws.PAPERSIZE_A3
+        ws.page_setup.fitToWidth = 1
+        ws.page_setup.fitToHeight = 0
+        ws.sheet_properties.pageSetUpPr.fitToPage = True
+
+        wb.save(output_path)
+        return output_path
+
     def export_all(self, timetable_data: Dict[str, Any], app_state_data: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         self.ensure_directories()
         
@@ -874,10 +1284,11 @@ class ExportEngine:
         if app_state_data and "institution" in app_state_data:
             inst_info.update(app_state_data["institution"])
         
-        break_slots = (app_state_data.get("institution", {}).get("break_time_slots") if app_state_data else None) or [
+        raw_breaks = (app_state_data.get("institution", {}).get("break_time_slots") if app_state_data else None) or [
             {"day": "الاربعاء م", "hour": "ح 1"}, {"day": "الاربعاء م", "hour": "ح 2"}, {"day": "الاربعاء م", "hour": "ح 3"}, {"day": "الاربعاء م", "hour": "ح 4"},
             {"day": "السبت م", "hour": "ح 1"}, {"day": "السبت م", "hour": "ح 2"}, {"day": "السبت م", "hour": "ح 3"}, {"day": "السبت م", "hour": "ح 4"}
         ]
+        break_slots = [{"day": s.get("day", "").replace("الأربعاء", "الاربعاء").replace("الإثنين", "الاثنين"), "hour": s.get("hour", "")} for s in raw_breaks]
         
         wed_settings = app_state_data.get("wednesday_settings", {}) if app_state_data else {}
         gen_date = timetable_data.get("generated_at", time.strftime("%Y-%m-%d"))
@@ -997,13 +1408,20 @@ class ExportEngine:
             f.write(all_teachers_html)
         conversion_tasks.append((all_teachers_path, all_teachers_pdf))
 
-        # 3. Master Table HTML + PDF
+        # 3. Master Table HTML + PDF + Excel (.xlsx)
         master_html = self.render_master_table_html(master_data, inst_info, break_slots, gen_date)
         master_path = os.path.join(self.master_dir, "الجدول_العام_لاستعمالات_الزمن_للمدرسين.html")
         master_pdf = os.path.join(self.master_dir, "الجدول_العام_لاستعمالات_الزمن_للمدرسين.pdf")
+        master_xlsx = os.path.join(self.master_dir, "الجدول_العام_لاستعمالات_الزمن_للمدرسين.xlsx")
+
         with open(master_path, "w", encoding="utf-8") as f:
             f.write(master_html)
         conversion_tasks.append((master_path, master_pdf))
+
+        try:
+            self.generate_master_table_excel(master_data, inst_info, break_slots, master_xlsx)
+        except Exception as e:
+            print("Master table Excel generation note:", e)
 
         # Concurrent PDF generation for maximum speed
         try:
@@ -1027,7 +1445,8 @@ class ExportEngine:
             "all_teachers_file": all_teachers_path,
             "all_teachers_pdf": all_teachers_pdf,
             "master_file": master_path,
-            "master_pdf": master_pdf
+            "master_pdf": master_pdf,
+            "master_xlsx": master_xlsx
         }
 
     def open_desktop_folder(self):

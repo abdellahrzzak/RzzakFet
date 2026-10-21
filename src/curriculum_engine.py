@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import math
 import re
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Any
 from .models import (
     InstitutionData, EducationalStructure, NonGeneralizedSubjectConfig,
     SubjectQuotaCalc, TeacherAssignment
@@ -20,7 +20,7 @@ class CurriculumEngine:
             NonGeneralizedSubjectConfig("اللغة الأجنبية الثانية (الإنجليزية)", True, 0, 0, 2, "قاعة عامة"),
         ]
 
-    def get_subject_quotas(self) -> List[SubjectQuotaCalc]:
+    def get_subject_quotas(self, enable_3apic_grouping: bool = False) -> List[SubjectQuotaCalc]:
         n1 = self.structure.classes_1_apic
         n2 = self.structure.classes_2_apic
         n3 = self.structure.classes_3_apic
@@ -66,6 +66,9 @@ class CurriculumEngine:
         results = []
         for name, is_gen, d_h1, d_h2, d_h3 in base_subjects:
             h1, h2, h3 = _resolve_subject_hours(name, d_h1, d_h2, d_h3)
+            if enable_3apic_grouping and name in ["الكيمياء و الفيزياء", "علوم الحياة و الأرض"]:
+                # In 3APIC grouping, teacher teaches 2h for G1 and 2h for G2 in lab = 4h total per class
+                h3 = 4
             tot_h1 = n1 * h1
             tot_h2 = n2 * h2
             tot_h3 = n3 * h3
@@ -385,7 +388,7 @@ class CurriculumEngine:
 
         return alloc
 
-    def calculate_assignments(self) -> List[TeacherAssignment]:
+    def calculate_assignments(self, enable_3apic_grouping: bool = False) -> List[TeacherAssignment]:
         n1 = self.structure.classes_1_apic
         n2 = self.structure.classes_2_apic
         n3 = self.structure.classes_3_apic
@@ -397,7 +400,7 @@ class CurriculumEngine:
         assignments: List[TeacherAssignment] = []
         row_id = 1
 
-        quotas = self.get_subject_quotas()
+        quotas = self.get_subject_quotas(enable_3apic_grouping=enable_3apic_grouping)
 
         shift_map = {
             "اللغة العربية": 0,
@@ -420,6 +423,9 @@ class CurriculumEngine:
                 continue
 
             num_teachers = self.institution.teacher_counts_by_subject.get(q.name, q.required_teachers)
+            if enable_3apic_grouping and q.name in ["الكيمياء و الفيزياء", "علوم الحياة و الأرض"]:
+                # Strictly enforce statutory max: teacher count must cover total hours without exceeding 24h
+                num_teachers = max(num_teachers, q.required_teachers)
             if num_teachers <= 0:
                 continue
 
@@ -490,3 +496,144 @@ class CurriculumEngine:
                 row_id += 1
 
         return assignments
+
+    def check_grouping_feasibility(self) -> Dict[str, Any]:
+        """
+        فحص الجدوى الاستباقي لاعتماد نظام التفويج (3APIC Grouping Feasibility Audit):
+        1. التحقق أولاً من فترات التوقف الرسمية (break_time_slots) لحساب السعة الزمنية الفعلية للمختبرات.
+        2. التحقق من كفاية مختبرات الفيزياء والكيمياء وعلوم الحياة والأرض.
+        3. التحقق من كفاية الموارد البشرية (أساتذة الفيزياء وأساتذة علوم الحياة والأرض) لتغطية حصص التفويج.
+        """
+        # 1. فحص فترات التوقف أولاً لحساب السعة الفعلية
+        break_slots = getattr(self.institution, 'break_time_slots', []) or []
+        num_breaks = len(break_slots)
+        effective_lab_capacity = max(20, 48 - num_breaks)
+
+        n1 = self.structure.classes_1_apic
+        n2 = self.structure.classes_2_apic
+        n3 = self.structure.classes_3_apic
+
+        # 2. فحص سعة المختبرات
+        pc_labs = getattr(self.institution, 'pc_labs_count', 0) or 0
+        svt_labs = getattr(self.institution, 'svt_labs_count', 0) or 0
+
+        avail_pc_lab_hours = pc_labs * effective_lab_capacity
+        avail_svt_lab_hours = svt_labs * effective_lab_capacity
+
+        # كل قسم من الثالثة إعدادي يتطلب 4 ساعات بالمختبر (ساعتان للفوج G1 وساعتان للفوج G2)
+        req_pc_lab_hours = n3 * 4
+        req_svt_lab_hours = n3 * 4
+
+        lab_pc_ok = (avail_pc_lab_hours >= req_pc_lab_hours) if req_pc_lab_hours > 0 else True
+        lab_svt_ok = (avail_svt_lab_hours >= req_svt_lab_hours) if req_svt_lab_hours > 0 else True
+
+        pc_lab_deficit_hours = max(0, req_pc_lab_hours - avail_pc_lab_hours)
+        svt_lab_deficit_hours = max(0, req_svt_lab_hours - avail_svt_lab_hours)
+
+        extra_pc_labs_needed = (math.ceil(req_pc_lab_hours / float(effective_lab_capacity)) - pc_labs) if req_pc_lab_hours > avail_pc_lab_hours else 0
+        extra_svt_labs_needed = (math.ceil(req_svt_lab_hours / float(effective_lab_capacity)) - svt_labs) if req_svt_lab_hours > avail_svt_lab_hours else 0
+
+        # 3. فحص نصاب وموارد هيئة التدريس
+        # في نظام التفويج: الأولى (2س) + الثانية (2س) + الثالثة (4س: 2س للفوج G1 + 2س للفوج G2)
+        req_pc_teacher_hours = (n1 * 2) + (n2 * 2) + (n3 * 4)
+        req_svt_teacher_hours = (n1 * 2) + (n2 * 2) + (n3 * 4)
+
+        req_pc_teachers = math.ceil(req_pc_teacher_hours / 24.0) if req_pc_teacher_hours > 0 else 0
+        req_svt_teachers = math.ceil(req_svt_teacher_hours / 24.0) if req_svt_teacher_hours > 0 else 0
+
+        # الأساتذة المتوفرون فعلياً
+        tc_map = getattr(self.institution, 'teacher_counts_by_subject', {}) or {}
+        def _find_tc(name_keys):
+            if isinstance(name_keys, str):
+                name_keys = [name_keys]
+            for k, v in tc_map.items():
+                for nk in name_keys:
+                    if nk.lower() in k.lower():
+                        return int(v)
+            return 0
+
+        avail_pc_teachers = _find_tc(["الفيزياء", "فيزياء", "PC"])
+        avail_svt_teachers = _find_tc(["علوم الحياة", "حياة", "SVT"])
+
+        # Fallback إلى الحساب الافتراضي بدون تفويج إذا لم يتم التخصيص اليدوي
+        if avail_pc_teachers == 0:
+            avail_pc_teachers = math.ceil(((n1 * 2) + (n2 * 2) + (n3 * 2)) / 24.0)
+        if avail_svt_teachers == 0:
+            avail_svt_teachers = math.ceil(((n1 * 2) + (n2 * 2) + (n3 * 2)) / 24.0)
+
+        avail_pc_teacher_hours = avail_pc_teachers * 24
+        avail_svt_teacher_hours = avail_svt_teachers * 24
+
+        teacher_pc_ok = (avail_pc_teachers >= req_pc_teachers)
+        teacher_svt_ok = (avail_svt_teachers >= req_svt_teachers)
+
+        extra_pc_teachers_needed = max(0, req_pc_teachers - avail_pc_teachers)
+        extra_svt_teachers_needed = max(0, req_svt_teachers - avail_svt_teachers)
+        total_extra_teachers = extra_pc_teachers_needed + extra_svt_teachers_needed
+
+        is_feasible = (lab_pc_ok and lab_svt_ok and teacher_pc_ok and teacher_svt_ok)
+
+        errors = []
+        if not lab_pc_ok:
+            errors.append(f"السعة الزمنية لمختبرات الفيزياء لا تسمح: فترات التوقف الرسمية ({num_breaks} فترات) تجعل السعة الفعلية للمختبر الواحد {effective_lab_capacity} ساعة أسبوعياً. المطلوب {req_pc_lab_hours} ساعة والمتوفر حالياً {avail_pc_lab_hours} ساعة. تحتاج المؤسسة إلى {extra_pc_labs_needed} مختبر فيزياء إضافي.")
+        if not lab_svt_ok:
+            errors.append(f"السعة الزمنية لمختبرات علوم الحياة والأرض لا تسمح: فترات التوقف الرسمية ({num_breaks} فترات) تجعل السعة الفعلية للمختبر الواحد {effective_lab_capacity} ساعة أسبوعياً. المطلوب {req_svt_lab_hours} ساعة والمتوفر حالياً {avail_svt_lab_hours} ساعة. تحتاج المؤسسة إلى {extra_svt_labs_needed} مختبر علوم إضافي.")
+
+        if total_extra_teachers > 0:
+            t_msgs = []
+            if extra_pc_teachers_needed > 0:
+                t_word = "أستاذين" if extra_pc_teachers_needed == 2 else ("أستاذ واحد" if extra_pc_teachers_needed == 1 else f"{extra_pc_teachers_needed} أساتذة")
+                t_msgs.append(f"{t_word} في الفيزياء والكيمياء (المطلوب {req_pc_teacher_hours}س والمتوفر {avail_pc_teacher_hours}س)")
+            if extra_svt_teachers_needed > 0:
+                t_word = "أستاذين" if extra_svt_teachers_needed == 2 else ("أستاذ واحد" if extra_svt_teachers_needed == 1 else f"{extra_svt_teachers_needed} أساتذة")
+                t_msgs.append(f"{t_word} في علوم الحياة والأرض (المطلوب {req_svt_teacher_hours}س والمتوفر {avail_svt_teacher_hours}س)")
+
+            tot_word = "أستاذين إضافيين" if total_extra_teachers == 2 else ("أستاذ إضافي واحد" if total_extra_teachers == 1 else f"{total_extra_teachers} أساتذة إضافيين")
+            errors.append(f"خصاص في هيئة التدريس لتطبيق التفويج: تحتاج المؤسسة إلى {tot_word} ({' و '.join(t_msgs)}).")
+
+        return {
+            "feasible": is_feasible,
+            "classes_3_apic": n3,
+            "classes_1_apic": n1,
+            "classes_2_apic": n2,
+            "break_slots_count": num_breaks,
+            "effective_lab_capacity": effective_lab_capacity,
+            "laboratories": {
+                "pc": {
+                    "count": pc_labs,
+                    "effective_hours": avail_pc_lab_hours,
+                    "required_hours": req_pc_lab_hours,
+                    "is_ok": lab_pc_ok,
+                    "deficit_hours": pc_lab_deficit_hours,
+                    "extra_needed": extra_pc_labs_needed
+                },
+                "svt": {
+                    "count": svt_labs,
+                    "effective_hours": avail_svt_lab_hours,
+                    "required_hours": req_svt_lab_hours,
+                    "is_ok": lab_svt_ok,
+                    "deficit_hours": svt_lab_deficit_hours,
+                    "extra_needed": extra_svt_labs_needed
+                }
+            },
+            "teachers": {
+                "pc": {
+                    "available_count": avail_pc_teachers,
+                    "required_count": req_pc_teachers,
+                    "available_hours": avail_pc_teacher_hours,
+                    "required_hours": req_pc_teacher_hours,
+                    "is_ok": teacher_pc_ok,
+                    "extra_needed": extra_pc_teachers_needed
+                },
+                "svt": {
+                    "available_count": avail_svt_teachers,
+                    "required_count": req_svt_teachers,
+                    "available_hours": avail_svt_teacher_hours,
+                    "required_hours": req_svt_teacher_hours,
+                    "is_ok": teacher_svt_ok,
+                    "extra_needed": extra_svt_teachers_needed
+                },
+                "total_extra_needed": total_extra_teachers
+            },
+            "errors": errors
+        }

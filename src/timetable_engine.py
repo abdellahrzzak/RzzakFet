@@ -6,6 +6,7 @@ import json
 import time
 import xml.etree.ElementTree as ET
 import shutil
+import re
 from typing import Dict, List, Any, Optional
 
 import sys
@@ -364,6 +365,56 @@ class TimetableEngine:
                         "is_first": (h == start_hour)
                     }
 
+                # Also populate / merge into parent class timetable if this activity belongs to a subgroup (e.g. 3APIC1-G1 -> 3APIC1)
+                is_sub = any(k in students for k in ["-G1", "-G2", "-F1", "-F2"])
+                if is_sub:
+                    parent_cls = re.sub(r'-(?:G|F)[12]', '', students).strip()
+                    if parent_cls not in student_timetables:
+                        student_timetables[parent_cls] = {d: {h: None for h in HOURS_4} for d in DAYS_12}
+
+                    sub_k = "G1" if ("-G1" in students or "-F1" in students) else "G2"
+                    sub_lbl = "فوج 1" if sub_k == "G1" else "فوج 2"
+                    for h in occupied_hours:
+                        curr_p = student_timetables[parent_cls][day][h]
+                        if curr_p is None:
+                            student_timetables[parent_cls][day][h] = {
+                                "is_grouped": True,
+                                "subject": f"{subject} ({sub_k})",
+                                "teacher": f"{teacher} ({sub_k})",
+                                "room": f"{room} ({sub_k})",
+                                "subgroups": {
+                                    sub_k: {
+                                        "name": sub_lbl,
+                                        "subject": subject,
+                                        "teacher": teacher,
+                                        "room": room
+                                    }
+                                },
+                                "duration": dur,
+                                "is_first": (h == start_hour)
+                            }
+                        else:
+                            curr_p["is_grouped"] = True
+                            if "subgroups" not in curr_p:
+                                curr_p["subgroups"] = {}
+                            curr_p["subgroups"][sub_k] = {
+                                "name": sub_lbl,
+                                "subject": subject,
+                                "teacher": teacher,
+                                "room": room
+                            }
+                            g1_info = curr_p["subgroups"].get("G1") or curr_p["subgroups"].get("F1", {})
+                            g2_info = curr_p["subgroups"].get("G2") or curr_p["subgroups"].get("F2", {})
+                            s1 = g1_info.get("subject", "")
+                            s2 = g2_info.get("subject", "")
+                            r1 = g1_info.get("room", "")
+                            r2 = g2_info.get("room", "")
+                            t1 = g1_info.get("teacher", "")
+                            t2 = g2_info.get("teacher", "")
+                            curr_p["subject"] = f"تفويج: {s1} / {s2}" if (s1 and s2) else (s1 or s2)
+                            curr_p["teacher"] = f"G1: {t1} | G2: {t2}" if (t1 and t2) else (t1 or t2)
+                            curr_p["room"] = f"G1: {r1} | G2: {r2}" if (r1 and r2) else (r1 or r2)
+
             # Room Timetable
             if room:
                 if room not in room_timetables:
@@ -401,6 +452,16 @@ class TimetableEngine:
             }
             master_teachers_data.append(t_row)
 
+        # Classes list: ONLY unified parent classes (strictly no fragmented subgroups in the dropdown)
+        def is_subgroup_cls(name):
+            return any(k in name for k in ["-G1", "-G2", "-F1", "-F2"])
+
+        parent_classes = sorted(
+            [c for c in student_timetables.keys() if not is_subgroup_cls(c)],
+            key=lambda x: (int(re.search(r'(\d+)', x).group(1)) if re.search(r'(\d+)', x) else 99, x)
+        )
+        classes_ordered = parent_classes
+
         result = {
             "success": True,
             "error": None,
@@ -413,7 +474,7 @@ class TimetableEngine:
             "days": DAYS_12,
             "hours": HOURS_4,
             "teachers_list": teachers_list,
-            "classes_list": sorted(list(student_timetables.keys())),
+            "classes_list": classes_ordered,
             "rooms_list": sorted(list(room_timetables.keys())),
             "teacher_timetables": teacher_timetables,
             "student_timetables": student_timetables,
