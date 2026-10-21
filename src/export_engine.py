@@ -482,6 +482,12 @@ class ExportEngine:
         acad_year = inst_info.get("academic_year") or inst_info.get("year", "2026-2027")
         gresa_code = inst_info.get("gresa_code") or inst_info.get("gresa", "045892P")
         principal = inst_info.get("principal_name") or inst_info.get("principal", "رئيس المؤسسة")
+        logo_src = inst_info.get("logo_base64") or inst_info.get("logo") or "/official_header_logo.png"
+        logo_html = f'''
+        <div class="official-logo-box" style="text-align:center; margin-bottom:4px;">
+            <img src="{logo_src}" alt="شعار الوزارة والمؤسسة" style="max-height:42px; max-width:260px; object-fit:contain; display:inline-block;">
+        </div>
+        ''' if logo_src else ''
 
         if category == "class":
             main_title = f"جدول حصص القسم: {target_name}"
@@ -655,25 +661,26 @@ class ExportEngine:
             </div>
             '''
 
+        logo_src = inst_info.get("logo_base64") or inst_info.get("logo") or "/official_header_logo.png"
+        logo_html = f'''
+        <div class="official-logo-box" style="text-align:center; margin-bottom:5px;">
+            <img src="{logo_src}" alt="شعار الوزارة والمؤسسة" style="max-height:50px; max-width:300px; object-fit:contain; display:inline-block;">
+        </div>
+        ''' if logo_src else ''
+
         return f'''
         <div class="sheet">
-            <div class="official-header">
-                <div class="header-box" style="text-align:right;">
-                    <div style="font-weight:900;">المملكة المغربية</div>
-                    <div style="font-size:9pt; color:#334155;">وزارة التربية الوطنية والتعليم الأولي والرياضة</div>
-                    <div style="font-size:8.5pt; color:#475569;">{acad_name}</div>
-                    <div style="font-size:8.5pt; color:#475569;">{prov_name}</div>
+            {logo_html}
+            <div class="official-header" style="display:flex; justify-content:space-between; align-items:center; border-bottom:1.5px solid #0f172a; padding-bottom:4px; margin-bottom:6px;">
+                <div class="header-box" style="text-align:right; font-size:8.5pt; line-height:1.4;">
+                    <div style="font-weight:800; color:#1e293b;">{acad_name}</div>
+                    <div style="font-weight:700; color:#334155;">{prov_name}</div>
+                    <div style="font-weight:900; color:#0f172a; font-size:9.5pt;">{inst_name}</div>
                 </div>
 
-                <div class="header-center">
-                    <div class="main-title">{main_title}</div>
-                    <div style="font-weight:800; font-size:10pt; color:#0f172a;">{inst_name}</div>
-                </div>
-
-                <div class="header-box" style="text-align:left;">
-                    <div>الموسم الدراسي: <strong>{acad_year}</strong></div>
-                    <div style="font-size:8.5pt; color:#475569;">رمز المؤسسة: <strong>{gresa_code}</strong></div>
-                    <div style="font-size:8.5pt; color:#475569;">رئيس المؤسسة: <strong>{principal}</strong></div>
+                <div class="header-center" style="text-align:center;">
+                    <div class="main-title" style="font-size:12pt; font-weight:900; color:#0f172a; margin-bottom:2px;">{main_title}</div>
+                    <div style="font-size:8pt; color:#475569;">الموسم الدراسي: <strong>{acad_year}</strong> | رمز مسار: <strong>{gresa_code}</strong></div>
                 </div>
             </div>
 
@@ -718,6 +725,12 @@ class ExportEngine:
         acad_year = inst_info.get("academic_year") or inst_info.get("year", "2026-2027")
         gresa_code = inst_info.get("gresa_code") or inst_info.get("gresa", "045892P")
         principal = inst_info.get("principal_name") or inst_info.get("principal", "رئيس المؤسسة")
+        logo_src = inst_info.get("logo_base64") or inst_info.get("logo") or "/official_header_logo.png"
+        logo_html = f'''
+        <div class="official-logo-box" style="text-align:center; margin-bottom:4px;">
+            <img src="{logo_src}" alt="شعار الوزارة والمؤسسة" style="max-height:42px; max-width:260px; object-fit:contain; display:inline-block;">
+        </div>
+        ''' if logo_src else ''
 
         rows_html = ""
         DAYS_12 = [
@@ -965,22 +978,16 @@ class ExportEngine:
     </div>
 
     <div class="master-sheet">
-        <div class="official-header" style="padding-bottom:3px; margin-bottom:4px;">
-            <div class="header-box" style="text-align:right;">
-                <div style="font-weight:900;">المملكة المغربية</div>
-                <div style="font-size:8pt; color:#334155;">وزارة التربية الوطنية والتعليم الأولي والرياضة</div>
-                <div style="font-size:7.5pt; color:#475569;">{acad_name} | {prov_name}</div>
+        {logo_html}
+        <div class="official-header" style="display:flex; justify-content:space-between; align-items:center; padding-bottom:3px; margin-bottom:4px; border-bottom:1.5px solid #0f172a;">
+            <div class="header-box" style="text-align:right; font-size:7.5pt; line-height:1.35;">
+                <div style="font-weight:800; color:#1e293b;">{acad_name} | {prov_name}</div>
+                <div style="font-weight:900; font-size:8.5pt; color:#0f172a;">{inst_name}</div>
             </div>
 
-            <div class="header-center">
-                <div class="main-title" style="font-size:10pt; padding:2px 12px; margin-bottom:1px;">📋 الجدول العام لاستعمالات الزمن للمدرسين</div>
-                <div style="font-weight:800; font-size:8.5pt;">{inst_name} ({acad_year})</div>
-            </div>
-
-            <div class="header-box" style="text-align:left;">
-                <div>الموسم: <strong>{acad_year}</strong></div>
-                <div style="font-size:7.5pt; color:#475569;">رمز المؤسسة: <strong>{gresa_code}</strong></div>
-                <div style="font-size:7.5pt; color:#475569;">رئيس المؤسسة: <strong>{principal}</strong></div>
+            <div class="header-center" style="text-align:center;">
+                <div class="main-title" style="font-size:10pt; font-weight:900; padding:2px 12px; margin-bottom:1px;">📋 الجدول العام لاستعمالات الزمن للمدرسين</div>
+                <div style="font-size:7.5pt; color:#475569;">الموسم الدراسي: <strong>{acad_year}</strong> | رمز المؤسسة: <strong>{gresa_code}</strong> | رئيس المؤسسة: <strong>{principal}</strong></div>
             </div>
         </div>
 
@@ -1077,6 +1084,12 @@ class ExportEngine:
         acad_year = inst_info.get("academic_year") or inst_info.get("year", "2026-2027")
         gresa_code = inst_info.get("gresa_code") or inst_info.get("gresa", "045892P")
         principal = inst_info.get("principal_name") or inst_info.get("principal", "رئيس المؤسسة")
+        logo_src = inst_info.get("logo_base64") or inst_info.get("logo") or "/official_header_logo.png"
+        logo_html = f'''
+        <div class="official-logo-box" style="text-align:center; margin-bottom:4px;">
+            <img src="{logo_src}" alt="شعار الوزارة والمؤسسة" style="max-height:42px; max-width:260px; object-fit:contain; display:inline-block;">
+        </div>
+        ''' if logo_src else ''
 
         thin_side = Side(style='thin', color='64748B')
         cell_border = Border(left=thin_side, right=thin_side, top=thin_side, bottom=thin_side)

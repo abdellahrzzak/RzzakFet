@@ -92,7 +92,7 @@ def is_server_alive(port=APP_PORT, timeout=0.25):
 def start_server(port=APP_PORT):
     try:
         ThreadingHTTPServer.allow_reuse_address = True
-        server = ThreadingHTTPServer(('127.0.0.1', port), RzzakFetHandler)
+        server = ThreadingHTTPServer(('0.0.0.0', port), RzzakFetHandler)
         server.serve_forever()
     except Exception as e:
         print(f"[RzzakFet Server Notice]: {e}")

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import os, sys, io, base64, zipfile, shutil, subprocess
+import os, sys, zipfile, shutil, subprocess
 
 INSTALLER_FOOTER = '''
 def create_shortcut(target, link_path, icon_path=None, desc=""):
@@ -30,25 +30,37 @@ def install_app(progress_var, status_var, root):
     try:
         subprocess.run(['taskkill', '/F', '/IM', 'RzzakFet.exe'], capture_output=True)
         
-        status_var.set("جاري بدء التثبيت واستخراج الملفات...")
-        progress_var.set(20)
+        status_var.set("جاري بدء التثبيت واستخراج ملفات البرنامج...")
+        progress_var.set(10)
         root.update()
         
         dest_dir = os.path.expandvars(r'%LOCALAPPDATA%\\Programs\\RzzakFet')
         os.makedirs(dest_dir, exist_ok=True)
-        
-        raw_zip = base64.b64decode(ZIP_DATA)
-        with zipfile.ZipFile(io.BytesIO(raw_zip), 'r') as zf:
-            total = len(zf.namelist())
-            for i, name in enumerate(zf.namelist()):
+
+        if getattr(sys, 'frozen', False):
+            base_p = getattr(sys, '_MEIPASS', os.path.dirname(sys.executable))
+        else:
+            base_p = os.path.dirname(os.path.abspath(__file__))
+
+        zip_cand = os.path.join(base_p, 'app.zip')
+        if not os.path.exists(zip_cand):
+            zip_cand = os.path.join(os.path.dirname(sys.executable), 'app.zip')
+
+        if not os.path.exists(zip_cand):
+            raise FileNotFoundError(f"لم يتم العثور على حزمة البرنامج: {zip_cand}")
+
+        with zipfile.ZipFile(zip_cand, 'r') as zf:
+            namelist = zf.namelist()
+            total = len(namelist)
+            for i, name in enumerate(namelist):
                 zf.extract(name, dest_dir)
-                if i % 15 == 0:
-                    pct = 20 + int((i / total) * 60)
+                if i % 25 == 0:
+                    pct = 10 + int((i / total) * 70)
                     progress_var.set(pct)
                     root.update()
         
         progress_var.set(85)
-        status_var.set("جاري تسجيل الاختصارات وأيقونة التطبيق...")
+        status_var.set("جاري إنشاء الاختصارات وتحديث الأيقونة الرسمية...")
         root.update()
         
         exe_path = os.path.join(dest_dir, 'RzzakFet.exe')
@@ -72,6 +84,30 @@ def install_app(progress_var, status_var, root):
         programs = os.path.expandvars(r'%APPDATA%\\Microsoft\\Windows\\Start Menu\\Programs')
         create_shortcut(exe_path, os.path.join(programs, 'RzzakFet.lnk'), icon_path, 'RzzakFet - برنامج إسناد وتوليد الجداول المدرسية')
 
+        # Seed user data directory with state files
+        user_data = os.path.expandvars(r'%LOCALAPPDATA%\\RzzakFet\\data')
+        os.makedirs(user_data, exist_ok=True)
+        for s_file in ['attendance_mobile_db.json', 'students_attendance_state.json', 'student_mobility_state.json', 'app_state.json']:
+            for src_cand in [os.path.join(dest_dir, 'data', s_file), os.path.join(dest_dir, '_internal', 'data', s_file)]:
+                if os.path.exists(src_cand):
+                    tgt = os.path.join(user_data, s_file)
+                    if not os.path.exists(tgt) or os.path.getsize(tgt) < 10:
+                        try:
+                            shutil.copy2(src_cand, tgt)
+                        except Exception:
+                            pass
+                    break
+
+        # Always update ui/index.html in user_data/ui to ensure fresh UI
+        for ui_cand in [os.path.join(dest_dir, 'ui', 'index.html'), os.path.join(dest_dir, '_internal', 'ui', 'index.html')]:
+            if os.path.exists(ui_cand):
+                try:
+                    os.makedirs(os.path.join(user_data, 'ui'), exist_ok=True)
+                    shutil.copy2(ui_cand, os.path.join(user_data, 'ui', 'index.html'))
+                except Exception:
+                    pass
+                break
+
         # Refresh Windows Shell Icon Cache immediately
         try:
             import ctypes
@@ -80,7 +116,7 @@ def install_app(progress_var, status_var, root):
             pass
         
         progress_var.set(100)
-        status_var.set("تم اكتمال التثبيت بنجاح! جاري فتح البرنامج...")
+        status_var.set("تم اكتمال التثبيت بنجاح! جاري تشغيل RzzakFet...")
         root.update()
         
         subprocess.Popen([exe_path], cwd=dest_dir)
@@ -91,16 +127,16 @@ def install_app(progress_var, status_var, root):
 
 def main():
     root = tk.Tk()
-    root.title("تثبيت برنامج RzzakFet v2.0 (النسخة الثانية)")
+    root.title("تثبيت برنامج RzzakFet v2.0 (النسخة المتطورة)")
     root.geometry("490x290")
     root.resizable(False, False)
     root.configure(bg="#0f172a")
     root.eval('tk::PlaceWindow . center')
     
-    title_lbl = tk.Label(root, text="برنامج RzzakFet المكتبي v2.0", font=("Segoe UI", 16, "bold"), fg="#38bdf8", bg="#0f172a")
+    title_lbl = tk.Label(root, text="برنامج RzzakFet المعتمد v2.0", font=("Segoe UI", 16, "bold"), fg="#38bdf8", bg="#0f172a")
     title_lbl.pack(pady=(28, 6))
     
-    sub_lbl = tk.Label(root, text="النسخة الثانية المتقدمة - بنك القيود الشامل (68 قيداً وتخصيص فردي وجماعي)", font=("Segoe UI", 10), fg="#94a3b8", bg="#0f172a")
+    sub_lbl = tk.Label(root, text="التثبيت والتحديث الشامل (إصلاح النوافذ وتتبع الغياب)", font=("Segoe UI", 10), fg="#94a3b8", bg="#0f172a")
     sub_lbl.pack(pady=(0, 20))
     
     progress_var = tk.DoubleVar(value=0)
@@ -111,7 +147,7 @@ def main():
     pb = ttk.Progressbar(root, variable=progress_var, maximum=100, style="Horizontal.TProgressbar", length=390)
     pb.pack(pady=10)
     
-    status_var = tk.StringVar(value="جاري التحضير...")
+    status_var = tk.StringVar(value="جاري فحص الحزمة والملفات...")
     status_lbl = tk.Label(root, textvariable=status_var, font=("Segoe UI", 10), fg="#e2e8f0", bg="#0f172a")
     status_lbl.pack(pady=8)
     
@@ -128,47 +164,67 @@ def build_setup():
         print(f"Error: {dist_dir} does not exist.")
         return False
 
-    # Ensure icon is present in dist_dir root and assets/
+    # Check essential files in dist_dir
+    pydll = os.path.join(dist_dir, "_internal", "python311.dll")
+    tcldll = os.path.join(dist_dir, "_internal", "tcl86t.dll")
+    mainexe = os.path.join(dist_dir, "RzzakFet.exe")
+    if not os.path.exists(pydll) or not os.path.exists(tcldll) or not os.path.exists(mainexe):
+        print("ERROR: dist/RzzakFet is missing critical binaries:")
+        print(f"  python311.dll: {os.path.exists(pydll)}")
+        print(f"  tcl86t.dll:    {os.path.exists(tcldll)}")
+        print(f"  RzzakFet.exe:  {os.path.exists(mainexe)}")
+        return False
+
+    # Ensure all assets and ui are synced into dist_dir and dist_dir/_internal
+    src_assets_dir = os.path.join(os.getcwd(), "assets")
+    src_ui_file = os.path.join(os.getcwd(), "ui", "index.html")
+    if os.path.exists(src_assets_dir):
+        for target_assets in [os.path.join(dist_dir, "assets"), os.path.join(dist_dir, "_internal", "assets")]:
+            os.makedirs(target_assets, exist_ok=True)
+            for a_item in os.listdir(src_assets_dir):
+                shutil.copy2(os.path.join(src_assets_dir, a_item), os.path.join(target_assets, a_item))
     src_icon = os.path.join(os.getcwd(), "assets", "icon.ico")
     if os.path.exists(src_icon):
-        os.makedirs(os.path.join(dist_dir, "assets"), exist_ok=True)
-        shutil.copy2(src_icon, os.path.join(dist_dir, "assets", "icon.ico"))
         shutil.copy2(src_icon, os.path.join(dist_dir, "icon.ico"))
+    if os.path.exists(src_ui_file):
+        for target_ui in [os.path.join(dist_dir, "ui"), os.path.join(dist_dir, "_internal", "ui")]:
+            os.makedirs(target_ui, exist_ok=True)
+            shutil.copy2(src_ui_file, os.path.join(target_ui, "index.html"))
 
-    print("1. Creating in-memory zip of dist/RzzakFet...")
-    zip_buf = io.BytesIO()
-    with zipfile.ZipFile(zip_buf, "w", zipfile.ZIP_DEFLATED, compresslevel=6) as zf:
+    print("1. Creating app.zip from dist/RzzakFet...")
+    zip_path = os.path.join(os.getcwd(), "app.zip")
+    with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED, compresslevel=6) as zf:
         for root, dirs, files in os.walk(dist_dir):
             for file in files:
                 full_path = os.path.join(root, file)
                 rel_path = os.path.relpath(full_path, dist_dir)
                 zf.write(full_path, rel_path)
 
-    raw_zip = zip_buf.getvalue()
-    print(f"   Zip size: {len(raw_zip) / (1024*1024):.2f} MB")
-    
-    print("2. Base64 encoding...")
-    b64_data = base64.b64encode(raw_zip).decode("ascii")
+    zip_size_mb = os.path.getsize(zip_path) / (1024 * 1024)
+    print(f"   app.zip created successfully! Size: {zip_size_mb:.2f} MB")
+    if zip_size_mb < 30.0:
+        print(f"WARNING: app.zip is suspiciously small ({zip_size_mb:.2f} MB)!")
+        return False
 
-    print("3. Writing updated installer_src.py...")
+    print("2. Writing installer_src.py...")
     with open("installer_src.py", "w", encoding="utf-8") as f:
         f.write("# -*- coding: utf-8 -*-\n")
-        f.write("import os\nimport sys\nimport base64\nimport zipfile\nimport io\nimport subprocess\n")
+        f.write("import os\nimport sys\nimport zipfile\nimport subprocess\n")
         f.write("import tkinter as tk\nfrom tkinter import ttk\nimport threading\n\n")
-        f.write('ZIP_DATA = """' + b64_data + '"""\n\n')
         f.write(INSTALLER_FOOTER.strip() + "\n")
 
-    print("4. Running PyInstaller on RzzakFet_v2.0_Setup.spec...")
-    res = subprocess.run(["pyinstaller", "RzzakFet_v2.0_Setup.spec", "--noconfirm"], capture_output=True, text=True)
+    print("3. Running PyInstaller on RzzakFet_v2.0_Setup.spec...")
+    res = subprocess.run(["pyinstaller", "RzzakFet_v2.0_Setup.spec", "--noconfirm"])
     if res.returncode != 0:
-        print("PyInstaller failed:", res.stderr[-500:])
+        print("PyInstaller failed for setup.")
         return False
 
     setup_exe = os.path.join("dist", "RzzakFet_v2.0_Setup.exe")
     if os.path.exists(setup_exe):
         desktop_dest = os.path.join(os.path.expanduser("~"), "Desktop", "RzzakFet_v2.0_Setup.exe")
         shutil.copy2(setup_exe, desktop_dest)
-        print(f"5. Successfully copied {setup_exe} to {desktop_dest} (size: {os.path.getsize(desktop_dest)/(1024*1024):.2f} MB)")
+        dest_size_mb = os.path.getsize(desktop_dest) / (1024 * 1024)
+        print(f"4. Successfully copied {setup_exe} to {desktop_dest} (size: {dest_size_mb:.2f} MB)")
         return True
     else:
         print("Setup.exe not found in dist/")

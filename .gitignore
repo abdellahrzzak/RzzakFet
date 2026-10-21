@@ -44,3 +44,6 @@ build_68_constraints.py
 test_*.py
 generate_*.py
 *.png
+
+!assets/*.png
+!ui/*.png

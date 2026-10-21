@@ -561,7 +561,8 @@ class RzzakFetAppState:
                     "afternoon_start_hour": self.institution.afternoon_start_hour,
                     "afternoon_period_times": self.institution.afternoon_period_times,
                     "cycle": getattr(self.institution, 'institution_cycle', 'middle'),
-                    "institution_cycle": getattr(self.institution, 'institution_cycle', 'middle')
+                    "institution_cycle": getattr(self.institution, 'institution_cycle', 'middle'),
+                    "logo_base64": getattr(self.institution, 'logo_base64', '')
                 },
                 "structure": {
                     "cycle": getattr(self.structure, 'cycle', 'middle'),
@@ -624,6 +625,7 @@ class RzzakFetAppState:
             self.institution.morning_start_hour = inst_data.get("morning_start_hour", self.institution.morning_start_hour)
             self.institution.morning_period_times = inst_data.get("morning_period_times", self.institution.morning_period_times)
             self.institution.afternoon_start_hour = inst_data.get("afternoon_start_hour", self.institution.afternoon_start_hour)
+            self.institution.logo_base64 = inst_data.get("logo_base64", getattr(self.institution, "logo_base64", ""))
             self.institution.afternoon_period_times = inst_data.get("afternoon_period_times") or self.institution.afternoon_period_times or ["14:00 - 15:00", "15:00 - 16:00", "16:00 - 17:00", "17:00 - 18:00"]
 
             # Structure
@@ -997,6 +999,7 @@ class RzzakFetAppState:
                 "morning_period_times": self.institution.morning_period_times,
                 "afternoon_start_hour": self.institution.afternoon_start_hour,
                 "afternoon_period_times": self.institution.afternoon_period_times,
+                "logo_base64": getattr(self.institution, "logo_base64", ""),
                 "all_default_rooms": all_default_rooms,
                 "all_default_teachers": all_default_teachers
             },
@@ -3277,6 +3280,8 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
             inst.academic_year = data.get("academic_year", inst.academic_year)
             inst.gresa_code = data.get("gresa", inst.gresa_code)
             inst.principal_name = data.get("principal", inst.principal_name)
+            if "logo_base64" in data:
+                inst.logo_base64 = str(data["logo_base64"]).strip()
             inst.general_rooms_count = int(data.get("general_rooms", inst.general_rooms_count))
             inst.svt_labs_count = int(data.get("svt_labs", inst.svt_labs_count))
             inst.pc_labs_count = int(data.get("pc_labs", inst.pc_labs_count))

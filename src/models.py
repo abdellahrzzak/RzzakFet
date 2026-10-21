@@ -20,6 +20,7 @@ class InstitutionData:
     principal_name: str = "ذ. محمد الإدريسي"
     institution_cycle: str = "middle"  # "middle" (الثانوي الإعدادي) or "qualifying" (الثانوي التأهيلي)
     cycle: str = "middle"
+    logo_base64: str = ""
     
     # Session / Period Timing Settings (Editable in Tab 2)
     morning_start_hour: str = "08:30"

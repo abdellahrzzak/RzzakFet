@@ -2410,6 +2410,39 @@
             </div>
           </div>
 
+          <!-- Official Logo Configuration Section -->
+          <div class="border-t border-slate-800 pt-4 space-y-3">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div>
+                <h3 class="font-bold text-sm text-cyan-400 flex items-center gap-2">
+                  <span>🖼️ شعار المؤسسة والوزارة للوثائق واستعمالات الزمن</span>
+                </h3>
+                <p class="text-xs text-slate-400 mt-0.5">شعار الترويسة يظهر في أعلى ووسط جميع الوثائق المطبوعة (استعمالات الزمن، تقارير الحراسة، الامتحانات، والإشعارات)</p>
+              </div>
+              <div class="flex items-center gap-2 flex-wrap">
+                <input type="file" id="inst-logo-file-input" accept="image/*" class="hidden" onchange="handleLogoUpload(event)">
+                <button type="button" onclick="document.getElementById('inst-logo-file-input').click()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-3.5 py-1.5 rounded-xl shadow-md transition flex items-center gap-1.5 cursor-pointer">
+                  <span>📁 تحميل شعار جديد (صورة)</span>
+                </button>
+                <button type="button" onclick="resetToDefaultLogo()" class="bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-slate-700 text-xs px-3 py-1.5 rounded-xl font-semibold transition flex items-center gap-1 cursor-pointer">
+                  <span>🔄 الشعار الرسمي الافتراضي</span>
+                </button>
+                <button type="button" onclick="removeInstitutionLogo()" class="bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 border border-rose-800/50 text-xs px-3 py-1.5 rounded-xl font-semibold transition flex items-center gap-1 cursor-pointer">
+                  <span>🗑️ إزالة الشعار</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Logo Preview Box -->
+            <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 flex flex-col items-center justify-center min-h-[90px]">
+              <div class="bg-white px-6 py-2.5 rounded-lg border border-slate-200 shadow-sm flex items-center justify-center max-w-full overflow-hidden">
+                <img id="inst-logo-preview" src="/official_header_logo.png" alt="شعار المؤسسة والوزارة" class="max-h-16 max-w-[380px] object-contain inline-block">
+                <span id="inst-logo-empty-hint" class="hidden text-xs text-slate-400 font-semibold py-2">لا يوجد شعار محدد حالياً (ستصدر الوثائق بدون صورة شعار بالترويسة)</span>
+              </div>
+              <span class="text-[11px] text-slate-400 mt-2">معاينة الترويسة كما ستظهر في أعلى الوثائق واستعمالات الزمن والتقارير المطبوعة</span>
+            </div>
+          </div>
+
           <!-- Working Hours & Session Timing Configuration -->
           <div class="border-t border-slate-800 pt-4 space-y-4">
             <div class="flex items-center justify-between">
@@ -3419,24 +3452,20 @@
           <!-- VIEW 1: INDIVIDUAL TIMETABLE SHEET (Teacher / Class / Room) -->
           <div id="printable-timetable-sheet" class="bg-slate-950 rounded-xl border border-slate-800 p-3 space-y-2 shadow-inner">
             
-            <!-- Moroccan Ministerial Header -->
+            <!-- Moroccan Ministerial Header (Logo Top Centered) -->
+            <div class="official-logo-box text-center mb-1">
+              <img id="print-sheet-logo-img" src="/official_header_logo.png" alt="شعار الوزارة والمؤسسة" class="max-h-12 max-w-[280px] object-contain inline-block">
+            </div>
             <div class="official-print-header border-b border-slate-800 pb-2 flex items-center justify-between text-xs">
               <div class="text-right space-y-0.5">
-                <div class="font-black text-slate-200 text-xs">المملكة المغربية</div>
-                <div class="text-[10px] text-slate-400">وزارة التربية الوطنية والتعليم الأولي والرياضة</div>
-                <div class="text-[9.5px] text-slate-400" id="print-academy-name">أكاديمية جهة الدار البيضاء - سطات</div>
+                <div class="text-[10px] text-slate-300 font-bold" id="print-academy-name">أكاديمية جهة الدار البيضاء - سطات</div>
                 <div class="text-[9.5px] text-slate-400" id="print-province-name">مديرية مولاي رشيد</div>
+                <div class="text-xs text-white font-black" id="print-inst-name">الثانوية الإعدادية بئر انزران</div>
               </div>
 
               <div class="text-center space-y-0.5">
                 <div id="print-target-title" class="official-print-title font-black text-xs text-cyan-400 bg-slate-900 border border-slate-800 px-3 py-1 rounded-lg shadow-sm">جدول حصص الأستاذ</div>
-                <div class="text-[10px] text-slate-300 font-bold" id="print-inst-name">الثانوية الإعدادية بئر انزران</div>
-              </div>
-
-              <div class="text-left space-y-0.5">
-                <div class="text-[10px] text-slate-300">الموسم الدراسي: <strong id="print-academic-year" class="text-white font-mono">2026-2027</strong></div>
-                <div class="text-[9.5px] text-slate-400">رمز المؤسسة: <strong id="print-gresa-code" class="font-mono text-slate-300">045892P</strong></div>
-                <div class="text-[9.5px] text-slate-400">رئيس المؤسسة: <strong id="print-principal-name" class="text-slate-300">ذ. محمد الإدريسي</strong></div>
+                <div class="text-[10px] text-slate-300">الموسم الدراسي: <strong id="print-academic-year" class="text-white font-mono">2026-2027</strong> | رمز مسار: <strong id="print-gresa-code" class="font-mono text-slate-300">045892P</strong></div>
               </div>
             </div>
 
@@ -3489,24 +3518,20 @@
           <!-- VIEW 2: MASTER TEACHERS TIMETABLE MATRIX -->
           <div id="master-timetable-sheet" class="bg-slate-950 rounded-xl border border-slate-800 p-3 space-y-2 shadow-inner hidden">
             
-            <!-- Moroccan Ministerial Header for Master Matrix -->
+            <!-- Moroccan Ministerial Header for Master Matrix (Logo Top Centered) -->
+            <div class="official-logo-box text-center mb-1">
+              <img id="print-master-logo-img" src="/official_header_logo.png" alt="شعار الوزارة والمؤسسة" class="max-h-11 max-w-[260px] object-contain inline-block">
+            </div>
             <div class="official-print-header border-b border-slate-800 pb-2 flex items-center justify-between text-xs">
               <div class="text-right space-y-0.5">
-                <div class="font-black text-slate-200 text-xs">المملكة المغربية</div>
-                <div class="text-[10px] text-slate-400">وزارة التربية الوطنية والتعليم الأولي والرياضة</div>
-                <div class="text-[9.5px] text-slate-400" id="print-master-academy-name">أكاديمية جهة الدار البيضاء - سطات</div>
+                <div class="text-[10px] text-slate-300 font-bold" id="print-master-academy-name">أكاديمية جهة الدار البيضاء - سطات</div>
                 <div class="text-[9.5px] text-slate-400" id="print-master-province-name">مديرية مولاي رشيد</div>
+                <div class="text-xs text-white font-black" id="print-master-inst-name">الثانوية الإعدادية بئر انزران</div>
               </div>
 
               <div class="text-center space-y-0.5">
                 <div class="official-print-title font-black text-xs text-amber-300 bg-slate-900 border border-slate-800 px-3 py-1 rounded-lg shadow-sm">📋 الجدول العام لاستعمالات الزمن للمدرسين (Master Schedule)</div>
-                <div class="text-[10px] text-slate-300 font-bold" id="print-master-inst-name">الثانوية الإعدادية بئر انزران</div>
-              </div>
-
-              <div class="text-left space-y-0.5">
-                <div class="text-[10px] text-slate-300">الموسم الدراسي: <strong id="print-master-academic-year" class="text-white font-mono">2026-2027</strong></div>
-                <div class="text-[9.5px] text-slate-400">رمز المؤسسة: <strong id="print-master-gresa-code" class="font-mono text-slate-300">045892P</strong></div>
-                <div class="text-[9.5px] text-slate-400">رئيس المؤسسة: <strong id="print-master-principal-name" class="text-slate-300">ذ. محمد الإدريسي</strong></div>
+                <div class="text-[10px] text-slate-300">الموسم الدراسي: <strong id="print-master-academic-year" class="text-white font-mono">2026-2027</strong> | رمز المؤسسة: <strong id="print-master-gresa-code" class="font-mono text-slate-300">045892P</strong></div>
               </div>
             </div>
 
@@ -9645,6 +9670,8 @@
       document.getElementById('inst-it-rooms').value = appData.institution.multimedia_rooms;
       document.getElementById('inst-sports-fields').value = appData.institution.sports_fields;
       renderRoomCapacityEvaluation();
+      window.currentInstitutionLogo = (appData.institution && appData.institution.logo_base64) ? appData.institution.logo_base64 : '/official_header_logo.png';
+      updateLogoPreviewUI(window.currentInstitutionLogo);
 
       // Working Hours & Period Times
       if (document.getElementById('inst-m-start')) {
@@ -10029,6 +10056,80 @@
       showToast('تم توليد الفترات الزمنية تلقائياً من ساعة الانطلاق بنجاح ✓', 'success');
     }
 
+    // ================= INSTITUTION LOGO MANAGEMENT =================
+    window.currentInstitutionLogo = '/official_header_logo.png';
+
+    function updateLogoPreviewUI(logoSrc) {
+      const prevImg = document.getElementById('inst-logo-preview');
+      const emptyHint = document.getElementById('inst-logo-empty-hint');
+      const sLogo = document.getElementById('print-sheet-logo-img');
+      const mLogo = document.getElementById('print-master-logo-img');
+
+      if (logoSrc && logoSrc.trim()) {
+        const clean = logoSrc.trim();
+        if (prevImg) {
+          prevImg.src = clean;
+          prevImg.classList.remove('hidden');
+        }
+        if (emptyHint) emptyHint.classList.add('hidden');
+        if (sLogo) { sLogo.src = clean; sLogo.style.display = 'inline-block'; }
+        if (mLogo) { mLogo.src = clean; mLogo.style.display = 'inline-block'; }
+      } else {
+        if (prevImg) prevImg.classList.add('hidden');
+        if (emptyHint) emptyHint.classList.remove('hidden');
+        if (sLogo) { sLogo.style.display = 'none'; }
+        if (mLogo) { mLogo.style.display = 'none'; }
+      }
+    }
+
+    function handleLogoUpload(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+      if (!file.type.startsWith('image/')) {
+        alert('يرجى اختيار ملف صورة صالح (PNG, JPG, SVG, WebP).');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = async function(e) {
+        window.currentInstitutionLogo = e.target.result;
+        updateLogoPreviewUI(window.currentInstitutionLogo);
+        if (appData && appData.institution) {
+          appData.institution.logo_base64 = window.currentInstitutionLogo;
+        }
+        await saveInstitution();
+        showToast('تم تحميل وتحديث شعار المؤسسة بنجاح!', 'success');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function resetToDefaultLogo() {
+      window.currentInstitutionLogo = '/official_header_logo.png';
+      updateLogoPreviewUI(window.currentInstitutionLogo);
+      if (appData && appData.institution) {
+        appData.institution.logo_base64 = window.currentInstitutionLogo;
+      }
+      await saveInstitution();
+      showToast('تمت استعادة الشعار الرسمي الافتراضي بنجاح!', 'success');
+    }
+
+    async function removeInstitutionLogo() {
+      if (!confirm('هل تريد بالتأكيد إزالة الشعار من الوثائق الرسمية؟')) return;
+      window.currentInstitutionLogo = '';
+      updateLogoPreviewUI('');
+      if (appData && appData.institution) {
+        appData.institution.logo_base64 = '';
+      }
+      await saveInstitution();
+      showToast('تمت إزالة الشعار من الوثائق.', 'info');
+    }
+
+    function getOfficialLogoHeaderHtml(customStyle = '') {
+      const inst = (appData && appData.institution) ? appData.institution : (window.appStateData ? window.appStateData.institution : {});
+      let logoSrc = (inst && inst.logo_base64 && inst.logo_base64.trim()) ? inst.logo_base64.trim() : (window.currentInstitutionLogo || '/official_header_logo.png');
+      if (!logoSrc || !logoSrc.trim()) return '';
+      return `<div class="official-logo-box" style="text-align: center; margin-bottom: 5px; ${customStyle}"><img src="${logoSrc}" alt="شعار الوزارة والمؤسسة" style="max-height: 48px; max-width: 280px; object-fit: contain; display: inline-block;"></div>`;
+    }
+
     async function saveInstitution() {
       const mTimes = [
         (document.getElementById('inst-m1') ? document.getElementById('inst-m1').value.trim() : '') || '08:30 - 09:30',
@@ -10059,6 +10160,7 @@
         pc_labs: document.getElementById('inst-pc-labs').value,
         multimedia_rooms: document.getElementById('inst-it-rooms').value,
         sports_fields: document.getElementById('inst-sports-fields').value,
+        logo_base64: window.currentInstitutionLogo || '',
       };
 
       const res = await fetch('/api/update_institution', {
@@ -10081,6 +10183,7 @@
         pc_labs: document.getElementById('inst-pc-labs').value,
         multimedia_rooms: document.getElementById('inst-it-rooms').value,
         sports_fields: document.getElementById('inst-sports-fields').value,
+        logo_base64: window.currentInstitutionLogo || '',
       };
 
       const res = await fetch('/api/update_institution', {
@@ -11141,12 +11244,18 @@
       const tbody = document.getElementById('master-tt-table-body');
       
       const inst = fullTimetableData.institution_info || (appData ? appData.institution : {});
-      document.getElementById('print-master-inst-name').textContent = inst.name || 'الثانوية الإعدادية بئر انزران';
-      document.getElementById('print-master-province-name').textContent = inst.province || 'مديرية مولاي رشيد';
-      document.getElementById('print-master-academy-name').textContent = inst.academy || 'أكاديمية الدار البيضاء';
-      document.getElementById('print-master-academic-year').textContent = inst.year || '2026-2027';
-      document.getElementById('print-master-gresa-code').textContent = inst.gresa || '045892P';
-      document.getElementById('print-master-principal-name').textContent = inst.principal || 'ذ. محمد الإدريسي';
+      if (document.getElementById('print-master-inst-name')) document.getElementById('print-master-inst-name').textContent = inst.name || 'الثانوية الإعدادية بئر انزران';
+      if (document.getElementById('print-master-province-name')) document.getElementById('print-master-province-name').textContent = inst.province || 'مديرية مولاي رشيد';
+      if (document.getElementById('print-master-academy-name')) document.getElementById('print-master-academy-name').textContent = inst.academy || 'أكاديمية الدار البيضاء';
+      if (document.getElementById('print-master-academic-year')) document.getElementById('print-master-academic-year').textContent = inst.year || '2026-2027';
+      if (document.getElementById('print-master-gresa-code')) document.getElementById('print-master-gresa-code').textContent = inst.gresa || '045892P';
+      if (document.getElementById('print-master-principal-name')) document.getElementById('print-master-principal-name').textContent = inst.principal || 'ذ. محمد الإدريسي';
+      const mLogo = document.getElementById('print-master-logo-img');
+      if (mLogo) {
+        const lSrc = (inst.logo_base64 && inst.logo_base64.trim()) ? inst.logo_base64.trim() : (window.currentInstitutionLogo || '/official_header_logo.png');
+        mLogo.src = lSrc;
+        mLogo.style.display = lSrc ? 'inline-block' : 'none';
+      }
       document.getElementById('print-master-footer-date').textContent = fullTimetableData.generated_at || new Date().toISOString().split('T')[0];
 
       const teachersData = fullTimetableData.master_teachers_data || [];
@@ -11337,16 +11446,22 @@
       const acadName = inst.academy || 'أكاديمية الدار البيضاء';
       const acadYear = inst.year || '2026-2027';
 
-      document.getElementById('print-inst-name').textContent = instName;
-      document.getElementById('print-province-name').textContent = provName;
-      document.getElementById('print-academy-name').textContent = acadName;
-      document.getElementById('print-academic-year').textContent = acadYear;
+      if (document.getElementById('print-inst-name')) document.getElementById('print-inst-name').textContent = instName;
+      if (document.getElementById('print-province-name')) document.getElementById('print-province-name').textContent = provName;
+      if (document.getElementById('print-academy-name')) document.getElementById('print-academy-name').textContent = acadName;
+      if (document.getElementById('print-academic-year')) document.getElementById('print-academic-year').textContent = acadYear;
       const yrBadge = document.getElementById('print-academic-year-badge');
       if (yrBadge) yrBadge.textContent = acadYear;
       const subHier = document.getElementById('print-sub-hierarchy');
       if (subHier) subHier.textContent = `${acadName} - ${provName} - ${instName}`;
-      document.getElementById('print-gresa-code').textContent = inst.gresa || '045892P';
-      document.getElementById('print-principal-name').textContent = inst.principal || 'ذ. محمد الإدريسي';
+      if (document.getElementById('print-gresa-code')) document.getElementById('print-gresa-code').textContent = inst.gresa || '045892P';
+      if (document.getElementById('print-principal-name')) document.getElementById('print-principal-name').textContent = inst.principal || 'ذ. محمد الإدريسي';
+      const sLogo = document.getElementById('print-sheet-logo-img');
+      if (sLogo) {
+        const lSrc = (inst.logo_base64 && inst.logo_base64.trim()) ? inst.logo_base64.trim() : (window.currentInstitutionLogo || '/official_header_logo.png');
+        sLogo.src = lSrc;
+        sLogo.style.display = lSrc ? 'inline-block' : 'none';
+      }
       document.getElementById('print-footer-date').textContent = fullTimetableData.generated_at || new Date().toISOString().split('T')[0];
 
       let targetGrid = {};
@@ -12769,11 +12884,16 @@
     async function fetchAdminUsersList() {
       try {
         const res = await fetch('/api/admin/list_users?t=' + Date.now());
-        if (!res.ok) throw new Error('فشل جلب قائمة المستخدمين');
-        const data = await res.json();
-        allAdminUsers = data.users || [];
-        renderAdminUsersTable(allAdminUsers);
-        updateAdminStats(allAdminUsers);
+        let data = null;
+        try { data = await res.json(); } catch (_) {}
+        if (res.ok && data && data.success) {
+          allAdminUsers = data.users || [];
+          renderAdminUsersTable(allAdminUsers);
+          updateAdminStats(allAdminUsers);
+        } else {
+          const msg = (data && data.error) ? data.error : ('فشل جلب قائمة المستخدمين (' + res.status + ')');
+          alert('خطأ أثناء تحميل لائحة المستخدمين: ' + msg);
+        }
       } catch (err) {
         console.error('Error fetching admin users:', err);
         alert('خطأ أثناء تحميل لائحة المستخدمين: ' + err.message);
@@ -13113,17 +13233,19 @@
             patch_type: patchType
           })
         });
-        const resp = await res.json();
-        if (resp.success) {
+        let resp = null;
+        try { resp = await res.json(); } catch (_) {}
+        if (res.ok && resp && resp.success) {
           alert('🎉 تم رفع ونشر التحديث v' + newVersion + ' بنجاح!\n\nسيصل إشعار التحديث التلقائي لجميع المستخدمين عند فتحهم للتطبيق فوراً.');
           closeDevPublishModal();
-          if (currentUpdateMeta) {
+          if (typeof currentUpdateMeta !== 'undefined' && currentUpdateMeta) {
             currentUpdateMeta.current_version = newVersion;
           }
           const curVerBadge = document.getElementById('update-current-ver');
           if (curVerBadge) curVerBadge.textContent = 'v' + newVersion;
         } else {
-          alert('فشل نشر التحديث: ' + (resp.error || 'خطأ غير معروف'));
+          const errMsg = (resp && resp.error) ? resp.error : ('فشل الاتصال بالخادم (' + res.status + ')');
+          alert('فشل نشر التحديث: ' + errMsg);
         }
       } catch (err) {
         alert('حدث خطأ أثناء النشر: ' + err.message);
@@ -13735,10 +13857,10 @@
   </style>
 </head>
 <body>
-  <div class="header">
-    <div>المملكة المغربية — وزارة التربية الوطنية والتعليم الأولي والرياضة</div>
-    <div>${inst.academy || ''} — ${inst.province || ''}</div>
-    <h2>${inst.name || inst.institution_name || 'المؤسسة التعليمية'}</h2>
+  <div class="header" style="text-align: center; border-bottom: 2px solid #0f172a; padding-bottom: 8px; margin-bottom: 10px;">
+    ${getOfficialLogoHeaderHtml()}
+    <div style="font-size: 11px; font-weight: bold;">${inst.academy || ''} — ${inst.province || ''}</div>
+    <h2 style="margin: 2px 0;">${inst.name || inst.institution_name || 'المؤسسة التعليمية'}</h2>
     <h1>جدول الحراسة العام: ${currentExamResult.exam_name} (${currentExamResult.session})</h1>
     <div>تاريخ إجراء الامتحان: <b>${currentExamResult.exam_dates || '15 و 16 يناير 2027'}</b> | الموسم الدراسي: <b>${inst.academic_year || '2026-2027'}</b> | إجمالي القاعات: <b>${currentExamResult.total_rooms} قاعة</b> | المترشحون: <b>${currentExamResult.total_candidates}</b></div>
   </div>
@@ -13804,9 +13926,10 @@
 
         let convosHtml = (currentExamResult.convocations || []).map(c => `
           <div style="border: 2px solid #0f172a; border-radius: 8px; padding: 15px; margin-bottom: 25px; page-break-inside: avoid; background: white;">
+            ${getOfficialLogoHeaderHtml('margin-bottom: 6px;')}
             <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #cbd5e1; padding-bottom: 8px; margin-bottom: 10px;">
               <div>
-                <div style="font-weight: bold; font-size: 11px;">المملكة المغربية — وزارة التربية الوطنية والتعليم الأولي والرياضة</div>
+                <div style="font-weight: bold; font-size: 11px;">${inst.academy || ''} — ${inst.province || ''}</div>
                 <div style="font-size: 10px; color: #475569;">${inst.name || inst.institution_name || 'المؤسسة التعليمية'}</div>
               </div>
               <div style="text-align: left; font-size: 10px;">
@@ -14100,7 +14223,7 @@
 </head>
 <body>
   <div class="header">
-    <div>المملكة المغربية — وزارة التربية الوطنية والتعليم الأولي والرياضة</div>
+    ${getOfficialLogoHeaderHtml()}
     <div>${inst.academy || ''} — ${inst.province || ''}</div>
     <h2>${inst.name || 'المؤسسة التعليمية'}</h2>
     <h1 style="font-size: 17px; margin-top: 5px;">مذكرة إدارية داخلية رقم: ....... / ${inst.academic_year || '2026-2027'}</h1>
@@ -14988,10 +15111,10 @@
   </style>
 </head>
 <body>
-  <div class="header">
-    <div>المملكة المغربية — وزارة التربية الوطنية والتعليم الأولي والرياضة</div>
-    <div>${h.academy} — ${h.province}</div>
-    <h2 style="margin: 3px 0;">${h.institution_name}</h2>
+  <div class="header" style="text-align: center; border-bottom: 2.5px solid #000000; padding-bottom: 8px; margin-bottom: 10px;">
+    ${getOfficialLogoHeaderHtml()}
+    <div style="font-size: 11px; font-weight: bold;">${h.academy} — ${h.province}</div>
+    <h2 style="margin: 3px 0; font-size: 14px;">${h.institution_name}</h2>
     <h1 style="font-size: 16px; margin: 5px 0;">تقرير الحراسة العامة اليومي عن سير الدراسة ومواظبة الأطر والتلاميذ</h1>
     <div>اليوم: <b>${h.day_name}</b> | التاريخ: <b>${h.report_date}</b> | الموسم الدراسي: <b>${h.academic_year}</b></div>
   </div>
@@ -15822,7 +15945,7 @@
 </head>
 <body>
   <div class="header">
-    <div>المملكة المغربية — وزارة التربية الوطنية والتعليم الأولي والرياضة</div>
+    ${getOfficialLogoHeaderHtml()}
     <div>${inst.academy || ''} — ${inst.province || ''}</div>
     <h2 style="margin: 3px 0;">${inst.school_name || 'المؤسسة التعليمية'}</h2>
     <h1 style="font-size: 16px; margin: 5px 0;">جدول الإحصاء الإجمالي لحركية التلاميذ ومطابقة التوازن</h1>
@@ -16011,7 +16134,7 @@
 </head>
 <body>
   <div class="header">
-    <div>المملكة المغربية — وزارة التربية الوطنية والتعليم الأولي والرياضة</div>
+    ${getOfficialLogoHeaderHtml()}
     <div>${inst.academy || ''} — ${inst.province || ''}</div>
     <h2 style="margin: 3px 0;">${inst.school_name || 'المؤسسة التعليمية'}</h2>
     <h1 style="font-size: 16px; margin: 5px 0;">${listTitle} (العدد الإجمالي: ${items.length})</h1>
@@ -16988,7 +17111,7 @@
     <button onclick="window.print()" style="padding:8px 16px; background:#0f766e; color:#fff; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">🖨️ طباعة الإشعار (A4)</button>
   </div>
   <div class="header">
-    <div>المملكة المغربية — وزارة التربية الوطنية والتعليم الأولي والرياضة</div>
+    ${getOfficialLogoHeaderHtml()}
     <div style="font-weight:bold; font-size:16px; margin-top:4px;">${instName}</div>
     <div class="title">إشعار بغياب تلميذ(ة) موجه إلى ولي الأمر</div>
   </div>
