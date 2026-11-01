@@ -5,6 +5,7 @@
 مواظبة الأطر التربوية، حالة الأقسام، وتوثيق الحوادث وتأشيرة الإدارة.
 """
 
+import os, sys, base64
 from typing import Dict, List, Any, Optional
 from datetime import datetime
 
@@ -29,7 +30,7 @@ class SurveillanceDailyReportEngine:
         """
         student_timetables = self.timetable.get("student_timetables", {})
         teacher_timetables = self.timetable.get("teacher_timetables", {})
-        
+
         # الأيام الفرعية (صباح ومساء)
         sub_days = DAYS_AR_MAP.get(day_base, [f"{day_base} ص", f"{day_base} م"])
 
@@ -103,7 +104,12 @@ class SurveillanceDailyReportEngine:
         incidents: str = "",
         supervisor_name: str = "",
         notes: str = "",
-        students_attendance: List[Dict[str, Any]] = None
+        students_attendance: List[Dict[str, Any]] = None,
+        week_number: str = "08",
+        inspections: List[Dict[str, Any]] = None,
+        guidelines: Dict[str, Any] = None,
+        extra_compensatory_hours: List[Dict[str, Any]] = None,
+        template_type: str = "detailed"
     ) -> Dict[str, Any]:
         """
         توليد التقرير اليومي الكامل مع المؤشرات الرياضية والإدارية وسجل غيابات وتأخرات التلاميذ
@@ -174,6 +180,93 @@ class SurveillanceDailyReportEngine:
         year = getattr(self.institution, "academic_year", "2026-2027") if self.institution else "2026-2027"
         principal = getattr(self.institution, "principal_name", "رئيس المؤسسة") if self.institution else "رئيس المؤسسة"
 
+        # Build dynamic classes matrix for the horizontal matrix table (Word Template 2)
+        classes_matrix = []
+        try:
+            from .student_attendance_engine import attendance_engine
+            classes_data = attendance_engine.students_by_class
+        except Exception:
+            classes_data = {}
+
+        def _get_short_name(cname):
+            u = cname.upper().replace(' ', '').replace('-', '').replace('_', '')
+            if 'TCSF' in u or 'TCSC' in u: return 'علمي'
+            if 'TCLSHF1' in u or 'TCLSH1' in u: return 'أدبي 1'
+            if 'TCLSHF2' in u or 'TCLSH2' in u: return 'أدبي 2'
+            if 'TCLSH' in u: return 'أدبي'
+            if '1BACSEF1' in u or '1BACEXP1' in u: return 'ع تج 1'
+            if '1BACSEF2' in u or '1BACEXP2' in u: return 'ع تج 2'
+            if '1BACSHF1' in u or '1BACLSH1' in u: return 'آ ع إ 1'
+            if '1BACSHF2' in u or '1BACLSH2' in u: return 'آ ع إ 2'
+            if '2BACSPF' in u or '2BACPC' in u: return 'ع فزيائية'
+            if '2BACSVT' in u: return 'ع ح أ'
+            if '2BACSH' in u: return 'ع إنسانية'
+            if '2BACLF' in u or '2BACL' in u: return 'آداب'
+            if '1AC' in u or '1APIC' in u: return cname.replace('1AC', '1/').replace('1APIC', '1/')
+            if '2AC' in u or '2APIC' in u: return cname.replace('2AC', '2/').replace('2APIC', '2/')
+            if '3AC' in u or '3APIC' in u: return cname.replace('3AC', '3/').replace('3APIC', '3/')
+            return cname
+
+        def _get_level_key(cname):
+            u = cname.upper()
+            if 'TC' in u or 'جذع' in u: return 'TC'
+            if '1BAC' in u or 'أولى' in u: return '1BAC'
+            if '2BAC' in u or 'ثانية' in u: return '2BAC'
+            if '1AC' in u or '1APIC' in u: return '1AC'
+            if '2AC' in u or '2APIC' in u: return '2AC'
+            if '3AC' in u or '3APIC' in u: return '3AC'
+            return 'OTHER'
+
+        # Map absent students by class for today
+        abs_counts_by_class = {}
+        for st in (students_att_list or []):
+            if st.get("absent_sessions_count", 0) > 0:
+                c = str(st.get("class_name", "")).strip()
+                abs_counts_by_class[c] = abs_counts_by_class.get(c, 0) + 1
+
+        for cname, slist in classes_data.items():
+            lvl = _get_level_key(cname)
+            s_name = _get_short_name(cname)
+            cnt = len(slist)
+            abs_cnt = abs_counts_by_class.get(cname, 0)
+            classes_matrix.append({
+                "class_code": cname,
+                "short_name": s_name,
+                "level": lvl,
+                "total_students": cnt,
+                "absent_count": abs_cnt
+            })
+
+        order_weights = {'TC': 1, '1BAC': 2, '2BAC': 3, '1AC': 4, '2AC': 5, '3AC': 6, 'OTHER': 7}
+        short_name_weights = {
+            'علمي': 1, 'أدبي 1': 2, 'أدبي 2': 3, 'أدبي': 3,
+            'ع تج 1': 4, 'ع تج 2': 5, 'ع تجريبية': 5,
+            'آ ع إ 1': 6, 'آ ع إ 2': 7, 'آداب و ع إ': 7,
+            'ع فزيائية': 8, 'ع ح أ': 9, 'ع إنسانية': 10, 'آداب': 11
+        }
+        classes_matrix.sort(key=lambda x: (
+            order_weights.get(x["level"], 99),
+            short_name_weights.get(x["short_name"], 99),
+            x["class_code"]
+        ))
+
+        # Official Ministry banner in base64
+        banner_b64 = ""
+        banner_candidates = [
+            os.path.join(os.path.dirname(__file__), "..", "assets", "surv_word_image2.png"),
+            os.path.join(os.getcwd(), "assets", "surv_word_image2.png"),
+        ]
+        if hasattr(sys, "_MEIPASS"):
+            banner_candidates.append(os.path.join(sys._MEIPASS, "assets", "surv_word_image2.png"))
+        for bp in banner_candidates:
+            if os.path.exists(bp):
+                try:
+                    with open(bp, "rb") as bf:
+                        banner_b64 = "data:image/png;base64," + base64.b64encode(bf.read()).decode("ascii")
+                        break
+                except Exception:
+                    pass
+
         return {
             "success": True,
             "report_id": f"REP_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
@@ -185,7 +278,8 @@ class SurveillanceDailyReportEngine:
                 "principal_name": principal,
                 "supervisor_name": supervisor_name or "الحارس العام للخارجية",
                 "day_name": day_base,
-                "report_date": date_str or datetime.now().strftime("%Y-%m-%d")
+                "report_date": date_str or datetime.now().strftime("%Y-%m-%d"),
+                "week_number": week_number or "08"
             },
             "metrics": {
                 "total_scheduled_sessions": total_scheduled,
@@ -200,7 +294,14 @@ class SurveillanceDailyReportEngine:
             "absent_teachers": cleaned_absences,
             "student_stats": student_stats,
             "students_attendance": students_att_list,
-            "incidents": incidents or "سير عادي للدراسة بالمؤسسة ولم تسجل أي حوادث تذكر.",
+            "classes_matrix": classes_matrix,
+            "incidents": incidents or "سير عادي ومستقر للدراسة بالمؤسسة ولم تسجل أي حوادث تذكر.",
             "notes": notes,
+            "week_number": week_number or "08",
+            "inspections": inspections or [],
+            "guidelines": guidelines or {},
+            "extra_compensatory_hours": extra_compensatory_hours or [],
+            "template_type": template_type or "detailed",
+            "banner_base64": banner_b64,
             "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         }

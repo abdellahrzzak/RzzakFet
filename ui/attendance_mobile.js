@@ -36,6 +36,41 @@ function normalizeMassarClassCode(rawCode) {
   return MASSAR_TO_TIMETABLE_CLASS[clean] || clean;
 }
 
+const TIMETABLE_TO_MASSAR_CLASS = Object.entries(MASSAR_TO_TIMETABLE_CLASS).reduce((acc, [m, t]) => {
+  acc[t] = m;
+  return acc;
+}, {});
+
+function matchClassCode(code1, code2) {
+  if (!code1 || !code2) return false;
+  const c1 = String(code1).trim().toUpperCase();
+  const c2 = String(code2).trim().toUpperCase();
+  if (c1 === c2) return true;
+  if (MASSAR_TO_TIMETABLE_CLASS[c1] === c2 || TIMETABLE_TO_MASSAR_CLASS[c1] === c2) return true;
+  if (MASSAR_TO_TIMETABLE_CLASS[c2] === c1 || TIMETABLE_TO_MASSAR_CLASS[c2] === c1) return true;
+  return false;
+}
+
+function getStudentsForClass(classCode) {
+  if (!classCode) return [];
+  return (state.students || []).filter(s => matchClassCode(s.classCode, classCode));
+}
+
+function getDateForDayOfWeek(targetDow, baseDateStr) {
+  const [y, m, d] = (baseDateStr || state.ui.simDate).split('-').map(Number);
+  const dt = new Date(y, m - 1, d);
+  const curDow = dt.getDay();
+  const curOffset = curDow === 0 ? 6 : (curDow - 1);
+  const targetOffset = Number(targetDow) === 0 ? 6 : (Number(targetDow) - 1);
+  const diff = targetOffset - curOffset;
+  const targetDt = new Date(dt);
+  targetDt.setDate(dt.getDate() + diff);
+  const yyyy = targetDt.getFullYear();
+  const mm = String(targetDt.getMonth() + 1).padStart(2, '0');
+  const dd = String(targetDt.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
+}
+
 const DAYS_AR = {
   1: 'الاثنين',
   2: 'الثلاثاء',
@@ -47,6 +82,49 @@ const DAYS_AR = {
 };
 
 // المواقيت الافتراضية المرنة (قابلة للتعديل من طرف المدير)
+function getTimeSlot(slotIndex) {
+  const idx = Number(slotIndex);
+  const found = (state.timeSlots || []).find(s => Number(s.slotIndex ?? s.index) === idx);
+  const st = found ? (found.startTime || found.start) : null;
+  const en = found ? (found.endTime || found.end) : null;
+
+  const FALLBACK_SLOTS = {
+    1: { startTime: '08:00', endTime: '09:00', label: '08:00 - 09:00' },
+    2: { startTime: '09:00', endTime: '10:00', label: '09:00 - 10:00' },
+    3: { startTime: '10:00', endTime: '11:00', label: '10:00 - 11:00' },
+    4: { startTime: '11:00', endTime: '12:00', label: '11:00 - 12:00' },
+    5: { startTime: '14:00', endTime: '15:00', label: '14:00 - 15:00' },
+    6: { startTime: '15:00', endTime: '16:00', label: '15:00 - 16:00' },
+    7: { startTime: '16:00', endTime: '17:00', label: '16:00 - 17:00' },
+    8: { startTime: '17:00', endTime: '18:00', label: '17:00 - 18:00' }
+  };
+  const def = FALLBACK_SLOTS[idx] || { startTime: '08:00', endTime: '09:00', label: `حصة ${idx}` };
+
+  return {
+    slotIndex: idx,
+    index: idx,
+    period: idx <= 4 ? 'MORNING' : 'AFTERNOON',
+    periodNumber: idx <= 4 ? idx : idx - 4,
+    startTime: st || def.startTime,
+    endTime: en || def.endTime,
+    start: st || def.startTime,
+    end: en || def.endTime,
+    label: (found && found.label) ? found.label : `${st || def.startTime}–${en || def.endTime}`
+  };
+}
+
+function isSessionInFuture(dateStr, slotIndex) {
+  const simDate = state.ui.simDate;
+  if (dateStr > simDate) return true; // يوم لاحق في المستقبل
+  if (dateStr === simDate) {
+    const timeSlot = getTimeSlot(slotIndex);
+    const nowMins = timeToMinutes(state.ui.simTime);
+    const startMins = timeToMinutes(timeSlot.startTime);
+    if (nowMins < startMins) return true; // حصة اليوم لم يحن وقتها بعد
+  }
+  return false;
+}
+
 const DEFAULT_TIME_SLOTS = [
   { slotIndex: 1, period: 'MORNING', periodNumber: 1, label: 'صباحية 1', startTime: '08:00', endTime: '09:00' },
   { slotIndex: 2, period: 'MORNING', periodNumber: 2, label: 'صباحية 2', startTime: '09:00', endTime: '10:00' },
@@ -95,7 +173,7 @@ function getMoroccanDateTime() {
 }
 
 function loadState() {
-  const schoolData = window.ANFG_SCHOOL_DATA || {
+  const schoolData = window.INITIAL_SCHOOL_DATA || window.ANFG_SCHOOL_DATA || {
     classes: [],
     students: [],
     teachers: [],
@@ -118,8 +196,38 @@ function loadState() {
           return match ? { ...match, ...st, massarCode: match.massarCode, birthDate: match.birthDate, gender: match.gender } : st;
         });
       }
+      if ((!parsed.timetable || parsed.timetable.length === 0) && schoolData.timetable && schoolData.timetable.length > 0) {
+        parsed.timetable = schoolData.timetable;
+      }
+      if (schoolData.teachers && schoolData.teachers.length > 0) {
+        const sMap = new Map(schoolData.teachers.map(t => [t.teacherId, t]));
+        if (!parsed.teachers || parsed.teachers.length === 0) {
+          parsed.teachers = schoolData.teachers;
+        } else {
+          const existingIds = new Set();
+          parsed.teachers = parsed.teachers.map(t => {
+            existingIds.add(t.teacherId);
+            const sT = sMap.get(t.teacherId);
+            return sT ? { ...t, loginCode: sT.loginCode || t.loginCode, fullName: sT.fullName || t.fullName, subject: sT.subject || t.subject, defaultRoom: sT.defaultRoom || t.defaultRoom } : t;
+          });
+          schoolData.teachers.forEach(st => {
+            if (!existingIds.has(st.teacherId)) {
+              parsed.teachers.push(st);
+            }
+          });
+        }
+      }
+      if ((!parsed.classes || parsed.classes.length === 0) && schoolData.classes && schoolData.classes.length > 0) {
+        parsed.classes = schoolData.classes;
+      }
+      if ((!parsed.students || parsed.students.length === 0) && schoolData.students && schoolData.students.length > 0) {
+        parsed.students = schoolData.students;
+      }
+
       if (parsed.ui) {
         parsed.ui.manualTimeOverride = false;
+        if (!parsed.entryPasses) parsed.entryPasses = {};
+        if (!parsed.dismissalReports) parsed.dismissalReports = {};
         parsed.ui.simDate = moroccanNow.dateStr;
         parsed.ui.simTime = moroccanNow.timeStr;
         parsed.ui.selectedSessionOverride = null;
@@ -151,6 +259,8 @@ function loadState() {
     students: schoolData.students,
     timetable: schoolData.timetable,
     attendanceSessions: {},
+    entryPasses: {},
+    dismissalReports: {},
     ui: {
       isLoggedIn: false, // يبدأ التطبيق بصفحة تسجيل الدخول
       role: 'TEACHER', // TEACHER | PRINCIPAL
@@ -206,16 +316,290 @@ function resolveStudentById(stId, fallbackClassCode = '') {
 
 let lastServerSyncAt = 0;
 
+// ==========================================
+// Cloud Firestore 24/7 Synchronization
+// ==========================================
+// Multi-Institution Dynamic Resolution
+const _urlParams = new URLSearchParams(window.location.search);
+const _schoolParam = _urlParams.get('school') || _urlParams.get('s');
+if (_schoolParam) {
+  try { localStorage.setItem('rzzak_school_id', _schoolParam.trim()); } catch(_) {}
+}
+const _savedSchool = (function() {
+  try { return localStorage.getItem('rzzak_school_id'); } catch(_) { return null; }
+})();
+
+const _bundledSchool = (window.INITIAL_SCHOOL_DATA && (window.INITIAL_SCHOOL_DATA.schoolDocId || (window.INITIAL_SCHOOL_DATA.settings && (window.INITIAL_SCHOOL_DATA.settings.gresa || window.INITIAL_SCHOOL_DATA.settings.schoolId)))) || 'H12657';
+
+const CLOUD_CONFIG = {
+  projectId: 'rzzakfet-app',
+  apiKey: 'AIzaSyDRAO-ae9rMBFf722p-Jei1UnbtCQ4i0qQ',
+  schoolDocId: _schoolParam || _savedSchool || _bundledSchool || 'default_school'
+};
+const CLOUD_BASE_URL = `https://firestore.googleapis.com/v1/projects/${CLOUD_CONFIG.projectId}/databases/(default)/documents`;
+
+function toFirestoreValue(val) {
+  if (val === null || val === undefined) return { nullValue: null };
+  if (typeof val === 'boolean') return { booleanValue: val };
+  if (typeof val === 'number') {
+    if (Number.isInteger(val)) return { integerValue: String(val) };
+    return { doubleValue: val };
+  }
+  if (typeof val === 'string') return { stringValue: val };
+  if (Array.isArray(val)) {
+    return { arrayValue: { values: val.map(toFirestoreValue) } };
+  }
+  if (typeof val === 'object') {
+    const fields = {};
+    for (const [k, v] of Object.entries(val)) {
+      if (v !== undefined) fields[k] = toFirestoreValue(v);
+    }
+    return { mapValue: { fields } };
+  }
+  return { stringValue: String(val) };
+}
+
+function fromFirestoreValue(val) {
+  if (!val || typeof val !== 'object') return null;
+  if ('stringValue' in val) return val.stringValue;
+  if ('integerValue' in val) return parseInt(val.integerValue, 10);
+  if ('doubleValue' in val) return parseFloat(val.doubleValue);
+  if ('booleanValue' in val) return val.booleanValue;
+  if ('nullValue' in val) return null;
+  if ('timestampValue' in val) return val.timestampValue;
+  if ('arrayValue' in val) {
+    return (val.arrayValue.values || []).map(fromFirestoreValue);
+  }
+  if ('mapValue' in val) {
+    const obj = {};
+    const fields = val.mapValue.fields || {};
+    for (const [k, v] of Object.entries(fields)) {
+      obj[k] = fromFirestoreValue(v);
+    }
+    return obj;
+  }
+  return null;
+}
+
+function parseFirestoreDoc(doc) {
+  if (!doc || !doc.fields) return null;
+  const obj = {};
+  for (const [k, v] of Object.entries(doc.fields)) {
+    obj[k] = fromFirestoreValue(v);
+  }
+  return obj;
+}
+
+async function syncSessionToCloud(sessionId, sessionData) {
+  if (!sessionId || !sessionData) return;
+  try {
+    const safeId = sessionId.replace(/\//g, '_');
+    const url = `${CLOUD_BASE_URL}/attendance_schools/${CLOUD_CONFIG.schoolDocId}/sessions/${safeId}?key=${CLOUD_CONFIG.apiKey}`;
+    const cleanSess = {
+      date: String(sessionData.date || ''),
+      slotIndex: Number(sessionData.slotIndex || 1),
+      classCode: String(sessionData.classCode || ''),
+      className: String(sessionData.className || ''),
+      teacherId: String(sessionData.teacherId || ''),
+      teacherName: String(sessionData.teacherName || ''),
+      subject: String(sessionData.subject || ''),
+      absentStudentIds: Array.isArray(sessionData.absentStudentIds) ? sessionData.absentStudentIds.map(String) : [],
+      lateStudentIds: Array.isArray(sessionData.lateStudentIds) ? sessionData.lateStudentIds.map(String) : [],
+      attendanceMap: sessionData.attendanceMap || {},
+      sessionId: sessionId,
+      status: String(sessionData.status || 'COMPLETED'),
+      totalStudents: Number(sessionData.totalStudents || 0),
+      presentCount: Number(sessionData.presentCount || 0),
+      absentCount: Number(sessionData.absentCount || 0),
+      dayOfWeek: sessionData.dayOfWeek !== undefined ? Number(sessionData.dayOfWeek) : 1,
+      scheduledStart: String(sessionData.scheduledStart || ''),
+      scheduledEnd: String(sessionData.scheduledEnd || ''),
+      updatedAt: Date.now()
+    };
+    const fields = {};
+    for (const [k, v] of Object.entries(cleanSess)) {
+      fields[k] = toFirestoreValue(v);
+    }
+    await fetch(url, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fields })
+    });
+    if (CLOUD_CONFIG.schoolDocId !== 'default_school') {
+      try {
+        const defUrl = `${CLOUD_BASE_URL}/attendance_schools/default_school/sessions/${safeId}?key=${CLOUD_CONFIG.apiKey}`;
+        await fetch(defUrl, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ fields })
+        });
+      } catch(_) {}
+    }
+  } catch (err) {
+    console.warn('[syncSessionToCloud error]:', err);
+  }
+}
+
+async function syncReportToCloud(reportObj) {
+  if (!reportObj || !reportObj.reportId) return;
+  try {
+    const repId = reportObj.reportId;
+    const url = `${CLOUD_BASE_URL}/attendance_schools/${CLOUD_CONFIG.schoolDocId}/reports/${repId}?key=${CLOUD_CONFIG.apiKey}`;
+    const cleanRep = {
+      reportId: repId,
+      studentName: String(reportObj.studentName || ''),
+      date: String(reportObj.date || ''),
+      reasonType: String(reportObj.reasonType || 'عرقلة السير العادي'),
+      status: String(reportObj.status || 'PENDING_ADMIN'),
+      customReason: String(reportObj.customReason || ''),
+      studentId: String(reportObj.studentId || ''),
+      massarCode: String(reportObj.massarCode || ''),
+      classCode: String(reportObj.classCode || ''),
+      teacherId: String(reportObj.teacherId || ''),
+      teacherName: String(reportObj.teacherName || ''),
+      subject: String(reportObj.subject || ''),
+      time: String(reportObj.time || '08:00'),
+      createdAt: reportObj.createdAt || Date.now()
+    };
+    const fields = {};
+    for (const [k, v] of Object.entries(cleanRep)) {
+      fields[k] = toFirestoreValue(v);
+    }
+    await fetch(url, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fields })
+    });
+    if (CLOUD_CONFIG.schoolDocId !== 'default_school') {
+      try {
+        const defUrl = `${CLOUD_BASE_URL}/attendance_schools/default_school/reports/${repId}?key=${CLOUD_CONFIG.apiKey}`;
+        await fetch(defUrl, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ fields })
+        });
+      } catch(_) {}
+    }
+  } catch (err) {
+    console.warn('[syncReportToCloud error]:', err);
+  }
+}
+
+async function syncAllPendingToCloud() {
+  const sessions = state.attendanceSessions || {};
+  for (const [sId, sess] of Object.entries(sessions)) {
+    if (!sess._cloudSynced) {
+      await syncSessionToCloud(sId, sess);
+      sess._cloudSynced = true;
+    }
+  }
+  const reports = state.dismissalReports || {};
+  for (const [rId, rep] of Object.entries(reports)) {
+    if (!rep._cloudSynced) {
+      await syncReportToCloud(rep);
+      rep._cloudSynced = true;
+    }
+  }
+}
+
+let cloudBackoffUntil = 0;
+
+async function pullFromCloudFirestore() {
+  if (Date.now() < cloudBackoffUntil) return;
+  try {
+    // 1. School data
+    const schoolRes = await fetch(`${CLOUD_BASE_URL}/attendance_schools/${CLOUD_CONFIG.schoolDocId}?key=${CLOUD_CONFIG.apiKey}`, { cache: 'no-store' });
+    if (schoolRes.status === 429) {
+      cloudBackoffUntil = Date.now() + 60000;
+      return;
+    }
+    if (schoolRes.ok) {
+      const doc = await schoolRes.json();
+      const schoolData = parseFirestoreDoc(doc);
+      if (schoolData) {
+        const isResetSignal = (schoolData.resetToken && (!state.resetToken || schoolData.resetToken > state.resetToken)) ||
+                              (Array.isArray(schoolData.students) && schoolData.students.length === 0 &&
+                               Array.isArray(schoolData.timetable) && schoolData.timetable.length === 0);
+        if (isResetSignal) {
+          applyServerSharedData(schoolData, true);
+          return;
+        }
+        applyServerSharedData(schoolData, true);
+      }
+    }
+
+    // 2. Sessions
+    const sessRes = await fetch(`${CLOUD_BASE_URL}/attendance_schools/${CLOUD_CONFIG.schoolDocId}/sessions?key=${CLOUD_CONFIG.apiKey}&pageSize=300`, { cache: 'no-store' });
+    if (sessRes.status === 429) {
+      cloudBackoffUntil = Date.now() + 60000;
+      return;
+    }
+    if (sessRes.ok) {
+      const sessJson = await sessRes.json();
+      const docs = sessJson.documents || [];
+      if (!state.attendanceSessions) state.attendanceSessions = {};
+      let hasNew = false;
+      docs.forEach(d => {
+        const parsed = parseFirestoreDoc(d);
+        if (parsed && parsed.sessionId) {
+          const cur = state.attendanceSessions[parsed.sessionId];
+          if (!cur || (parsed.updatedAt && parsed.updatedAt >= (cur.updatedAt || 0))) {
+            parsed._cloudSynced = true;
+            state.attendanceSessions[parsed.sessionId] = parsed;
+            hasNew = true;
+          }
+        }
+      });
+      if (hasNew) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        renderApp();
+      }
+    }
+
+    // 3. Reports
+    const repRes = await fetch(`${CLOUD_BASE_URL}/attendance_schools/${CLOUD_CONFIG.schoolDocId}/reports?key=${CLOUD_CONFIG.apiKey}&pageSize=300`, { cache: 'no-store' });
+    if (repRes.status === 429) {
+      cloudBackoffUntil = Date.now() + 60000;
+      return;
+    }
+    if (repRes.ok) {
+      const repJson = await repRes.json();
+      const docs = repJson.documents || [];
+      if (!state.dismissalReports) state.dismissalReports = {};
+      let hasNewRep = false;
+      docs.forEach(d => {
+        const parsed = parseFirestoreDoc(d);
+        if (parsed && parsed.reportId) {
+          const cur = state.dismissalReports[parsed.reportId];
+          if (!cur || JSON.stringify(cur) !== JSON.stringify(parsed)) {
+            parsed._cloudSynced = true;
+            state.dismissalReports[parsed.reportId] = parsed;
+            hasNewRep = true;
+          }
+        }
+      });
+      if (hasNewRep) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        renderApp();
+      }
+    }
+  } catch (err) {
+    // Silent on offline/network failure
+  }
+}
+
 function saveState(isConfigUpdate = false) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   pushStateToServer(isConfigUpdate);
 }
 
 async function pushStateToServer(isConfigUpdate = false) {
+  // Push to local server if available
   try {
     const payload = {
       attendanceSessions: state.attendanceSessions || {},
       justifiedAbsences: state.justifiedAbsences || {},
+      dismissalReports: state.dismissalReports || {},
       isConfigUpdate: Boolean(isConfigUpdate || state.ui?.role === 'PRINCIPAL')
     };
     if (payload.isConfigUpdate) {
@@ -236,13 +620,67 @@ async function pushStateToServer(isConfigUpdate = false) {
       applyServerSharedData(serverData, false);
     }
   } catch (e) {
-    // في حال عدم الاتصال بالخادم يستمر العمل محلياً دون مشكلة
+    // Local server offline; continue to Cloud Firestore
+  }
+
+  // Push directly to 24/7 Cloud Firestore
+  try {
+    await syncAllPendingToCloud();
+  } catch (e) {
+    // Offline queue
   }
 }
 
 function applyServerSharedData(serverData, shouldRender = true) {
   if (!serverData || typeof serverData !== 'object') return;
   let changed = false;
+
+  const isResetSignal = (serverData.resetToken && (!state.resetToken || serverData.resetToken > state.resetToken)) ||
+                        (serverData.isReset === true) ||
+                        (Array.isArray(serverData.students) && serverData.students.length === 0 &&
+                         Array.isArray(serverData.timetable) && serverData.timetable.length === 0 &&
+                         (!serverData.attendanceSessions || Object.keys(serverData.attendanceSessions).length === 0));
+
+  if (isResetSignal) {
+    console.log('[RESET] Factory reset signal applied to mobile database.');
+    state.resetToken = serverData.resetToken || Date.now();
+    state.students = Array.isArray(serverData.students) ? serverData.students : [];
+    state.classes = Array.isArray(serverData.classes) ? serverData.classes : [];
+    state.teachers = Array.isArray(serverData.teachers) ? serverData.teachers : [];
+    state.timetable = Array.isArray(serverData.timetable) ? serverData.timetable : [];
+    state.attendanceSessions = {};
+    state.dismissalReports = {};
+    state.entryPasses = {};
+    state.justifiedAbsences = {};
+    if (serverData.settings) state.settings = serverData.settings;
+    if (serverData.timeSlots) state.timeSlots = serverData.timeSlots;
+    if (serverData.updatedAt) lastServerSyncAt = serverData.updatedAt;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    if (shouldRender) renderApp();
+    return true;
+  }
+
+  if (serverData.entryPasses && typeof serverData.entryPasses === 'object') {
+    if (!state.entryPasses) state.entryPasses = {};
+    for (const [k, p] of Object.entries(serverData.entryPasses)) {
+      const curP = state.entryPasses[k];
+      if (!curP || JSON.stringify(curP) !== JSON.stringify(p)) {
+        state.entryPasses[k] = p;
+        changed = true;
+      }
+    }
+  }
+
+  if (serverData.dismissalReports && typeof serverData.dismissalReports === 'object') {
+    if (!state.dismissalReports) state.dismissalReports = {};
+    for (const [k, rep] of Object.entries(serverData.dismissalReports)) {
+      const curRep = state.dismissalReports[k];
+      if (!curRep || JSON.stringify(curRep) !== JSON.stringify(rep)) {
+        state.dismissalReports[k] = rep;
+        changed = true;
+      }
+    }
+  }
 
   if (serverData.attendanceSessions && typeof serverData.attendanceSessions === 'object') {
     if (!state.attendanceSessions) state.attendanceSessions = {};
@@ -277,6 +715,18 @@ function applyServerSharedData(serverData, shouldRender = true) {
     state.teachers = serverData.teachers;
     changed = true;
   }
+  if (Array.isArray(serverData.classes) && serverData.classes.length > 0 && (!state.classes || state.classes.length === 0 || JSON.stringify(state.classes) !== JSON.stringify(serverData.classes))) {
+    state.classes = serverData.classes;
+    changed = true;
+  }
+  if (Array.isArray(serverData.students) && serverData.students.length > 0 && (!state.students || state.students.length === 0 || JSON.stringify(state.students) !== JSON.stringify(serverData.students))) {
+    state.students = serverData.students;
+    changed = true;
+  }
+  if (Array.isArray(serverData.timetable) && serverData.timetable.length > 0 && (!state.timetable || state.timetable.length === 0 || JSON.stringify(state.timetable) !== JSON.stringify(serverData.timetable))) {
+    state.timetable = serverData.timetable;
+    changed = true;
+  }
 
   if (serverData.updatedAt) {
     lastServerSyncAt = serverData.updatedAt;
@@ -292,23 +742,36 @@ function applyServerSharedData(serverData, shouldRender = true) {
 }
 
 async function pullStateFromServer() {
+  let pulledFromLocal = false;
   try {
     const res = await fetch('/api/sync?t=' + Date.now(), { cache: 'no-store' });
-    if (!res.ok) return;
-    const serverData = await res.json();
-
-    // إذا كان الهاتف يحتوي على حصص محفوظة محلياً غير موجودة في الخادم بعد، نرفعها تلقائياً
-    const localKeys = Object.keys(state.attendanceSessions || {});
-    const serverSessions = serverData.attendanceSessions || {};
-    const hasUnsyncedLocal = localKeys.some(k => !serverSessions[k]);
-    if (hasUnsyncedLocal) {
-      await pushStateToServer(false);
-      return;
+    if (res.ok) {
+      const serverData = await res.json();
+      const isResetSignal = (serverData.resetToken && (!state.resetToken || serverData.resetToken > state.resetToken)) ||
+                            (serverData.isReset === true) ||
+                            (Array.isArray(serverData.students) && serverData.students.length === 0 &&
+                             Array.isArray(serverData.timetable) && serverData.timetable.length === 0 &&
+                             (!serverData.attendanceSessions || Object.keys(serverData.attendanceSessions).length === 0));
+      if (isResetSignal) {
+        applyServerSharedData(serverData, true);
+        return true;
+      }
+      const localKeys = Object.keys(state.attendanceSessions || {});
+      const serverSessions = serverData.attendanceSessions || {};
+      const hasUnsyncedLocal = localKeys.some(k => !serverSessions[k]);
+      if (hasUnsyncedLocal) {
+        await pushStateToServer(false);
+      }
+      applyServerSharedData(serverData, true);
+      pulledFromLocal = true;
     }
-
-    applyServerSharedData(serverData, true);
   } catch (e) {
-    // تجاهل الخطأ عند انقطاع الشبكة
+    pulledFromLocal = false;
+  }
+
+  // If local server is not accessible or if running on Firebase Hosting, pull directly from Cloud Firestore
+  if (!pulledFromLocal || location.hostname.includes('web.app') || location.hostname.includes('firebaseapp.com')) {
+    await pullFromCloudFirestore();
   }
 }
 
@@ -344,7 +807,8 @@ function syncWithMoroccanClock() {
 // إيجاد الحصة الموافقة للوقت الحالي بالضبط (تُرجع null إذا كان الوقت خارج أوقات الحصص)
 function getExactSlotForTime(timeStr) {
   const mins = timeToMinutes(timeStr);
-  for (const s of state.timeSlots) {
+  for (let idx = 1; idx <= 8; idx++) {
+    const s = getTimeSlot(idx);
     const start = timeToMinutes(s.startTime);
     const end = timeToMinutes(s.endTime);
     if (mins >= start && mins < end) {
@@ -380,8 +844,7 @@ function getMissedSessionsForTeacher(teacherId) {
       .sort((a, b) => b.slotIndex - a.slotIndex);
 
     teacherSlots.forEach(ts => {
-      const timeSlot = state.timeSlots.find(s => s.slotIndex === ts.slotIndex);
-      if (!timeSlot) return;
+      const timeSlot = getTimeSlot(ts.slotIndex);
 
       // في نفس اليوم: لا نعتبر الحصة فائتة إلا إذا انتهى وقتها (أو بدأت ومضى وقتها دون أن تكون هي الحصة الجارية)
       if (offset === 0 && timeToMinutes(timeSlot.endTime) > currentMins) {
@@ -408,53 +871,88 @@ function getMissedSessionsForTeacher(teacherId) {
   return missed;
 }
 
-// الحالة المؤقتة للغائبين في الشاشة الحالية للأستاذ
+// الحالة المؤقتة للغائبين والمتأخرين في الشاشة الحالية للأستاذ
 let activeDraftAbsentIds = null;
+let activeDraftLateIds = null;
 let activeDraftKey = null;
+
+function selectTeacherSession(date, dayOfWeek, slotIndex, classCode, room) {
+  // منع مسك الغياب للحصص القادمة التي لم يحن وقتها بعد
+  if (isSessionInFuture(date || state.ui.simDate, slotIndex)) {
+    showToast('⚠️ لا يمكن مسك الغياب إلا في الساعة الفعلية التي يتواجد بها الأستاذ بالقسم!');
+    return;
+  }
+
+  state.ui.selectedSessionOverride = {
+    date: date || state.ui.simDate,
+    dayOfWeek: Number(dayOfWeek),
+    slotIndex: Number(slotIndex),
+    classCode: String(classCode),
+    room: room || ''
+  };
+  activeDraftKey = null;
+  activeDraftAbsentIds = null;
+  activeDraftLateIds = null;
+  state.ui.showMissedDrawer = false;
+  saveState();
+  renderApp();
+  setTimeout(() => {
+    const el = document.getElementById('teacher-active-session-card');
+    if (el) el.scrollIntoView({ behavior: 'smooth' });
+  }, 80);
+}
+
+function clearTeacherSessionOverride() {
+  state.ui.selectedSessionOverride = null;
+  activeDraftKey = null;
+  activeDraftAbsentIds = null;
+  activeDraftLateIds = null;
+  saveState();
+  renderApp();
+}
+
+function toggleTeacherWeeklyTimetable() {
+  state.ui.showWeeklyTimetable = !state.ui.showWeeklyTimetable;
+  saveState();
+  renderApp();
+}
 
 function getActiveTeacherSessionContext() {
   syncWithMoroccanClock();
-  const teacher = state.teachers.find(t => t.teacherId === state.ui.currentTeacherId) || state.teachers[0];
+  const teacher = (state.teachers || []).find(t => t.teacherId === state.ui.currentTeacherId) || (state.teachers && state.teachers[0]) || { teacherId: 'T01', fullName: 'أستاذ', subject: '', defaultRoom: '' };
   const ov = state.ui.selectedSessionOverride;
 
   if (ov) {
-    const ovKey = `${ov.date}_${ov.slotIndex}_${ov.classCode}`;
-    // إذا كان قد تم مسك غياب هذه الحصة السابقة، نلغي عرضها ونعود للحصة الحالية
-    if (state.attendanceSessions[ovKey]) {
-      state.ui.selectedSessionOverride = null;
-    } else {
-      const timeSlot = state.timeSlots.find(s => s.slotIndex === ov.slotIndex) || state.timeSlots[0];
-      return {
-        teacher,
-        date: ov.date,
-        dayOfWeek: ov.dayOfWeek,
-        slotIndex: ov.slotIndex,
-        classCode: ov.classCode,
-        room: ov.room || teacher.defaultRoom,
-        timeSlot,
-        isPastSession: true
-      };
-    }
+    const timeSlot = getTimeSlot(ov.slotIndex);
+    return {
+      teacher,
+      date: ov.date,
+      dayOfWeek: Number(ov.dayOfWeek),
+      slotIndex: Number(ov.slotIndex),
+      classCode: ov.classCode,
+      room: ov.room || teacher.defaultRoom,
+      timeSlot,
+      isOverride: true,
+      isPastSession: Boolean(ov.isPastSession)
+    };
   }
 
   const dow = getDayOfWeek(state.ui.simDate);
   const exactSlot = getExactSlotForTime(state.ui.simTime);
 
-  // نبحث فقط عن الحصة التي يوجد فيها الأستاذ بالضبط في هذه الساعة وفق التوقيت المغربي
   const scheduledNow = exactSlot
-    ? state.timetable.find(
-        t => t.teacherId === teacher.teacherId && t.dayOfWeek === dow && t.slotIndex === exactSlot.slotIndex
+    ? (state.timetable || []).find(
+        t => t.teacherId === teacher.teacherId && Number(t.dayOfWeek) === Number(dow) && Number(t.slotIndex) === Number(exactSlot.slotIndex)
       )
     : null;
 
   if (!scheduledNow) {
-    // البحث عن الحصة القادمة للأستاذ في نفس اليوم (لتذكيره بموعدها فقط دون عرض لائحتها)
     const nowMins = timeToMinutes(state.ui.simTime);
-    const upcomingToday = state.timetable
-      .filter(t => t.teacherId === teacher.teacherId && t.dayOfWeek === dow)
+    const upcomingToday = (state.timetable || [])
+      .filter(t => t.teacherId === teacher.teacherId && Number(t.dayOfWeek) === Number(dow))
       .map(t => ({
         ...t,
-        timeSlot: state.timeSlots.find(s => s.slotIndex === t.slotIndex)
+        timeSlot: getTimeSlot(t.slotIndex)
       }))
       .filter(t => t.timeSlot && timeToMinutes(t.timeSlot.startTime) > nowMins)
       .sort((a, b) => a.slotIndex - b.slotIndex)[0] || null;
@@ -472,24 +970,43 @@ function getActiveTeacherSessionContext() {
   return {
     teacher,
     date: state.ui.simDate,
-    dayOfWeek: scheduledNow.dayOfWeek,
-    slotIndex: scheduledNow.slotIndex,
+    dayOfWeek: Number(scheduledNow.dayOfWeek),
+    slotIndex: Number(scheduledNow.slotIndex),
     classCode: scheduledNow.classCode,
     room: scheduledNow.room || teacher.defaultRoom,
     timeSlot: exactSlot,
-    isPastSession: false
+    isCurrentNow: true
   };
 }
 
-function toggleStudentAbsent(studentId, sessionKey, existingAbsentIds) {
-  if (activeDraftKey !== sessionKey || !activeDraftAbsentIds) {
+function toggleStudentAbsent(studentId, sessionKey, existingAbsentIds, existingLateIds) {
+  const existing = state.attendanceSessions[sessionKey];
+  if (activeDraftKey !== sessionKey || !activeDraftAbsentIds || !activeDraftLateIds) {
     activeDraftKey = sessionKey;
-    activeDraftAbsentIds = new Set(existingAbsentIds);
+    activeDraftAbsentIds = new Set(existingAbsentIds || (existing ? existing.absentStudentIds : []));
+    activeDraftLateIds = new Set(existingLateIds || (existing ? (existing.lateStudentIds || []) : []));
   }
   if (activeDraftAbsentIds.has(studentId)) {
     activeDraftAbsentIds.delete(studentId);
   } else {
     activeDraftAbsentIds.add(studentId);
+    activeDraftLateIds.delete(studentId);
+  }
+  renderApp();
+}
+
+function toggleStudentLate(studentId, sessionKey, existingAbsentIds, existingLateIds) {
+  const existing = state.attendanceSessions[sessionKey];
+  if (activeDraftKey !== sessionKey || !activeDraftAbsentIds || !activeDraftLateIds) {
+    activeDraftKey = sessionKey;
+    activeDraftAbsentIds = new Set(existingAbsentIds || (existing ? existing.absentStudentIds : []));
+    activeDraftLateIds = new Set(existingLateIds || (existing ? (existing.lateStudentIds || []) : []));
+  }
+  if (activeDraftLateIds.has(studentId)) {
+    activeDraftLateIds.delete(studentId);
+  } else {
+    activeDraftLateIds.add(studentId);
+    activeDraftAbsentIds.delete(studentId);
   }
   renderApp();
 }
@@ -501,20 +1018,35 @@ function saveTeacherAttendance() {
   const realNow = getMoroccanDateTime();
   const sessionKey = `${ctx.date}_${ctx.slotIndex}_${ctx.classCode}`;
   const existing = state.attendanceSessions[sessionKey];
-  const classStudents = state.students.filter(s => s.classCode === ctx.classCode);
+  const classStudents = getStudentsForClass(ctx.classCode);
 
   const absentSet =
     activeDraftKey === sessionKey && activeDraftAbsentIds
       ? activeDraftAbsentIds
       : new Set(existing ? existing.absentStudentIds : []);
 
+  const lateSet =
+    activeDraftKey === sessionKey && activeDraftLateIds
+      ? activeDraftLateIds
+      : new Set(existing ? (existing.lateStudentIds || []) : []);
+
   const absentIds = Array.from(absentSet);
+  const lateIds = Array.from(lateSet);
   const totalStudents = classStudents.length;
   const absentCount = absentIds.length;
-  const presentCount = totalStudents - absentCount;
+  const lateCount = lateIds.length;
+  const presentCount = Math.max(0, totalStudents - absentCount);
+
+  // Generate per-student attendanceMap: 'A' (Absent), 'L' (Late), 'P' (Present)
+  const attMap = {};
+  classStudents.forEach(s => {
+    if (absentSet.has(s.studentId)) attMap[s.studentId] = 'A';
+    else if (lateSet.has(s.studentId)) attMap[s.studentId] = 'L';
+    else attMap[s.studentId] = 'P';
+  });
 
   // تحديد ما إذا كان المسك في الوقت أو متأخراً (حصة سابقة في الوراء)
-  const isLate = Boolean(
+  const isLateSession = Boolean(
     ctx.isPastSession ||
       ctx.date < state.ui.simDate ||
       (ctx.date === state.ui.simDate &&
@@ -529,12 +1061,18 @@ function saveTeacherAttendance() {
     scheduledStart: ctx.timeSlot.startTime,
     scheduledEnd: ctx.timeSlot.endTime,
     classCode: ctx.classCode,
+    className: ctx.classCode,
     teacherId: ctx.teacher.teacherId,
-    status: existing ? existing.status : isLate ? 'LATE' : 'ON_TIME',
+    teacherName: ctx.teacher.fullName || '',
+    subject: ctx.teacher.subject || '',
+    status: existing ? existing.status : isLateSession ? 'LATE' : 'ON_TIME',
     totalStudents,
     presentCount,
     absentCount,
+    lateCount,
     absentStudentIds: absentIds,
+    lateStudentIds: lateIds,
+    attendanceMap: attMap,
     submittedAt: existing ? existing.submittedAt : realNow.timeStr,
     lastModifiedAt: existing ? realNow.timeStr : null,
     submittedDate: realNow.dateStr,
@@ -548,13 +1086,16 @@ function saveTeacherAttendance() {
   }
   activeDraftKey = null;
   activeDraftAbsentIds = null;
+  activeDraftLateIds = null;
 
   saveState();
-  showToast(
-    absentCount === 0
-      ? '✅ تم حفظ الغياب بنجاح (الجميع حاضر) وإرساله إلى المدير'
-      : `✅ تم حفظ الغياب بنجاح (${absentCount} غائب) وإرساله إلى المدير`
-  );
+  let msg = `✅ تم حفظ الغياب بنجاح وإرساله للإدارة`;
+  if (absentCount === 0 && lateCount === 0) {
+    msg = `✅ تم حفظ الغياب بنجاح (الجميع حاضر 🟢)`;
+  } else {
+    msg = `✅ تم حفظ الحصة (${absentCount} غائب 🔴 • ${lateCount} متأخر 🟡)`;
+  }
+  showToast(msg);
   renderApp();
 }
 
@@ -570,6 +1111,7 @@ function selectMissedSession(date, dayOfWeek, slotIndex, classCode, room) {
   state.ui.showMissedDrawer = false;
   activeDraftKey = null;
   activeDraftAbsentIds = null;
+  activeDraftLateIds = null;
   saveState();
   renderApp();
 }
@@ -578,6 +1120,7 @@ function clearSessionOverride() {
   state.ui.selectedSessionOverride = null;
   activeDraftKey = null;
   activeDraftAbsentIds = null;
+  activeDraftLateIds = null;
   saveState();
   renderApp();
 }
@@ -822,38 +1365,144 @@ function exportAttendanceToExcel() {
   showToast('📥 تم تحميل تقرير الغياب بصيغة Excel');
 }
 
+
+// استخراج التلاميذ المحالين على الإدارة (تغيبوا في الحصة الماضية بدون مبرر وبدون ورقة السماح بالدخول)
+function getReferredStudentsForClass(classCode, currentSlotIndex, dateStr) {
+  if (!classCode) return { referred: [], permitted: [] };
+
+  const classStudents = getStudentsForClass(classCode);
+  const studentsMap = {};
+  classStudents.forEach(s => { 
+    if (s.studentId) studentsMap[s.studentId] = s;
+    if (s.massarCode) studentsMap[s.massarCode] = s;
+  });
+
+  const relevantSessions = [];
+  Object.values(state.attendanceSessions || {}).forEach(sess => {
+    if (matchClassCode(sess.classCode, classCode)) {
+      if (sess.date === dateStr && sess.slotIndex < currentSlotIndex) {
+        relevantSessions.push(sess);
+      } else if (sess.date < dateStr) {
+        relevantSessions.push(sess);
+      }
+    }
+  });
+
+  relevantSessions.sort((a, b) => b.date.localeCompare(a.date) || b.slotIndex - a.slotIndex);
+
+  const passesMap = state.entryPasses || {};
+  const justifiedMap = state.justifiedAbsences || {};
+
+  const referredSet = new Map();
+  const permittedSet = new Map();
+
+  relevantSessions.forEach(sess => {
+    const absIds = sess.absentStudentIds || [];
+    absIds.forEach(stId => {
+      const cleanId = String(stId).trim();
+      if (referredSet.has(cleanId) || permittedSet.has(cleanId)) return;
+
+      const st = studentsMap[cleanId] || (state.students || []).find(s => s.studentId === cleanId || s.massarCode === cleanId) || {
+        studentId: cleanId,
+        fullName: cleanId,
+        massarCode: cleanId
+      };
+
+      const mCode = st.massarCode || cleanId;
+      const isJustified = Boolean(
+        justifiedMap[cleanId] ||
+        justifiedMap[mCode] ||
+        justifiedMap[`${sess.sessionId}_${cleanId}`] ||
+        justifiedMap[`${sess.sessionId}_${mCode}`]
+      );
+      if (isJustified) return;
+
+      let pass = Object.values(passesMap).find(p => 
+        (p.studentId === cleanId || p.massarCode === mCode) &&
+        p.status !== 'REVOKED' &&
+        (
+          p.issuedDate >= sess.date ||
+          p.issuedDate === dateStr ||
+          p.validForDate === dateStr ||
+          p.absentDate === sess.date ||
+          p.absentDate >= sess.date
+        )
+      );
+
+      const slotObj = (state.timeSlots || []).find(ts => ts.slotIndex === sess.slotIndex);
+      const slotLabel = slotObj ? `${slotObj.label} (${slotObj.startTime}–${slotObj.endTime})` : `حصة ${sess.slotIndex}`;
+      const teacherObj = (state.teachers || []).find(t => t.teacherId === sess.teacherId);
+      const teacherName = teacherObj ? teacherObj.fullName : '';
+
+      if (pass) {
+        permittedSet.set(cleanId, {
+          student: st,
+          pass,
+          session: sess,
+          slotLabel,
+          teacherName
+        });
+      } else {
+        referredSet.set(cleanId, {
+          student: st,
+          session: sess,
+          slotLabel,
+          teacherName,
+          date: sess.date
+        });
+      }
+    });
+  });
+
+  return {
+    referred: Array.from(referredSet.values()),
+    permitted: Array.from(permittedSet.values())
+  };
+}
+
+
+function clearSessionOverride() {
+  clearTeacherSessionOverride();
+}
+
 function renderTeacherView() {
   const ctx = getActiveTeacherSessionContext();
   const teacher = ctx.teacher;
-  const missedList = getMissedSessionsForTeacher(teacher.teacherId);
   const dow = getDayOfWeek(state.ui.simDate);
+  const nowMins = timeToMinutes(state.ui.simTime);
 
-  // شريط الحصص السابقة التي في الوراء (فقط الحصص التي مرت ولم يُمسك فيها الغياب بعد)
+  const teacherAllSlots = (state.timetable || []).filter(t => t.teacherId === teacher.teacherId);
+  const todaySlots = (state.timetable || [])
+    .filter(t => t.teacherId === teacher.teacherId && Number(t.dayOfWeek) === Number(dow))
+    .sort((a, b) => Number(a.slotIndex) - Number(b.slotIndex));
+  const missedList = getMissedSessionsForTeacher(teacher.teacherId);
+
+  // شريط الحصص السابقة التي في الوراء (غير الممسوكة وفق مهلة المدير)
   const missedSectionHtml = `
     <div class="missed-bar">
       <div style="font-weight:700; color:#92400e; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-        ⏪ حصص سابقة في الوراء (غير ممسوكة): <strong>${missedList.length}</strong>
+        ⏪ حصص سابقة (غير ممسوكة): <strong>${missedList.length}</strong>
       </div>
       <div style="display:flex; gap:5px; flex-shrink:0;">
         ${
           state.ui.selectedSessionOverride
-            ? `<button class="btn btn-outline" style="padding:3px 8px; font-size:0.74rem;" onclick="clearSessionOverride()">الحصة الحالية ✕</button>`
+            ? `<button class="btn btn-outline" style="padding:3px 8px; font-size:0.74rem;" onclick="clearSessionOverride()">إلغاء التحديد ✕</button>`
             : ''
         }
         <button class="missed-bar-btn" onclick="toggleMissedDrawer()">
-          ${state.ui.showMissedDrawer ? 'إغلاق ▲' : 'العودة لحصة سابقة ▼'}
+          ${state.ui.showMissedDrawer ? 'إغلاق ▲' : 'عرض السابقة ▼'}
         </button>
       </div>
     </div>
 
     ${
       state.ui.showMissedDrawer
-        ? `<div class="card" style="border-color:#fcd34d; background:#fffef7;">
+        ? `<div class="card" style="border-color:#fcd34d; background:#fffef7; margin-bottom:12px;">
             <div style="font-weight:800; font-size:0.84rem; margin-bottom:4px;">
               ⏪ الحصص السابقة التي مرّ وقتها ولم يُمسك غيابها
             </div>
             <div style="font-size:0.75rem; color:var(--muted); margin-bottom:8px;">
-              الحصص التي قمت بمسك غيابها تختفي تلقائياً من هذه اللائحة ولا تظهر لك مجدداً
+              الحصص التي قمت بمسك غيابها تختفي تلقائياً من هذه اللائحة
             </div>
             ${
               missedList.length === 0
@@ -864,7 +1513,7 @@ function renderTeacherView() {
                         m => `<div style="display:flex; justify-content:space-between; align-items:center; padding:7px 10px; background:#fff; border:1px solid var(--border); border-radius:8px; gap:8px;">
                           <div style="min-width:0;">
                             <div style="font-weight:800; font-size:0.84rem; direction:ltr; text-align:right;">${m.classCode}</div>
-                            <div style="font-size:0.75rem; color:var(--muted);">${DAYS_AR[m.dayOfWeek]} ${m.date} • ${m.startTime}–${m.endTime}</div>
+                            <div style="font-size:0.75rem; color:var(--muted);">${DAYS_AR[m.dayOfWeek]} ${m.date} • (${m.startTime}–${m.endTime})</div>
                           </div>
                           <button class="btn btn-primary" style="padding:4px 10px; font-size:0.76rem;"
                             onclick="selectMissedSession('${m.date}', ${m.dayOfWeek}, ${m.slotIndex}, '${m.classCode}', '${m.room}')">
@@ -880,7 +1529,127 @@ function renderTeacherView() {
     }
   `;
 
-  // إذا لم تكن للأستاذ حصة جارية في هذه الساعة بالضبط وفق التوقيت المغربي
+  // قسم جدول حصص اليوم للأستاذ: تعرض أوقات الحصص الفعلية بدقة وتفعل فقط الحصة الحالية
+  const todayClassesHtml = `
+    <div class="card" style="margin-bottom:12px; border: 1.5px solid #0284c7; background: #f0f9ff;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; border-bottom:1px solid #bae6fd; padding-bottom:6px;">
+        <div style="font-weight:900; font-size:0.92rem; color:#0369a1; display:flex; align-items:center; gap:6px;">
+          <span>📆</span>
+          <span>جدول حصصك اليوم (${DAYS_AR[dow]}):</span>
+        </div>
+        <span class="badge" style="background:#0284c7; color:#fff; font-weight:800; font-size:0.75rem;">
+          ${todaySlots.length} حصص مبرمجة
+        </span>
+      </div>
+
+      ${
+        todaySlots.length === 0
+          ? `<div style="text-align:center; padding:14px; font-size:0.84rem; color:#0369a1; font-weight:700;">
+              🌴 لا توجد لديك حصص مبرمجة في هذا اليوم (${DAYS_AR[dow] || 'اليوم'}).
+            </div>`
+          : `<div style="display:flex; flex-direction:column; gap:8px;">
+              ${todaySlots.map(ts => {
+                const timeSlot = getTimeSlot(ts.slotIndex);
+                const sessionKey = `${state.ui.simDate}_${ts.slotIndex}_${ts.classCode}`;
+                const sessRec = state.attendanceSessions[sessionKey];
+                const isSelected = state.ui.selectedSessionOverride &&
+                                   state.ui.selectedSessionOverride.date === state.ui.simDate &&
+                                   Number(state.ui.selectedSessionOverride.slotIndex) === Number(ts.slotIndex) &&
+                                   state.ui.selectedSessionOverride.classCode === ts.classCode;
+                const startMins = timeToMinutes(timeSlot.startTime);
+                const endMins = timeToMinutes(timeSlot.endTime);
+                const isLiveNow = (nowMins >= startMins && nowMins < endMins);
+                const isUpcoming = (nowMins < startMins);
+                const isPast = (nowMins >= endMins);
+
+                let statusBadge = '';
+                let actionBtn = '';
+
+                if (sessRec) {
+                  // الحصة تم مسك غيابها بالفعل
+                  statusBadge = `<span class="badge" style="background:#16a34a; color:#fff; font-size:0.72rem;">✅ تم المسك (${sessRec.absentCount || 0} غائب • ${sessRec.lateCount || 0} متأخر)</span>`;
+                  if (isSelected) {
+                    actionBtn = `<button class="btn btn-outline" style="padding:4px 8px; font-size:0.74rem; background:#e0f2fe; color:#0369a1; border-color:#0284c7;" onclick="clearSessionOverride()">المعروضة حالياً ✓</button>`;
+                  } else {
+                    actionBtn = `<button class="btn btn-outline" style="padding:4px 10px; font-size:0.75rem; border-color:#0284c7; color:#0369a1; font-weight:700;" onclick="selectTeacherSession('${state.ui.simDate}', ${dow}, ${ts.slotIndex}, '${ts.classCode}', '${ts.room || ''}')">✏️ مراجعة / تعديل</button>`;
+                  }
+                } else if (isLiveNow) {
+                  // الحصة جارية الآن وفق التوقيت الفعلي: مفعلة لمسك الغياب فوراً
+                  statusBadge = `<span class="badge" style="background:#0f766e; color:#fff; font-size:0.72rem; animation: pulse 2s infinite;">🟢 جارية الآن</span>`;
+                  if (isSelected || (!state.ui.selectedSessionOverride && !ctx.noCurrentSessionNow && Number(ctx.slotIndex) === Number(ts.slotIndex))) {
+                    actionBtn = `<button class="btn btn-outline" style="padding:4px 8px; font-size:0.74rem; background:#dcfce7; color:#15803d; border-color:#16a34a; font-weight:800;" onclick="clearSessionOverride()">الجارية حالياً ✓</button>`;
+                  } else {
+                    actionBtn = `<button class="btn btn-primary" style="padding:5px 12px; font-size:0.78rem; background:#0f766e; font-weight:800;" onclick="selectTeacherSession('${state.ui.simDate}', ${dow}, ${ts.slotIndex}, '${ts.classCode}', '${ts.room || ''}')">📝 مسك الغياب الآن 🟢</button>`;
+                  }
+                } else if (isUpcoming) {
+                  // حصة قادمة لم يحن وقتها بعد: غير مفعلة إطلاقاً وفق التوجيه الصارم للمستخدم
+                  statusBadge = `<span class="badge" style="background:#f1f5f9; color:#64748b; font-size:0.72rem;">⏳ لم يحن وقتها بعد</span>`;
+                  actionBtn = `<button class="btn" disabled style="padding:4px 10px; font-size:0.74rem; background:#f8fafc; color:#94a3b8; border:1px solid #cbd5e1; cursor:not-allowed; opacity:0.65;" title="لا يمكن مسك الغياب إلا في الساعة الفعلية للحصة">🔒 غير مفعلة (تبدأ ${timeSlot.startTime})</button>`;
+                } else {
+                  // حصة سابقة مرت اليوم ولم يُمسك غيابها بعد: متاحة للمسك المتأخر
+                  statusBadge = `<span class="badge" style="background:#fef3c7; color:#92400e; font-size:0.72rem; border:1px solid #fcd34d;">⚠️ مر وقتها (غير ممسوكة)</span>`;
+                  if (isSelected) {
+                    actionBtn = `<button class="btn btn-outline" style="padding:4px 8px; font-size:0.74rem; background:#fef3c7; color:#92400e; border-color:#f59e0b;" onclick="clearSessionOverride()">المعروضة حالياً ✓</button>`;
+                  } else {
+                    actionBtn = `<button class="btn btn-primary" style="padding:4px 10px; font-size:0.75rem; background:#d97706; font-weight:800;" onclick="selectTeacherSession('${state.ui.simDate}', ${dow}, ${ts.slotIndex}, '${ts.classCode}', '${ts.room || ''}')">⏪ مسك متأخر</button>`;
+                  }
+                }
+
+                return `
+                  <div style="display:flex; justify-content:space-between; align-items:center; padding:9px 11px; background:#ffffff; border:1px solid ${isLiveNow ? '#0f766e' : isSelected ? '#0284c7' : '#e0f2fe'}; border-radius:9px; gap:8px; box-shadow: ${isLiveNow ? '0 0 0 2px #5eead4' : isSelected ? '0 0 0 2px #38bdf8' : 'none'};">
+                    <div style="min-width:0; flex:1;">
+                      <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                        <span style="font-weight:900; font-size:0.92rem; color:#0f172a; direction:ltr; text-align:right;">${ts.classCode}</span>
+                        ${statusBadge}
+                      </div>
+                      <div style="font-size:0.75rem; color:#64748b; margin-top:3px;">
+                        ⏰ (${timeSlot.startTime}–${timeSlot.endTime}) • القاعة: ${ts.room || teacher.defaultRoom || '—'}
+                      </div>
+                    </div>
+                    <div style="flex-shrink:0;">
+                      ${actionBtn}
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>`
+      }
+    </div>
+  `;
+
+  // إذا لم يكن للأستاذ أي حصص في قاعدة البيانات
+  if (teacherAllSlots.length === 0) {
+    return `
+      <div class="teacher-shell">
+        <div class="teacher-banner">
+          <div class="teacher-top-row">
+            <div style="min-width:0; flex:1;">
+              <div style="font-weight:800; font-size:0.95rem;">👨‍🏫 ذ. ${teacher.fullName}</div>
+              <div style="font-size:0.74rem; opacity:0.88;">📘 ${teacher.subject} • القاعة: ${teacher.defaultRoom}</div>
+            </div>
+            <span class="badge" style="background:rgba(255,255,255,0.18); color:#fff; font-size:0.74rem;">
+              🇲🇦 ${DAYS_AR[dow] || ''} ${state.ui.simDate.slice(5)} • ${state.ui.simTime}
+            </span>
+          </div>
+        </div>
+
+        <div class="card" style="border: 2px solid #f59e0b; background: #fffbeb; text-align: center; padding: 20px 14px; margin-bottom: 12px;">
+          <div style="font-size: 2rem; margin-bottom: 6px;">⚠️</div>
+          <div style="font-weight: 800; font-size: 0.95rem; color: #92400e; margin-bottom: 6px;">
+            لم يتم العثور على حصص مبرمجة في ذاكرة الهاتف لهذا الأستاذ
+          </div>
+          <div style="font-size: 0.8rem; color: #78350f; line-height: 1.5; margin-bottom: 12px;">
+            يرجى التأكد من قيام المدير بتوليد الجدول ومزامنته، أو الضغط على الزر أدناه لسحب جدول الحصص الآن:
+          </div>
+          <button class="btn btn-primary" onclick="pullFromCloudFirestore().then(() => { showToast('تم تحديث البيانات من السحابة'); renderApp(); })" style="padding: 8px 16px; font-size: 0.84rem; background:#d97706;">
+            🔄 سحب جدول الحصص والبيانات الآن من السحابة
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  // إذا لم تكن هناك حصة جارية ولا توجد حصة مختارة override:
   if (ctx.noCurrentSessionNow) {
     return `
       <div class="teacher-shell">
@@ -902,13 +1671,13 @@ function renderTeacherView() {
           <div class="session-pill-box">
             <div style="min-width:0;">
               <div style="font-weight:800; font-size:0.88rem;">
-                🕒 لا توجد لديك حصة مبرمجة في هذه الساعة (${state.ui.simTime})
+                🕒 لا توجد لديك حصة جارية في هذه الدقيقة بالضبط (${state.ui.simTime})
               </div>
               <div style="font-size:0.76rem; opacity:0.92; margin-top:2px;">
                 ${
                   ctx.upcomingToday
                     ? `⏭️ حصتك القادمة اليوم: قسم <strong>${ctx.upcomingToday.classCode}</strong> (${ctx.upcomingToday.timeSlot.startTime}–${ctx.upcomingToday.timeSlot.endTime})`
-                    : 'لا توجد حصص متبقية لك في هذا اليوم حسب التوقيت الحالي'
+                    : 'لا توجد حصص متبقية لك في هذا اليوم حسب التوقيت الحالي.'
                 }
               </div>
             </div>
@@ -916,36 +1685,92 @@ function renderTeacherView() {
         </div>
 
         ${missedSectionHtml}
+        ${todayClassesHtml}
+      </div>
+    `;
+  }
 
-        <div class="card" style="text-align:center; padding:22px 14px;">
-          <div style="font-size:1.8rem; margin-bottom:6px;">⏰</div>
-          <div style="font-weight:800; font-size:0.95rem; color:var(--text); margin-bottom:4px;">
-            تظهر هنا تلقائياً فقط الحصة الموافقة للتوقيت المغربي الحالي (${state.ui.simTime})
+  // إذا كانت هناك حصة نشطة (إما جارية الآن وفق التوقيت أو حصة سابقة مختارة بالضغط عليها)
+  const sessionKey = `${ctx.date}_${ctx.slotIndex}_${ctx.classCode}`;
+  const savedRecord = state.attendanceSessions[sessionKey];
+  const classStudents = getStudentsForClass(ctx.classCode);
+  const refData = getReferredStudentsForClass(ctx.classCode, ctx.slotIndex, ctx.date);
+
+  let referredSectionHtml = '';
+  if (refData.referred.length > 0) {
+    referredSectionHtml += `
+      <div class="card" style="border: 2px solid #ef4444; background: #fff5f5; margin-bottom: 12px; border-radius: 12px; padding: 12px; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.12);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
+          <div style="font-weight:900; font-size:0.92rem; color:#991b1b; display:flex; align-items:center; gap:6px;">
+            <span style="font-size:1.1rem;">🚨</span>
+            <span>التلاميذ المحالون على الإدارة (ملزمون بورقة السماح بالدخول):</span>
           </div>
-          <div style="font-size:0.8rem; color:var(--muted);">
-            إذا كانت لديك حصة سابقة مرّ وقتها ولم تمسك غيابها بعد، يمكنك الضغط على زر <strong>«العودة لحصة سابقة ▼»</strong> أعلاه لإضافة التلاميذ المتغيبين.
-          </div>
+          <span class="badge" style="background:#dc2626; color:#fff; font-weight:800; font-size:0.75rem;">
+            ${refData.referred.length} متغيب(ة) سابقاً
+          </span>
+        </div>
+        <div style="font-size:0.76rem; color:#7f1d1d; line-height:1.4; margin-bottom: 8px;">
+          ⚠️ <strong>تنبيه للأستاذ:</strong> هؤلاء التلاميذ تغيبوا في الحصة الماضية بدون مبرر، <strong>يمنعون من الدخول إلى الفصل</strong> إلا بعد الإدلاء بورقة السماح بالدخول المسلمة من الحراسة العامة.
+        </div>
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          ${refData.referred.map(r => `
+            <div style="display:flex; justify-content:space-between; align-items:center; background:#ffffff; border:1px solid #fca5a5; padding:8px 10px; border-radius:8px;">
+              <div>
+                <div style="font-weight:800; font-size:0.86rem; color:#1e293b;">
+                  👤 ${r.student.fullName} <span style="font-family:monospace; font-size:0.75rem; color:#64748b;">(${r.student.massarCode})</span>
+                </div>
+                <div style="font-size:0.72rem; color:#dc2626; font-weight:700; margin-top:2px;">
+                  🔴 تغيب في ${r.slotLabel} • يلزم إحضار ورقة الإذن من الإدارة
+                </div>
+              </div>
+              <span class="badge" style="background:#fee2e2; color:#991b1b; border:1px solid #f87171; font-size:0.7rem; font-weight:800; flex-shrink:0;">
+                إحالة على الإدارة 🛑
+              </span>
+            </div>
+          `).join('')}
         </div>
       </div>
     `;
   }
 
-  const sessionKey = `${ctx.date}_${ctx.slotIndex}_${ctx.classCode}`;
-  const savedRecord = state.attendanceSessions[sessionKey];
-  const classStudents = state.students.filter(s => s.classCode === ctx.classCode);
+  if (refData.permitted.length > 0) {
+    referredSectionHtml += `
+      <div class="card" style="border: 1.5px solid #16a34a; background: #f0fdf4; margin-bottom: 12px; border-radius: 12px; padding: 10px 12px; box-shadow: 0 4px 12px rgba(22, 163, 74, 0.08);">
+        <div style="font-weight:800; font-size:0.85rem; color:#166534; display:flex; align-items:center; gap:6px; margin-bottom:6px;">
+          <span>✅</span>
+          <span>تلاميذ أدلوا بورقة السماح بالدخول من الإدارة (مصرح لهم بالدخول):</span>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:4px;">
+          ${refData.permitted.map(p => `
+            <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.78rem; background:#ffffff; border:1px solid #bbf7d0; padding:6px 10px; border-radius:6px;">
+              <span style="font-weight:700; color:#1e293b;">👤 ${p.student.fullName} (${p.student.massarCode})</span>
+              <span style="font-size:0.72rem; color:#15803d; font-weight:800; font-family:monospace;">
+                ✓ إذن رقم ${p.pass.passId} (الساعة ${p.pass.issuedAt || p.pass.issuedTime || ''})
+              </span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }
 
   const currentAbsentSet =
     activeDraftKey === sessionKey && activeDraftAbsentIds
       ? activeDraftAbsentIds
       : new Set(savedRecord ? savedRecord.absentStudentIds : []);
 
+  const currentLateSet =
+    activeDraftKey === sessionKey && activeDraftLateIds
+      ? activeDraftLateIds
+      : new Set(savedRecord ? (savedRecord.lateStudentIds || []) : []);
+
   const absentCount = currentAbsentSet.size;
-  const presentCount = classStudents.length - absentCount;
+  const lateCount = currentLateSet.size;
+  const presentCount = Math.max(0, classStudents.length - absentCount);
 
   return `
     <div class="teacher-shell">
-      <!-- بطاقة مدمجة للأستاذ تعرض فقط الحصة الموافقة للتوقيت المغربي الحالي -->
-      <div class="teacher-banner">
+      <div class="teacher-banner" id="teacher-active-session-card">
         <div class="teacher-top-row">
           <div style="min-width:0; flex:1;">
             <div style="font-weight:800; font-size:0.95rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
@@ -961,61 +1786,105 @@ function renderTeacherView() {
         </div>
 
         <div class="session-pill-box">
-          <div style="min-width:0;">
+          <div style="min-width:0; flex:1;">
             <div style="font-size:0.76rem; opacity:0.92; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-              ${ctx.isPastSession ? `⏪ عودة لحصة سابقة (${DAYS_AR[ctx.dayOfWeek]} ${ctx.date})` : '🟢 الحصة الجارية الآن حسب التوقيت المغربي'}
+              ${ctx.isOverride ? `📌 حصة مختارة (${DAYS_AR[ctx.dayOfWeek]} ${ctx.date})` : '🟢 الحصة الجارية الآن حسب التوقيت المغربي'}
             </div>
             <div style="font-weight:800; font-size:0.9rem;">
-              ⏰ ${ctx.timeSlot.label}: ${ctx.timeSlot.startTime}–${ctx.timeSlot.endTime}
+              ⏰ ${ctx.timeSlot.startTime}–${ctx.timeSlot.endTime}
             </div>
           </div>
-          <div class="session-class-badge">${ctx.classCode}</div>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <div class="session-class-badge">${ctx.classCode}</div>
+            ${
+              ctx.isOverride
+                ? `<button class="btn btn-outline" style="padding:2px 8px; font-size:0.72rem; color:#fff; border-color:rgba(255,255,255,0.6);" onclick="clearSessionOverride()">✕ إلغاء التحديد</button>`
+                : ''
+            }
+          </div>
         </div>
       </div>
 
       ${missedSectionHtml}
+      ${referredSectionHtml}
 
-      <!-- لائحة التلاميذ للحصة الجارية -->
+      <!-- لائحة التلاميذ للحصة -->
       <div class="card">
         <div class="card-header" style="margin-bottom:8px;">
           <div class="card-title" style="font-size:0.9rem;">
-            👥 تلاميذ ${ctx.classCode} (${classStudents.length})
+            👥 تلاميذ قسم ${ctx.classCode} (${classStudents.length} تلميذ)
           </div>
           ${
             savedRecord
               ? `<span class="badge ${savedRecord.status === 'ON_TIME' ? 'badge-ontime' : 'badge-late'}">
                   ${savedRecord.status === 'ON_TIME' ? '✅ تم في الوقت' : '🟡 مسك متأخر'} (${savedRecord.submittedAt})
                 </span>`
-              : `<span class="badge badge-pending">اضغط على الغائب لتحويله للأحمر 🔴</span>`
+              : `<span class="badge badge-pending">حدد الغائبين 🔴 والمتأخرين 🟡</span>`
           }
         </div>
 
         <div class="student-list">
-          ${classStudents
-            .map(st => {
-              const isAbsent = currentAbsentSet.has(st.studentId);
-              return `
-                <div class="student-row ${isAbsent ? 'is-absent' : ''}"
-                     onclick='toggleStudentAbsent("${st.studentId}", "${sessionKey}", ${JSON.stringify(Array.from(currentAbsentSet))})'>
-                  <div class="student-info">
-                    <div class="student-num">${String(st.rollNumber).padStart(2, '0')}</div>
-                    <div class="student-name">${st.fullName}</div>
-                  </div>
-                  <div class="status-chip">
-                    ${isAbsent ? '🔴 غائب' : '🟢 حاضر'}
-                  </div>
-                </div>
-              `;
-            })
-            .join('')}
+          ${
+            classStudents.length === 0
+              ? `<div style="text-align:center; padding:18px; color:var(--muted); font-size:0.84rem; font-weight:700;">
+                  لم يتم العثور على تلاميذ لهذا القسم (${ctx.classCode})
+                </div>`
+              : classStudents
+                  .map(st => {
+                    const isAbsent = currentAbsentSet.has(st.studentId);
+                    const isLate = currentLateSet.has(st.studentId);
+                    const isReferred = refData.referred.some(r => r.student.studentId === st.studentId || r.student.massarCode === st.massarCode);
+                    const isPermitted = refData.permitted.some(p => p.student.studentId === st.studentId || p.student.massarCode === st.massarCode);
+                    const todayReport = Object.values(state.dismissalReports || {}).find(r =>
+                      (r.studentId === st.studentId || r.massarCode === st.massarCode) &&
+                      r.date === state.ui.simDate &&
+                      Number(r.slotIndex) === Number(ctx.slotIndex)
+                    );
+                    const safeName = (st.fullName || '').replace(/"/g, '&quot;').replace(/'/g, "\'");
+                    return `
+                      <div class="student-row ${isAbsent ? 'is-absent' : isLate ? 'is-late' : ''}"
+                           onclick='toggleStudentAbsent("${st.studentId}", "${sessionKey}", ${JSON.stringify(Array.from(currentAbsentSet))}, ${JSON.stringify(Array.from(currentLateSet))})'>
+                        <div class="student-info">
+                          <div class="student-num">${String(st.rollNumber).padStart(2, '0')}</div>
+                          <div class="student-name">
+                            ${st.fullName}
+                            ${isReferred ? '<span style="font-size:0.68rem; background:#fee2e2; color:#991b1b; padding:1px 6px; border-radius:4px; font-weight:800; border:1px solid #f87171; margin-right:6px;">ملزم بإذن الدخول 🛑</span>' : ''}
+                            ${isPermitted ? '<span style="font-size:0.68rem; background:#dcfce7; color:#15803d; padding:1px 6px; border-radius:4px; font-weight:800; border:1px solid #86efac; margin-right:6px;">مسموح بالدخول ✓</span>' : ''}
+                            ${todayReport ? `<span class="chip-dismissed" title="${todayReport.reasonType}">⚠️ أُخرج (${todayReport.time})</span>` : ''}
+                          </div>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:5px; flex-shrink:0;">
+                          <button type="button" class="btn-report-incident"
+                                  title="كتابة تقرير إخراج التلميذ(ة) من الفصل"
+                                  onclick='event.stopPropagation(); openDismissalReportModal("${st.studentId}", "${safeName}", "${st.massarCode || ''}", "${ctx.classCode}", ${ctx.slotIndex})'>
+                            ${todayReport ? '✏️ التقرير' : '📝 تقرير'}
+                          </button>
+                          <button type="button" class="btn-status-toggle btn-toggle-late ${isLate ? 'active-late' : ''}"
+                                  title="تسجيل التلميذ متأخر عن الحصة"
+                                  onclick='event.stopPropagation(); toggleStudentLate("${st.studentId}", "${sessionKey}", ${JSON.stringify(Array.from(currentAbsentSet))}, ${JSON.stringify(Array.from(currentLateSet))})'>
+                            ${isLate ? '🟡 متأخر' : 'تأخر'}
+                          </button>
+                          <div class="status-chip">
+                            ${isAbsent ? '🔴 غائب' : isLate ? '🟡 متأخر' : '🟢 حاضر'}
+                          </div>
+                        </div>
+                      </div>
+                    `;
+                  })
+                  .join('')
+          }
         </div>
       </div>
+
+      <!-- جدول حصص اليوم يظهر أيضاً أسفل لائحة التلاميذ لتسهيل المتابعة -->
+      ${todayClassesHtml}
 
       <!-- الشريط السفلي الثابت والمدمج للحفظ -->
       <div class="bottom-bar">
         <div class="bottom-bar-inner">
           <div class="counters">
             <div class="counter-pill counter-present" title="الحاضرون">🟢 ${presentCount}</div>
+            <div class="counter-pill counter-late" title="المتأخرون">🟡 ${lateCount}</div>
             <div class="counter-pill counter-absent" title="الغائبون">🔴 ${absentCount}</div>
           </div>
           <button class="save-btn ${savedRecord ? 'saved' : ''}" onclick="saveTeacherAttendance()">
@@ -2222,14 +3091,24 @@ function logoutSession() {
   renderApp();
 }
 
+function normalizeLoginCode(raw) {
+  if (!raw) return '';
+  const arabicDigits = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
+  let s = String(raw);
+  for (let i = 0; i < 10; i++) {
+    s = s.replaceAll(arabicDigits[i], String(i));
+  }
+  return s.replace(/[\s\-_#\u200B-\u200D\uFEFF]/g, '').trim().toUpperCase();
+}
+
 function loginWithCodeValue(rawCode) {
-  const code = String(rawCode || '').trim().toUpperCase();
+  const code = normalizeLoginCode(rawCode);
   if (!code) {
     showToast('⚠️ يرجى إدخال الرقم التعريفي أولاً');
     return;
   }
 
-  const principalCode = (state.settings.principalCode || 'ADMIN888').toUpperCase();
+  const principalCode = normalizeLoginCode(state.settings.principalCode || 'ADMIN888');
   if (code === principalCode) {
     state.ui.isLoggedIn = true;
     state.ui.role = 'PRINCIPAL';
@@ -2239,7 +3118,18 @@ function loginWithCodeValue(rawCode) {
     return;
   }
 
-  const foundTeacher = state.teachers.find(t => String(t.loginCode || '').toUpperCase() === code);
+  // 1. Search in active state teachers
+  let foundTeacher = (state.teachers || []).find(t => normalizeLoginCode(t.loginCode) === code);
+
+  // 2. Fallback: search directly in bundled initial school data
+  const initialData = window.INITIAL_SCHOOL_DATA || window.ANFG_SCHOOL_DATA;
+  if (!foundTeacher && initialData && Array.isArray(initialData.teachers)) {
+    foundTeacher = initialData.teachers.find(t => normalizeLoginCode(t.loginCode) === code);
+    if (foundTeacher) {
+      state.teachers = initialData.teachers;
+    }
+  }
+
   if (foundTeacher) {
     state.ui.isLoggedIn = true;
     state.ui.role = 'TEACHER';
@@ -2261,72 +3151,18 @@ function submitLoginPage() {
   loginWithCodeValue(input ? input.value : '');
 }
 
-function toggleDemoCodesOnLogin() {
-  state.ui.showDemoCodesOnLogin = !state.ui.showDemoCodesOnLogin;
-  saveState();
-  renderApp();
+function isStandaloneMode() {
+  return window.matchMedia('(display-mode: standalone)').matches ||
+         window.matchMedia('(display-mode: fullscreen)').matches ||
+         window.matchMedia('(display-mode: minimal-ui)').matches ||
+         window.navigator.standalone === true ||
+         document.referrer.includes('android-app://') ||
+         window.location.search.includes('standalone=true');
 }
 
-function renderLoginView() {
-  const pCode = state.settings.principalCode || 'ADMIN888';
-  return `
-    <div class="teacher-shell" style="margin-top:24px;">
-      <div class="card" style="text-align:center; padding:26px 18px;">
-        <div style="width:64px; height:64px; margin:0 auto 12px; border-radius:16px; background:linear-gradient(135deg, var(--primary), var(--primary-dark)); color:#fff; display:flex; align-items:center; justify-content:center; font-size:2rem; box-shadow:0 6px 16px rgba(15,118,110,0.25);">
-          📋
-        </div>
-        <div style="font-size:1.2rem; font-weight:800; color:var(--text);">تطبيق «مسك الغياب»</div>
-        <div style="font-size:0.84rem; font-weight:700; color:var(--primary); margin-bottom:6px;">
-          ${state.settings.schoolName}
-        </div>
-        <div style="font-size:0.8rem; color:var(--muted); margin-bottom:18px;">
-          أدخل رقمك التعريفي السري المكون من <strong>8 حروف وأرقام</strong> للدخول مباشرة إلى حسابك
-        </div>
-
-        <div style="max-width:300px; margin:0 auto; display:flex; flex-direction:column; gap:10px;">
-          <input id="unified-login-input" type="text" maxlength="12" class="input"
-                 placeholder="مثال: HWGQ496R"
-                 style="text-align:center; font-size:1.15rem; font-weight:800; font-family:monospace; letter-spacing:2px; text-transform:uppercase; padding:11px;"
-                 onkeydown="if(event.key==='Enter') submitLoginPage()" />
-          <button class="save-btn" style="padding:11px; font-size:0.95rem;" onclick="submitLoginPage()">
-            🔐 تسجيل الدخول
-          </button>
-        </div>
-
-        <div style="margin-top:20px; padding-top:12px; border-top:1px solid var(--border);">
-          <button class="btn btn-outline" style="font-size:0.76rem; padding:5px 10px;" onclick="toggleDemoCodesOnLogin()">
-            ${state.ui.showDemoCodesOnLogin ? 'إخفاء أرقام التجربة ▲' : '🔍 عرض الأرقام التعريفية للتجربة السريعة ▼'}
-          </button>
-
-          ${
-            state.ui.showDemoCodesOnLogin
-              ? `<div style="margin-top:10px; text-align:right; background:#f8fafc; border:1px solid var(--border); border-radius:10px; padding:10px; max-height:240px; overflow-y:auto;">
-                  <div style="margin-bottom:8px; padding-bottom:8px; border-bottom:1px dashed var(--border); display:flex; justify-content:space-between; align-items:center;">
-                    <span style="font-size:0.8rem; font-weight:800; color:#0f172a;">👨‍💼 حساب السيد المدير:</span>
-                    <button class="btn btn-primary" style="padding:3px 10px; font-size:0.76rem; font-family:monospace;" onclick="loginWithCodeValue('${pCode}')">
-                      ${pCode} (دخول)
-                    </button>
-                  </div>
-                  <div style="font-size:0.78rem; font-weight:800; color:var(--muted); margin-bottom:6px;">👨‍🏫 حسابات الأساتذة (8 حروف وأرقام):</div>
-                  <div style="display:flex; flex-direction:column; gap:5px;">
-                    ${state.teachers
-                      .map(
-                        t => `<div style="display:flex; justify-content:space-between; align-items:center; background:#fff; padding:5px 8px; border-radius:7px; border:1px solid var(--border); font-size:0.76rem;">
-                          <span style="font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${t.fullName}</span>
-                          <button class="btn btn-outline" style="padding:2px 8px; font-family:monospace; font-weight:800; font-size:0.75rem;" onclick="loginWithCodeValue('${t.loginCode}')">
-                            ${t.loginCode}
-                          </button>
-                        </div>`
-                      )
-                      .join('')}
-                  </div>
-                </div>`
-              : ''
-          }
-        </div>
-      </div>
-    </div>
-  `;
+function allowWebAccessTemporarily() {
+  sessionStorage.setItem('rzzakfet_allow_web', '1');
+  renderApp();
 }
 
 let deferredInstallPrompt = null;
@@ -2339,12 +3175,89 @@ window.addEventListener('beforeinstallprompt', e => {
 async function triggerPwaInstall() {
   if (deferredInstallPrompt) {
     deferredInstallPrompt.prompt();
-    await deferredInstallPrompt.userChoice;
+    try {
+      const choice = await deferredInstallPrompt.userChoice;
+      if (choice && choice.outcome === 'accepted') {
+        showToast('🎉 تم تثبيت تطبيق rzzakfet بنجاح على هاتفك!');
+        allowWebAccessTemporarily();
+      }
+    } catch (err) {}
     deferredInstallPrompt = null;
-    renderApp();
   } else {
-    showToast('📲 لتثبيت التطبيق على الهاتف: افتح قائمة المتصفح (⋮) واختر «تثبيت التطبيق / الإضافة إلى الشاشة الرئيسية»');
+    const guide = document.getElementById('pwa-install-manual-guide');
+    if (guide) {
+      guide.style.display = 'block';
+      guide.scrollIntoView({ behavior: 'smooth' });
+    }
+    showToast('📲 افتح خيارات المتصفح (⋮) واختر «تثبيت التطبيق / Ajouter à l\'écran d\'accueil»');
   }
+}
+
+function renderInstallPromptGate() {
+  return `
+    <div class="teacher-shell" style="margin-top:20px;">
+      <div class="card" style="text-align:center; padding:28px 18px; border-radius:24px; box-shadow:0 10px 30px rgba(15,118,110,0.12); border:1px solid rgba(15,118,110,0.2);">
+        <div style="width:76px; height:76px; margin:0 auto 14px; border-radius:22px; background:#0f766e; display:flex; align-items:center; justify-content:center; box-shadow:0 8px 24px rgba(15,118,110,0.35);">
+          <img src="/icon-192.png" alt="rzzakfet" style="width:60px; height:60px; border-radius:16px; object-fit:contain;" />
+        </div>
+        <div style="font-size:1.35rem; font-weight:800; color:#0f172a; margin-bottom:2px;">تطبيق «rzzakfet»</div>
+        <div style="font-size:0.86rem; font-weight:700; color:#0f766e; margin-bottom:12px;">منظومة مسك وتتبع غياب التلاميذ</div>
+        
+        <p style="font-size:0.84rem; color:#475569; line-height:1.6; margin-bottom:22px; text-align:justify;">
+          لتشغيل المنظومة كتطبيق أندرويد متكامل وسريع <strong>بدون ظهور شريط المتصفح أو الروابط (URL)</strong>، يرجى تثبيت التطبيق على الشاشة الرئيسية لهاتفك، ليظهر كأيقونة مستقلة باسم <strong>rzzakfet</strong>.
+        </p>
+
+        <div style="display:flex; flex-direction:column; gap:11px; max-width:320px; margin:0 auto;">
+          <button class="save-btn" style="padding:13px; font-size:1rem; border-radius:14px; display:flex; align-items:center; justify-content:center; gap:8px;" onclick="triggerPwaInstall()">
+            <span>📲</span>
+            <span>تثبيت التطبيق على الهاتف (rzzakfet)</span>
+          </button>
+          
+          <button class="btn btn-outline" style="padding:10px; font-size:0.84rem; border-radius:12px; color:#475569;" onclick="allowWebAccessTemporarily()">
+            🌐 المتابعة عبر المتصفح للدخول
+          </button>
+        </div>
+
+        <div id="pwa-install-manual-guide" style="display:none; margin-top:16px; text-align:right; background:#f0fdfa; border:1px solid #99f6e4; border-radius:14px; padding:14px; font-size:0.8rem; color:#115e59; line-height:1.7;">
+          <div style="font-weight:800; font-size:0.85rem; margin-bottom:6px; color:#0f766e;">✨ خطوات التثبيت السريعة في المتصفح:</div>
+          <div>1️⃣ اضغط على زر الخيارات (<strong>⋮</strong>) في أعلى أو أسفل شاشة المتصفح.</div>
+          <div>2️⃣ اختر <strong>«تثبيت التطبيق»</strong> أو <strong>«إضافة إلى الشاشة الرئيسية»</strong> (Ajouter à l'écran d'accueil).</div>
+          <div>3️⃣ ستجد أيقونة التطبيق فوراً باسم <strong>rzzakfet</strong> على شاشة هاتفك مثل باقي تطبيقات أندرويد.</div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderLoginView() {
+  return `
+    <div class="teacher-shell" style="margin-top:20px;">
+      <div class="card" style="text-align:center; padding:28px 18px; border-radius:20px; box-shadow:0 8px 24px rgba(0,0,0,0.06);">
+        <div style="width:70px; height:70px; margin:0 auto 12px; border-radius:18px; background:linear-gradient(135deg, var(--primary), var(--primary-dark)); color:#fff; display:flex; align-items:center; justify-content:center; box-shadow:0 6px 16px rgba(15,118,110,0.25);">
+          <img src="/icon-192.png" alt="rzzakfet" style="width:52px; height:52px; border-radius:12px; object-fit:contain;" />
+        </div>
+        <div style="font-size:1.25rem; font-weight:800; color:var(--text); margin-bottom:2px;">تطبيق «مسك الغياب»</div>
+        <div style="font-size:0.86rem; font-weight:700; color:var(--primary); margin-bottom:6px;">
+          ${state.settings.schoolName || 'المؤسسة التعليمية'}
+        </div>
+        <div style="font-size:0.8rem; color:var(--muted); margin-bottom:20px; line-height:1.5;">
+          أدخل رقمك التعريفي السري المكون من <strong>8 حروف وأرقام</strong> للدخول المباشر إلى حسابك
+        </div>
+
+        <div style="max-width:320px; margin:0 auto; display:flex; flex-direction:column; gap:12px;">
+          <input id="unified-login-input" type="text" maxlength="12" class="input"
+                 placeholder="مثال: HWGQ496R"
+                 autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false"
+                 style="text-align:center; font-size:1.25rem; font-weight:800; font-family:monospace; letter-spacing:3px; text-transform:uppercase; padding:12px; border:2px solid var(--border); border-radius:12px;"
+                 onkeydown="if(event.key==='Enter') submitLoginPage()" />
+          <button class="save-btn" style="padding:12px; font-size:1rem; border-radius:12px; display:flex; align-items:center; justify-content:center; gap:8px;" onclick="submitLoginPage()">
+            <span>🔐</span>
+            <span>تسجيل الدخول</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
 }
 
 function toggleSimDrawer() {
@@ -2360,21 +3273,30 @@ function renderApp() {
   syncWithMoroccanClock();
 
   if (!state.ui.isLoggedIn) {
+    const isStandalone = isStandaloneMode();
+    const allowWeb = sessionStorage.getItem('rzzakfet_allow_web') === '1';
+
+    // If running in browser for the first time, show install screen
+    const mainViewHtml = (!isStandalone && !allowWeb)
+      ? renderInstallPromptGate()
+      : renderLoginView();
+
     root.innerHTML = `
       <header class="top-bar">
         <div class="top-bar-inner">
           <div class="brand">
-            <span>📱 مسك الغياب</span>
-            <span class="brand-badge">أنفك</span>
+            <img src="/icon-192.png" alt="rzzakfet" style="width:24px; height:24px; border-radius:6px; object-fit:contain;" />
+            <span>rzzakfet</span>
+            <span class="brand-badge">${state.settings.schoolName ? state.settings.schoolName.slice(0, 15) : 'أنفك'}</span>
           </div>
           <div class="top-actions">
             <span class="icon-btn" style="cursor:default;">🇲🇦 ${state.ui.simTime}</span>
-            <button class="icon-btn" onclick="triggerPwaInstall()">📲 تثبيت التطبيق</button>
+            ${!isStandalone ? '<button class="icon-btn" onclick="triggerPwaInstall()" style="font-weight:700;">📲 تثبيت التطبيق</button>' : ''}
           </div>
         </div>
       </header>
       <main class="container">
-        ${renderLoginView()}
+        ${mainViewHtml}
       </main>
     `;
     return;
@@ -2436,10 +3358,186 @@ function renderApp() {
   `;
 }
 
+// ================= MOBILE DISMISSAL REPORT MODAL =================
+let activeDismissalTarget = null;
+
+function openDismissalReportModal(studentId, studentName, massarCode, classCode, slotIndex) {
+  const ctx = getActiveTeacherSessionContext();
+  const teacher = ctx.teacher;
+  activeDismissalTarget = {
+    studentId,
+    studentName,
+    massarCode,
+    classCode,
+    slotIndex,
+    teacherId: teacher.teacherId,
+    teacherName: teacher.fullName,
+    subject: ctx.subject || teacher.subject || ''
+  };
+
+  // Check if report already exists
+  const existing = Object.values(state.dismissalReports || {}).find(r =>
+    (r.studentId === studentId || r.massarCode === massarCode) &&
+    r.date === state.ui.simDate &&
+    Number(r.slotIndex) === Number(slotIndex)
+  );
+
+  const defaultTime = existing ? existing.time : (state.ui.simTime || new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }));
+  const existingReasonType = existing ? existing.reasonType : 'عدم الاستماع لتنبيهات الأستاذ وتكرار الفوضى';
+  const existingCustomReason = existing ? (existing.customReason || '') : '';
+
+  const modalHtml = `
+    <div id="mobile-dismissal-modal" class="mobile-modal-overlay" onclick="if(event.target===this) closeDismissalReportModal()">
+      <div class="mobile-modal-card">
+        <div class="mobile-modal-header">
+          <div class="mobile-modal-title">
+            <span>⚠️</span>
+            <span>تقرير إخراج تلميذ من الحصة الدراسية</span>
+          </div>
+          <button type="button" class="mobile-modal-close" onclick="closeDismissalReportModal()">✕</button>
+        </div>
+
+        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:10px; margin-bottom:12px; font-size:0.8rem; line-height:1.5;">
+          <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+            <span>التلميذ(ة): <strong style="color:#0369a1;">${studentName}</strong></span>
+            <span>القسم: <strong style="font-family:monospace;">${classCode}</strong></span>
+          </div>
+          <div style="display:flex; justify-content:space-between; color:#64748b; font-size:0.75rem;">
+            <span>مسار: <strong style="font-family:monospace;">${massarCode || '-'}</strong></span>
+            <span>الحصة: <strong>حصة ${slotIndex}</strong></span>
+          </div>
+        </div>
+
+        <div style="margin-bottom:12px;">
+          <label style="display:block; font-weight:800; font-size:0.8rem; color:#334155; margin-bottom:4px;">
+            ⏱️ ساعة الإخراج بالضبط من الفصل:
+          </label>
+          <input type="time" id="dism-time" value="${defaultTime}" style="width:100%; box-sizing:border-box; padding:7px 10px; border:1.5px solid #cbd5e1; border-radius:8px; font-weight:800; font-family:monospace; font-size:0.9rem;" />
+        </div>
+
+        <div style="margin-bottom:12px;">
+          <label style="display:block; font-weight:800; font-size:0.8rem; color:#334155; margin-bottom:6px;">
+            📌 نوع المخالفة المرتكبة (اختر من القائمة):
+          </label>
+          
+          <label class="violation-option">
+            <input type="radio" name="dism-reason-type" value="عدم الاستماع لتنبيهات الأستاذ وتكرار الفوضى" ${existingReasonType === 'عدم الاستماع لتنبيهات الأستاذ وتكرار الفوضى' ? 'checked' : ''} />
+            <span>عدم الاستماع لتنبيهات الأستاذ وتكرار الفوضى</span>
+          </label>
+          <label class="violation-option">
+            <input type="radio" name="dism-reason-type" value="عرقلة السير العادي للدراسة والتشويش على الزملاء" ${existingReasonType === 'عرقلة السير العادي للدراسة والتشويش على الزملاء' ? 'checked' : ''} />
+            <span>عرقلة السير العادي للدراسة والتشويش على الزملاء</span>
+          </label>
+          <label class="violation-option">
+            <input type="radio" name="dism-reason-type" value="السلوك غير اللائق / عدم احترام الأستاذ أو التلاميذ" ${existingReasonType === 'السلوك غير اللائق / عدم احترام الأستاذ أو التلاميذ' ? 'checked' : ''} />
+            <span>السلوك غير اللائق / عدم احترام الأستاذ أو التلاميذ</span>
+          </label>
+          <label class="violation-option">
+            <input type="radio" name="dism-reason-type" value="رفض العمل أو الامتناع عن إحضار الأدوات واللوازم" ${existingReasonType === 'رفض العمل أو الامتناع عن إحضار الأدوات واللوازم' ? 'checked' : ''} />
+            <span>رفض العمل أو الامتناع عن إحضار الأدوات واللوازم</span>
+          </label>
+          <label class="violation-option">
+            <input type="radio" name="dism-reason-type" value="مغادرة المقعد أو الفصل الدراسي بدون إذن" ${existingReasonType === 'مغادرة المقعد أو الفصل الدراسي بدون إذن' ? 'checked' : ''} />
+            <span>مغادرة المقعد أو الفصل الدراسي بدون إذن</span>
+          </label>
+          <label class="violation-option">
+            <input type="radio" name="dism-reason-type" value="مخالفة أخرى (تحديد السبب أسفله)" ${existingReasonType.includes('أخرى') ? 'checked' : ''} />
+            <span>مخالفة أخرى (تحديد السبب أسفله)</span>
+          </label>
+        </div>
+
+        <div style="margin-bottom:14px;">
+          <label style="display:block; font-weight:800; font-size:0.8rem; color:#334155; margin-bottom:4px;">
+            📝 بيان الوقائع وتفاصيل سبب الإخراج:
+          </label>
+          <textarea id="dism-custom-reason" rows="3" placeholder="اكتب هنا توضيحاً مختصراً لسبب إخراج التلميذ وإحالته على إدارة المؤسسة والحراسة العامة..." style="width:100%; box-sizing:border-box; border:1.5px solid #cbd5e1; border-radius:8px; padding:8px 10px; font-family:inherit; font-size:0.82rem; line-height:1.4;">${existingCustomReason}</textarea>
+        </div>
+
+        <div style="display:flex; align-items:center; justify-content:flex-end; gap:8px; border-top:1px solid #e2e8f0; padding-top:10px;">
+          <button type="button" class="btn btn-outline" style="padding:7px 14px; font-size:0.8rem;" onclick="closeDismissalReportModal()">إلغاء</button>
+          <button type="button" class="btn btn-primary" style="background:#dc2626; color:#fff; padding:7px 16px; font-size:0.82rem; font-weight:800; display:flex; align-items:center; gap:5px;" onclick="submitDismissalReport()">
+            <span>📤</span>
+            <span>إرسال التقرير للإدارة</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const old = document.getElementById('mobile-dismissal-modal');
+  if (old) old.remove();
+
+  document.body.insertAdjacentHTML('beforeend', modalHtml);
+}
+
+function closeDismissalReportModal() {
+  const el = document.getElementById('mobile-dismissal-modal');
+  if (el) el.remove();
+  activeDismissalTarget = null;
+}
+
+async function submitDismissalReport() {
+  if (!activeDismissalTarget) return;
+
+  const timeInput = document.getElementById('dism-time');
+  const customReasonInput = document.getElementById('dism-custom-reason');
+  const checkedRadio = document.querySelector('input[name="dism-reason-type"]:checked');
+
+  const dismissalTime = timeInput ? timeInput.value : (state.ui.simTime || '09:00');
+  const reasonType = checkedRadio ? checkedRadio.value : 'عرقلة السير العادي للدراسة والتشويش على الزملاء';
+  const customReason = customReasonInput ? customReasonInput.value.trim() : '';
+
+  const repId = `DISM-${state.ui.simDate.replace(/-/g, '')}-${Date.now().toString(16).slice(-4).toUpperCase()}`;
+
+  const reportObj = {
+    reportId: repId,
+    studentId: activeDismissalTarget.studentId,
+    studentName: activeDismissalTarget.studentName,
+    massarCode: activeDismissalTarget.massarCode,
+    classCode: activeDismissalTarget.classCode,
+    teacherId: activeDismissalTarget.teacherId,
+    teacherName: activeDismissalTarget.teacherName,
+    subject: activeDismissalTarget.subject,
+    date: state.ui.simDate,
+    time: dismissalTime,
+    slotIndex: activeDismissalTarget.slotIndex,
+    reasonType: reasonType,
+    customReason: customReason,
+    status: 'PENDING_ADMIN',
+    createdAt: Date.now()
+  };
+
+  if (!state.dismissalReports) state.dismissalReports = {};
+  state.dismissalReports[repId] = reportObj;
+
+  saveState();
+  closeDismissalReportModal();
+  renderApp();
+  showToast('تم إرسال تقرير إخراج التلميذ(ة) للإدارة بنجاح! ✓');
+
+  try {
+    await fetch('/api/attendance/dismissal_report', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(reportObj)
+    });
+  } catch (err) {
+    console.warn('[dismissal report POST error]:', err);
+  }
+}
+
 window.addEventListener('DOMContentLoaded', () => {
   renderApp();
   pullStateFromServer();
-  setInterval(pullStateFromServer, 2000);
+  window.addEventListener('focus', () => { pullStateFromServer(); });
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) pullStateFromServer();
+  });
+  setInterval(() => {
+    if (!document.hidden) {
+      pullStateFromServer();
+    }
+  }, 25000);
   setInterval(() => {
     const prevTime = state.ui.simTime;
     syncWithMoroccanClock();

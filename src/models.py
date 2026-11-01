@@ -18,6 +18,8 @@ class InstitutionData:
     academic_year: str = "2026-2027"
     gresa_code: str = "045892P"
     principal_name: str = "ذ. محمد الإدريسي"
+    general_guard_name: str = ""
+    director_studies_name: str = ""
     institution_cycle: str = "middle"  # "middle" (الثانوي الإعدادي) or "qualifying" (الثانوي التأهيلي)
     cycle: str = "middle"
     logo_base64: str = ""

@@ -482,12 +482,6 @@ class ExportEngine:
         acad_year = inst_info.get("academic_year") or inst_info.get("year", "2026-2027")
         gresa_code = inst_info.get("gresa_code") or inst_info.get("gresa", "045892P")
         principal = inst_info.get("principal_name") or inst_info.get("principal", "رئيس المؤسسة")
-        logo_src = inst_info.get("logo_base64") or inst_info.get("logo") or "/official_header_logo.png"
-        logo_html = f'''
-        <div class="official-logo-box" style="text-align:center; margin-bottom:4px;">
-            <img src="{logo_src}" alt="شعار الوزارة والمؤسسة" style="max-height:42px; max-width:260px; object-fit:contain; display:inline-block;">
-        </div>
-        ''' if logo_src else ''
 
         if category == "class":
             main_title = f"جدول حصص القسم: {target_name}"
@@ -662,25 +656,24 @@ class ExportEngine:
             '''
 
         logo_src = inst_info.get("logo_base64") or inst_info.get("logo") or "/official_header_logo.png"
-        logo_html = f'''
-        <div class="official-logo-box" style="text-align:center; margin-bottom:5px;">
-            <img src="{logo_src}" alt="شعار الوزارة والمؤسسة" style="max-height:50px; max-width:300px; object-fit:contain; display:inline-block;">
-        </div>
-        ''' if logo_src else ''
+        logo_img_tag = f'<img src="{logo_src}" alt="شعار المملكة المغربية ووزارة التربية الوطنية" style="max-height:68px; max-width:380px; width:auto; object-fit:contain; display:inline-block;">' if logo_src else ''
 
         return f'''
         <div class="sheet">
-            {logo_html}
-            <div class="official-header" style="display:flex; justify-content:space-between; align-items:center; border-bottom:1.5px solid #0f172a; padding-bottom:4px; margin-bottom:6px;">
-                <div class="header-box" style="text-align:right; font-size:8.5pt; line-height:1.4;">
-                    <div style="font-weight:800; color:#1e293b;">{acad_name}</div>
-                    <div style="font-weight:700; color:#334155;">{prov_name}</div>
-                    <div style="font-weight:900; color:#0f172a; font-size:9.5pt;">{inst_name}</div>
+            <div class="official-header" style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #0f172a; padding-bottom:6px; margin-bottom:8px;">
+                <div class="header-box" style="text-align:right; flex:1; min-width:180px; line-height:1.4;">
+                    <div style="font-weight:800; font-size:10pt; color:#1e293b;">{acad_name}</div>
+                    <div style="font-weight:700; font-size:9.5pt; color:#475569;">{prov_name}</div>
+                    <div style="font-weight:900; font-size:11.5pt; color:#0f172a;">{inst_name}</div>
                 </div>
 
-                <div class="header-center" style="text-align:center;">
-                    <div class="main-title" style="font-size:12pt; font-weight:900; color:#0f172a; margin-bottom:2px;">{main_title}</div>
-                    <div style="font-size:8pt; color:#475569;">الموسم الدراسي: <strong>{acad_year}</strong> | رمز مسار: <strong>{gresa_code}</strong></div>
+                <div class="header-center" style="text-align:center; flex:1.2; padding:0 8px;">
+                    {logo_img_tag}
+                </div>
+
+                <div class="header-box" style="text-align:left; flex:1; min-width:180px; line-height:1.4;">
+                    <div class="main-title" style="font-size:11.5pt; font-weight:900; color:#0f172a; margin-bottom:3px; display:inline-block; padding:3px 10px; background:#f1f5f9; border:1px solid #cbd5e1; border-radius:6px;">{main_title}</div>
+                    <div style="font-size:8.5pt; color:#334155; margin-top:2px;">الموسم الدراسي: <strong>{acad_year}</strong> | رمز مسار: <strong>{gresa_code}</strong></div>
                 </div>
             </div>
 
@@ -726,11 +719,7 @@ class ExportEngine:
         gresa_code = inst_info.get("gresa_code") or inst_info.get("gresa", "045892P")
         principal = inst_info.get("principal_name") or inst_info.get("principal", "رئيس المؤسسة")
         logo_src = inst_info.get("logo_base64") or inst_info.get("logo") or "/official_header_logo.png"
-        logo_html = f'''
-        <div class="official-logo-box" style="text-align:center; margin-bottom:4px;">
-            <img src="{logo_src}" alt="شعار الوزارة والمؤسسة" style="max-height:42px; max-width:260px; object-fit:contain; display:inline-block;">
-        </div>
-        ''' if logo_src else ''
+        logo_img_tag = f'<img src="{logo_src}" alt="شعار المملكة المغربية ووزارة التربية الوطنية" style="max-height:65px; max-width:380px; width:auto; object-fit:contain; display:inline-block;">' if logo_src else ''
 
         rows_html = ""
         DAYS_12 = [
@@ -978,16 +967,20 @@ class ExportEngine:
     </div>
 
     <div class="master-sheet">
-        {logo_html}
-        <div class="official-header" style="display:flex; justify-content:space-between; align-items:center; padding-bottom:3px; margin-bottom:4px; border-bottom:1.5px solid #0f172a;">
-            <div class="header-box" style="text-align:right; font-size:7.5pt; line-height:1.35;">
-                <div style="font-weight:800; color:#1e293b;">{acad_name} | {prov_name}</div>
-                <div style="font-weight:900; font-size:8.5pt; color:#0f172a;">{inst_name}</div>
+        <div class="official-header" style="display:flex; justify-content:space-between; align-items:center; padding-bottom:4px; margin-bottom:5px; border-bottom:1.5px solid #0f172a;">
+            <div class="header-box" style="text-align:right; flex:1; line-height:1.35;">
+                <div style="font-weight:800; font-size:8.5pt; color:#1e293b;">{acad_name}</div>
+                <div style="font-weight:700; font-size:8pt; color:#475569;">{prov_name}</div>
+                <div style="font-weight:900; font-size:9.5pt; color:#0f172a;">{inst_name}</div>
             </div>
 
-            <div class="header-center" style="text-align:center;">
-                <div class="main-title" style="font-size:10pt; font-weight:900; padding:2px 12px; margin-bottom:1px;">📋 الجدول العام لاستعمالات الزمن للمدرسين</div>
-                <div style="font-size:7.5pt; color:#475569;">الموسم الدراسي: <strong>{acad_year}</strong> | رمز المؤسسة: <strong>{gresa_code}</strong> | رئيس المؤسسة: <strong>{principal}</strong></div>
+            <div class="header-center" style="text-align:center; flex:1.2; padding:0 10px;">
+                {logo_img_tag}
+            </div>
+
+            <div class="header-box" style="text-align:left; flex:1; line-height:1.35;">
+                <div class="main-title" style="font-size:10.5pt; font-weight:900; padding:2px 10px; margin-bottom:2px; display:inline-block; background:#f1f5f9; border:1px solid #cbd5e1; border-radius:4px;">📋 الجدول العام لاستعمالات الزمن للمدرسين</div>
+                <div style="font-size:7.5pt; color:#334155;">الموسم الدراسي: <strong>{acad_year}</strong> | رمز مسار: <strong>{gresa_code}</strong> | رئيس المؤسسة: <strong>{principal}</strong></div>
             </div>
         </div>
 
@@ -1084,12 +1077,6 @@ class ExportEngine:
         acad_year = inst_info.get("academic_year") or inst_info.get("year", "2026-2027")
         gresa_code = inst_info.get("gresa_code") or inst_info.get("gresa", "045892P")
         principal = inst_info.get("principal_name") or inst_info.get("principal", "رئيس المؤسسة")
-        logo_src = inst_info.get("logo_base64") or inst_info.get("logo") or "/official_header_logo.png"
-        logo_html = f'''
-        <div class="official-logo-box" style="text-align:center; margin-bottom:4px;">
-            <img src="{logo_src}" alt="شعار الوزارة والمؤسسة" style="max-height:42px; max-width:260px; object-fit:contain; display:inline-block;">
-        </div>
-        ''' if logo_src else ''
 
         thin_side = Side(style='thin', color='64748B')
         cell_border = Border(left=thin_side, right=thin_side, top=thin_side, bottom=thin_side)
@@ -1107,7 +1094,7 @@ class ExportEngine:
         ws.cell(row=1, column=45, value=f"الموسم الدراسي: {acad_year}").font = Font(name="Calibri", size=10, bold=True)
         ws.cell(row=1, column=45).alignment = Alignment(horizontal="left", vertical="center")
 
-        ws.cell(row=2, column=1, value="وزارة التربية الوطنية والتعليم الأولي والرياضة").font = Font(name="Calibri", size=9, bold=True, color="334155")
+        ws.cell(row=2, column=1, value="وزارة التربية الوطنية و التعليم الأولي و التكوين المهني و التأهيل").font = Font(name="Calibri", size=9, bold=True, color="334155")
         ws.cell(row=2, column=1).alignment = Alignment(horizontal="right", vertical="center")
 
         ws.merge_cells(start_row=2, start_column=10, end_row=2, end_column=42)

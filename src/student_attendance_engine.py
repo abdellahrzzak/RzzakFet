@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 محرك مسك وتتبع غياب التلاميذ (Student Attendance Engine)
-برنامج RzzakFet - متوافق مع منظومة «مسار» بوزارة التربية الوطنية والتعليم الأولي والرياضة.
+برنامج RzzakFet - متوافق مع منظومة «مسار» بوزارة التربية الوطنية و التعليم الأولي و التكوين المهني و التأهيل.
 يدعم:
 - استيراد لوائح التلاميذ من ملفات مسار المتعددة الأوراق (Multi-sheet Excel).
 - الإدخال اليدوي المباشر لأسماء التلاميذ وترتيبهم.
@@ -81,7 +81,7 @@ def normalize_class_name(cname: str) -> str:
     if not cname:
         return ""
     c = str(cname).strip().upper()
-    
+
     # 1. نمط السلك الإعدادي (مثل 1/1 أو 2-3 أو 3/2)
     m_slash = re.match(r'^([123])[\s/_-]+(\d+)$', c)
     if m_slash:
@@ -258,7 +258,7 @@ class StudentAttendanceEngine:
 
         for sheet_idx, sheet_name in enumerate(wb.sheetnames):
             ws = wb[sheet_name]
-            
+
             # محاولة قراءة بيانات المؤسسة من أول ورقة إن وجدت
             if sheet_idx == 0:
                 for r in range(1, 10):
@@ -415,7 +415,8 @@ class StudentAttendanceEngine:
         if not files:
             raise FileNotFoundError(f"لم يتم العثور على أي ملف Excel في المجلد: {folder_path}")
 
-        # نختار أحدث ملف أو الملف الذي يبدأ بـ ListEleve
+        # نختار أحدث ملف تم تعديله أو الملف الذي يبدأ بـ ListEleve
+        files.sort(key=lambda f: os.path.getmtime(os.path.join(folder_path, f)), reverse=True)
         target_file = None
         for f in files:
             if f.lower().startswith('listeleve'):
@@ -521,13 +522,13 @@ class StudentAttendanceEngine:
 
         c_students = self.students_by_class[resolved]
         lines = [l.strip() for l in raw_text.strip().splitlines() if l.strip()]
-        
+
         added_count = 0
         curr_order = len(c_students) + 1
 
         for line in lines:
             parts = line.split('\t') if '\t' in line else line.split(';') if ';' in line else [line]
-            
+
             s_order = curr_order
             s_code = ""
             s_name = ""
@@ -752,10 +753,10 @@ class StudentAttendanceEngine:
                     continue
             if date_str and rec.get("date") != date_str:
                 continue
-            
+
             abs_cnt = sum(1 for r in rec.get("records", {}).values() if r.get("status") == "absent")
             late_cnt = sum(1 for r in rec.get("records", {}).values() if r.get("status") == "late")
-            
+
             res.append({
                 "id": rec.get("id"),
                 "class_name": rec.get("class_name"),
@@ -929,7 +930,7 @@ class StudentAttendanceEngine:
                 if status in ["absent", "late"]:
                     hours = rec.get("hours", 1)
                     is_just = st_rec.get("justified", False)
-                    
+
                     if status == "absent":
                         total_absent_sessions += 1
                         total_absent_hours += hours
@@ -1071,7 +1072,7 @@ class StudentAttendanceEngine:
         fill_absent = PatternFill(start_color="FEE2E2", end_color="FEE2E2", fill_type="solid")
         fill_late = PatternFill(start_color="FEF3C7", end_color="FEF3C7", fill_type="solid")
         fill_alt = PatternFill(start_color="F8FAFC", end_color="F8FAFC", fill_type="solid")
-        
+
         thin_border = Border(
             left=Side(style='thin', color='CBD5E1'),
             right=Side(style='thin', color='CBD5E1'),
@@ -1081,7 +1082,7 @@ class StudentAttendanceEngine:
 
         # الترويسة الرسمية
         inst = self.institution_info
-        ws["A1"] = f"المملكة المغربية - وزارة التربية الوطنية والتعليم الأولي والرياضة"
+        ws["A1"] = f"المملكة المغربية - وزارة التربية الوطنية و التعليم الأولي و التكوين المهني و التأهيل"
         ws["A1"].font = font_header
         ws.merge_cells("A1:G1")
         ws["A1"].alignment = Alignment(horizontal="center")

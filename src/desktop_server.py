@@ -1,4 +1,6 @@
+import re
 import http.server
+import subprocess
 import json
 import os
 import io
@@ -25,6 +27,15 @@ from .student_attendance_engine import attendance_engine, DEFAULT_PERIODS
 import sys
 import webbrowser
 from datetime import datetime
+import socket
+
+# Force IPv4 resolution for googleapis.com to prevent Windows dual-stack IPv6 DNS/handshake timeouts
+_orig_getaddrinfo = socket.getaddrinfo
+def _ipv4_getaddrinfo(host, port, family=0, type=0, proto=0, flags=0):
+    if host and "googleapis.com" in str(host):
+        return _orig_getaddrinfo(host, port, socket.AF_INET, type, proto, flags)
+    return _orig_getaddrinfo(host, port, family, type, proto, flags)
+socket.getaddrinfo = _ipv4_getaddrinfo
 
 LATEST_PRINT_DOC = {"title": "وثيقة رسمية", "html": ""}
 
@@ -60,41 +71,517 @@ def get_local_ip():
     return IP
 
 def load_attendance_mobile_db():
-    if os.path.exists(ATTENDANCE_MOBILE_DB_FILE):
+    candidates = [
+        ATTENDANCE_MOBILE_DB_FILE,
+        os.path.join(os.environ.get("LOCALAPPDATA", ""), "RzzakFet", "data", "attendance_mobile_db.json"),
+        os.path.join(BASE_DIR, "data", "attendance_mobile_db.json")
+    ]
+    best_data = None
+    best_updated_at = -1
+    for p in candidates:
+        if p and os.path.exists(p):
+            try:
+                with open(p, "r", encoding="utf-8") as f:
+                    cand = json.load(f)
+                    cand_ts = cand.get("updatedAt", 0) if isinstance(cand, dict) else 0
+                    if cand_ts > best_updated_at or best_data is None:
+                        best_data = cand
+                        best_updated_at = cand_ts
+            except Exception:
+                pass
+    data = best_data
+
+    if data is None:
+        data = {
+            "updatedAt": 0,
+            "attendanceSessions": {},
+            "justifiedAbsences": {},
+            "entryPasses": {},
+            "dismissalReports": {},
+            "settings": {
+                "schoolName": "الثانوية التأهيلية أنفك (045892P)",
+                "principalName": "رئيس المؤسسة",
+                "principalCode": "ADMIN888",
+                "lateEntryMaxDays": 7,
+                "scheduleMode": "NORMAL"
+            },
+            "timeSlots": [
+                {"slotIndex": 1, "index": 1, "period": "MORNING", "periodNumber": 1, "label": "08:00 - 09:00", "startTime": "08:00", "endTime": "09:00", "start": "08:00", "end": "09:00"},
+                {"slotIndex": 2, "index": 2, "period": "MORNING", "periodNumber": 2, "label": "09:00 - 10:00", "startTime": "09:00", "endTime": "10:00", "start": "09:00", "end": "10:00"},
+                {"slotIndex": 3, "index": 3, "period": "MORNING", "periodNumber": 3, "label": "10:00 - 11:00", "startTime": "10:00", "endTime": "11:00", "start": "10:00", "end": "11:00"},
+                {"slotIndex": 4, "index": 4, "period": "MORNING", "periodNumber": 4, "label": "11:00 - 12:00", "startTime": "11:00", "endTime": "12:00", "start": "11:00", "end": "12:00"},
+                {"slotIndex": 5, "index": 5, "period": "AFTERNOON", "periodNumber": 1, "label": "14:00 - 15:00", "startTime": "14:00", "endTime": "15:00", "start": "14:00", "end": "15:00"},
+                {"slotIndex": 6, "index": 6, "period": "AFTERNOON", "periodNumber": 2, "label": "15:00 - 16:00", "startTime": "15:00", "endTime": "16:00", "start": "15:00", "end": "16:00"},
+                {"slotIndex": 7, "index": 7, "period": "AFTERNOON", "periodNumber": 3, "label": "16:00 - 17:00", "startTime": "16:00", "endTime": "17:00", "start": "16:00", "end": "17:00"},
+                {"slotIndex": 8, "index": 8, "period": "AFTERNOON", "periodNumber": 4, "label": "17:00 - 18:00", "startTime": "17:00", "endTime": "18:00", "start": "17:00", "end": "18:00"}
+            ],
+            "teachers": [],
+            "classes": [],
+            "students": [],
+            "timetable": []
+        }
+
+    if isinstance(data, dict):
+        if "entryPasses" not in data or not isinstance(data["entryPasses"], dict):
+            data["entryPasses"] = {}
+        if "dismissalReports" not in data or not isinstance(data["dismissalReports"], dict):
+            data["dismissalReports"] = {}
+        data = fix_arabic_mojibake(data)
+
+    return data
+
+def fix_arabic_mojibake(val):
+    """
+    Recursively detects and fixes mojibake Arabic strings where UTF-8 bytes
+    were decoded using cp1256, cp1252, latin1, or iso-8859-1.
+    """
+    if isinstance(val, dict):
+        return {k: fix_arabic_mojibake(v) for k, v in val.items()}
+    elif isinstance(val, list):
+        return [fix_arabic_mojibake(v) for v in val]
+    elif isinstance(val, str):
+        # Look for typical CP1256 representation of UTF-8 Arabic bytes (0xD8..0xD9)
+        # 'ط' (\u0637) is byte 0xD8 in cp1256, 'ظ' (\u0638) is byte 0xD9 in cp1256
+        if ('\u0637' in val or '\u0638' in val) and any(m in val for m in ('ط§', 'ظ…', 'ط¨', 'ط¹', 'ط±', 'ط¶', 'ظ†', 'ط³', 'ظ„', 'طھ', 'ط£', 'ظٹ', 'ط،', 'ظˆ', 'ط¯', 'ط¬')):
+            for enc in ('cp1256', 'cp1252', 'latin1', 'iso-8859-1'):
+                try:
+                    cand = val.encode(enc).decode('utf-8')
+                    if any('\u0600' <= c <= '\u06FF' for c in cand):
+                        return cand
+                except Exception:
+                    pass
+        return val
+    return val
+
+def save_attendance_mobile_db(db):
+    try:
+        db = fix_arabic_mojibake(db)
+        s_id = get_current_school_doc_id()
+        if s_id:
+            db["schoolDocId"] = s_id
+            db["schoolId"] = s_id
+        candidates = {
+            ATTENDANCE_MOBILE_DB_FILE,
+            os.path.join(os.environ.get("LOCALAPPDATA", ""), "RzzakFet", "data", "attendance_mobile_db.json"),
+            os.path.join(BASE_DIR, "data", "attendance_mobile_db.json")
+        }
+        for p in candidates:
+            if p:
+                try:
+                    os.makedirs(os.path.dirname(p), exist_ok=True)
+                    with open(p, "w", encoding="utf-8") as f:
+                        json.dump(db, f, ensure_ascii=False, indent=2)
+                except Exception:
+                    pass
+
+        # Also write attendance_school_data.js with BOTH variables
+        js_code = f"window.INITIAL_SCHOOL_DATA = {json.dumps(db, ensure_ascii=False, indent=2)};\nwindow.ANFG_SCHOOL_DATA = window.INITIAL_SCHOOL_DATA;\n"
+        js_targets = {
+            os.path.join(BASE_DIR, "hosting_public", "attendance_school_data.js"),
+            os.path.join(BASE_DIR, "ui", "attendance_school_data.js"),
+            os.path.join(BASE_DIR, "data", "ui", "attendance_school_data.js"),
+            os.path.expanduser(r"~\AppData\Local\Programs\RzzakFet\ui\attendance_school_data.js"),
+            os.path.expanduser(r"~\AppData\Local\RzzakFet\data\ui\attendance_school_data.js"),
+        }
+        for jp in js_targets:
+            if os.path.exists(os.path.dirname(jp)):
+                try:
+                    with open(jp, "w", encoding="utf-8") as _jsf:
+                        _jsf.write(js_code)
+                except Exception:
+                    pass
+    except Exception as e:
+        print("[save_attendance_mobile_db error]:", e)
+
+def firestore_cloud_call(method, path, body=None, timeout=35):
+    api_key = "AIzaSyDRAO-ae9rMBFf722p-Jei1UnbtCQ4i0qQ"
+    base_url = "https://firestore.googleapis.com/v1/projects/rzzakfet-app/databases/(default)/documents"
+    sep = "&" if "?" in path else "?"
+    url = f"{base_url}/{path}{sep}key={api_key}"
+
+    # 1. Primary method: Python native urllib with IPv4 and Connection: close
+    for attempt in range(2):
         try:
-            with open(ATTENDANCE_MOBILE_DB_FILE, "r", encoding="utf-8") as f:
-                return json.load(f)
+            import urllib.request
+            import ssl
+
+            req_data = None
+            headers = {
+                "User-Agent": "RzzakFet-Desktop/2.0",
+                "Accept": "application/json",
+                "Connection": "close"
+            }
+            if body is not None:
+                req_data = json.dumps(body, ensure_ascii=False).encode("utf-8")
+                headers["Content-Type"] = "application/json; charset=utf-8"
+
+            req = urllib.request.Request(url, data=req_data, headers=headers, method=method)
+            ctx = ssl.create_default_context()
+            try:
+                ctx.check_hostname = True
+                ctx.verify_mode = ssl.CERT_REQUIRED
+            except Exception:
+                pass
+
+            with urllib.request.urlopen(req, timeout=timeout, context=ctx) as resp:
+                raw_bytes = resp.read()
+                text = raw_bytes.decode("utf-8", errors="replace")
+                if text:
+                    return json.loads(text)
+                return {}
+        except urllib.error.HTTPError as e:
+            try:
+                err_text = e.read().decode("utf-8", errors="replace")
+                print(f"[firestore_cloud_call HTTPError {e.code}]:", err_text[:200])
+                return json.loads(err_text)
+            except Exception:
+                pass
+            break
         except Exception as e:
-            print("[load_attendance_mobile_db error]:", e)
-    
-    fallback = os.path.join(BASE_DIR, "data", "attendance_mobile_db.json")
-    if os.path.exists(fallback):
+            if attempt == 0:
+                time.sleep(0.5)
+                continue
+            print("[firestore_cloud_call urllib exception, trying fallback]:", e)
+
+    # 2. Secondary fallback: curl.exe with -4 (force IPv4) and strictly NO CONSOLE WINDOW
+    body_file = None
+    try:
+        cmd = ["curl.exe", "-s", "-4", "--connect-timeout", "10", "-X", method]
+        if body is not None:
+            body_file = os.path.join(DATA_DIR, f"_fs_tmp_{int(time.time()*1000)}.json")
+            with open(body_file, "w", encoding="utf-8") as f:
+                json.dump(body, f, ensure_ascii=False)
+            cmd.extend(["-H", "Content-Type: application/json; charset=utf-8", "-d", f"@{body_file}"])
+        cmd.append(url)
+
+        creation_flags = 0
+        if sys.platform == "win32":
+            creation_flags = 0x08000000  # CREATE_NO_WINDOW
+
+        res = subprocess.run(
+            cmd,
+            capture_output=True,
+            creationflags=creation_flags,
+            timeout=timeout
+        )
+        if res.returncode == 0 and res.stdout:
+            stdout_str = res.stdout.decode("utf-8", errors="replace")
+            return json.loads(stdout_str)
+    except Exception as e:
+        print("[firestore_cloud_call curl fallback error]:", e)
+    finally:
+        if body_file and os.path.exists(body_file):
+            try:
+                os.remove(body_file)
+            except Exception:
+                pass
+    return None
+
+def get_current_school_doc_id():
+    """
+    Returns the unique document identifier for this school in Cloud Firestore.
+    Prioritizes GRESA code (e.g. '04230P') to guarantee 100% isolation between institutions.
+    Falls back to 'default_school' if no code is assigned.
+    """
+    try:
+        inst = getattr(APP_STATE, 'institution', None)
+        gresa = getattr(inst, 'gresa_code', '') or ''
+        if not gresa:
+            db = load_attendance_mobile_db()
+            gresa = db.get("settings", {}).get("gresa") or db.get("settings", {}).get("schoolId") or ""
+        gresa = str(gresa).strip()
+        if gresa:
+            clean_id = re.sub(r'[^a-zA-Z0-9_\-]', '', gresa)
+            if clean_id:
+                return clean_id
+    except Exception:
+        pass
+    return "default_school"
+
+def sync_attendance_with_cloud(upload_metadata=True):
+    try:
+        sync_time_slots_from_institution(APP_STATE)
+    except Exception as _e:
+        print("[sync_time_slots_from_institution in cloud error]:", _e)
+
+    try:
+        from auth_engine import to_firestore_value, from_firestore_value
+    except Exception:
+        from src.auth_engine import to_firestore_value, from_firestore_value
+
+    try:
+        from student_attendance_engine import normalize_class_name
+    except Exception:
+        from src.student_attendance_engine import normalize_class_name
+
+    db = load_attendance_mobile_db()
+    school_doc_id = get_current_school_doc_id()
+
+    # 1. Upload main school document (if upload_metadata is True)
+    if upload_metadata:
+        school_name = db.get("settings", {}).get("schoolName") or getattr(APP_STATE.institution, "institution_name", None) or getattr(APP_STATE.institution, "name", None) or "مؤسسة تعليمية"
+        school_payload = {
+            "schoolId": school_doc_id,
+            "schoolName": school_name,
+            "settings": db.get("settings", {}),
+            "timeSlots": db.get("timeSlots", []),
+            "teachers": db.get("teachers", []),
+            "classes": db.get("classes", []),
+            "students": db.get("students", []),
+            "timetable": db.get("timetable", []),
+            "entryPasses": db.get("entryPasses", {}),
+            "justifiedAbsences": db.get("justifiedAbsences", {}),
+            "updatedAt": db.get("updatedAt", int(time.time() * 1000))
+        }
+        school_fields = {k: to_firestore_value(v) for k, v in school_payload.items()}
+        patch_res = firestore_cloud_call("PATCH", f"attendance_schools/{school_doc_id}", {"fields": school_fields})
+        if school_doc_id != "default_school":
+            try:
+                firestore_cloud_call("PATCH", "attendance_schools/default_school", {"fields": school_fields})
+            except Exception:
+                pass
+        if patch_res is None and not db.get("attendanceSessions"):
+            return {
+                "success": False,
+                "error": "تعذر الاتصال بالسحابة.",
+                "cloudUrl": "https://rzzakfet-app.web.app"
+            }
+
+    # 2. Build set of valid classes from both classes and timetable
+    valid_classes = set()
+    for c in db.get("classes", []):
+        cc = c.get("classCode", "")
+        if cc:
+            valid_classes.add(cc)
+            valid_classes.add(cc.replace("-", "").replace("_", "").upper())
+            try: valid_classes.add(normalize_class_name(cc))
+            except: pass
+    for t in db.get("timetable", []):
+        tc = t.get("classCode", "")
+        if tc:
+            valid_classes.add(tc)
+            valid_classes.add(tc.replace("-", "").replace("_", "").upper())
+            try: valid_classes.add(normalize_class_name(tc))
+            except: pass
+
+    reset_token = db.get("resetToken", 0)
+
+    # 3. Pull sessions from Cloud across both the current school ID and default_school
+    schools_to_check = [school_doc_id]
+    if school_doc_id != "default_school" and "default_school" not in schools_to_check:
+        schools_to_check.append("default_school")
+
+    if "attendanceSessions" not in db or not isinstance(db["attendanceSessions"], dict):
+        db["attendanceSessions"] = {}
+
+    has_new_sessions = False
+    for sch in schools_to_check:
+        sess_res = firestore_cloud_call("GET", f"attendance_schools/{sch}/sessions?pageSize=100")
+        if sess_res and "documents" in sess_res:
+            for doc in sess_res["documents"]:
+                fields = doc.get("fields", {})
+                parsed = {k: from_firestore_value(v) for k, v in fields.items()}
+                parsed = fix_arabic_mojibake(parsed)
+                # Skip old sessions created or updated before resetToken
+                # ONLY skip if session timestamp is non-zero and strictly older than reset_token
+                sess_ts = max(
+                    int(parsed.get("updatedAt") or 0),
+                    int(parsed.get("createdAt") or 0),
+                    int(parsed.get("updatedAtTs") or 0)
+                )
+                if reset_token and sess_ts > 0 and sess_ts < reset_token:
+                    continue
+
+                # Check class validity (soft check: accept if class or teacher recognized)
+                sess_cls = parsed.get("classCode") or ""
+                sess_cls_clean = sess_cls.replace("-", "").replace("_", "").upper()
+                sess_cls_norm = ""
+                try: sess_cls_norm = normalize_class_name(sess_cls)
+                except Exception: pass
+                if valid_classes and sess_cls:
+                    if sess_cls not in valid_classes and sess_cls_clean not in valid_classes and sess_cls_norm not in valid_classes:
+                        t_id = parsed.get("teacherId") or ""
+                        known_teachers = {t.get("teacherId") for t in db.get("teachers", []) if t.get("teacherId")}
+                        if not t_id or t_id not in known_teachers:
+                            continue
+
+                s_id = parsed.get("sessionId") or doc.get("name", "").split("/")[-1]
+                if s_id:
+                    parsed["sessionId"] = s_id
+                    cur = db["attendanceSessions"].get(s_id)
+                    if not cur or (parsed.get("updatedAt", 0) >= cur.get("updatedAt", 0)):
+                        db["attendanceSessions"][s_id] = parsed
+                        has_new_sessions = True
+                        if sch == "default_school" and school_doc_id != "default_school":
+                            def _mirror_sess_bg(sid=s_id, pdata=dict(parsed)):
+                                try:
+                                    m_fields = {k: to_firestore_value(v) for k, v in pdata.items()}
+                                    firestore_cloud_call("PATCH", f"attendance_schools/{school_doc_id}/sessions/{sid}", {"fields": m_fields})
+                                except Exception:
+                                    pass
+                            threading.Thread(target=_mirror_sess_bg, daemon=True).start()
+
+    # 4. Pull dismissal reports from Cloud
+    if "dismissalReports" not in db or not isinstance(db["dismissalReports"], dict):
+        db["dismissalReports"] = {}
+
+    for sch in schools_to_check:
+        rep_res = firestore_cloud_call("GET", f"attendance_schools/{sch}/reports?pageSize=100")
+        if rep_res and "documents" in rep_res:
+            for doc in rep_res["documents"]:
+                fields = doc.get("fields", {})
+                parsed = {k: from_firestore_value(v) for k, v in fields.items()}
+                parsed = fix_arabic_mojibake(parsed)
+                rep_ts = max(int(parsed.get("updatedAt") or 0), int(parsed.get("createdAt") or 0))
+                if reset_token and rep_ts > 0 and rep_ts < reset_token:
+                    continue
+                r_id = parsed.get("reportId") or doc.get("name", "").split("/")[-1]
+                if r_id:
+                    parsed["reportId"] = r_id
+                    cur_rep = db["dismissalReports"].get(r_id)
+                    if not cur_rep or (parsed.get("createdAt", 0) >= cur_rep.get("createdAt", 0)):
+                        db["dismissalReports"][r_id] = parsed
+                        has_new_sessions = True
+                        if sch == "default_school" and school_doc_id != "default_school":
+                            def _mirror_rep_bg(rid=r_id, rdata=dict(parsed)):
+                                try:
+                                    m_fields = {k: to_firestore_value(v) for k, v in rdata.items()}
+                                    firestore_cloud_call("PATCH", f"attendance_schools/{school_doc_id}/reports/{rid}", {"fields": m_fields})
+                                except Exception:
+                                    pass
+                            threading.Thread(target=_mirror_rep_bg, daemon=True).start()
+
+    if has_new_sessions or upload_metadata:
+        db["updatedAt"] = int(time.time() * 1000)
+    save_attendance_mobile_db(db)
+    return {
+        "success": True,
+        "sessionsCount": len(db.get("attendanceSessions", {})),
+        "reportsCount": len(db.get("dismissalReports", {})),
+        "cloudUrl": "https://rzzakfet-app.web.app"
+    }
+
+def clear_attendance_records_and_reports(cloud_wipe=True):
+    """
+    مسح شامل وفوري لسجلات الحصص المسجلة، تقارير إخراج التلاميذ، أذونات الدخول، وتبريرات الغياب.
+    مع الحفاظ الكامل على الأقسام والأساتذة والتلاميذ والتوقيت وبنية المؤسسة.
+    """
+    now_ms = int(time.time() * 1000)
+    db = load_attendance_mobile_db()
+    db["attendanceSessions"] = {}
+    db["dismissalReports"] = {}
+    db["entryPasses"] = {}
+    db["justifiedAbsences"] = {}
+    db["updatedAt"] = now_ms
+    db["resetToken"] = now_ms
+
+    save_attendance_mobile_db(db)
+    for p in [
+        ATTENDANCE_MOBILE_DB_FILE,
+        os.path.join(BASE_DIR, "data", "attendance_mobile_db.json"),
+        os.path.join(os.environ.get("LOCALAPPDATA", ""), "RzzakFet", "data", "attendance_mobile_db.json")
+    ]:
+        if p and os.path.exists(os.path.dirname(p)):
+            try:
+                with open(p, "w", encoding="utf-8") as f:
+                    json.dump(db, f, ensure_ascii=False, indent=2)
+            except Exception:
+                pass
+
+    # Reset attendance engine memory & disk
+    try:
+        attendance_engine.attendance_records = []
+        attendance_engine.save_state()
+        for loc in [
+            getattr(attendance_engine, 'state_file', None),
+            os.path.join(DATA_DIR, "students_attendance_state.json"),
+            os.path.join(BASE_DIR, "data", "students_attendance_state.json"),
+            os.path.join(os.environ.get("LOCALAPPDATA", ""), "RzzakFet", "data", "students_attendance_state.json")
+        ]:
+            if loc and os.path.exists(loc):
+                try:
+                    with open(loc, "w", encoding="utf-8") as f:
+                        json.dump({"students_by_class": attendance_engine.students_by_class, "attendance_records": []}, f, ensure_ascii=False, indent=2)
+                except Exception:
+                    pass
+    except Exception as e:
+        print("[clear_attendance_records_and_reports] attendance_engine error:", e)
+
+    # Cloud wipe in parallel
+    if cloud_wipe:
         try:
-            with open(fallback, "r", encoding="utf-8") as f:
-                return json.load(f)
-        except Exception:
-            pass
+            from concurrent.futures import ThreadPoolExecutor
+            for coll in ["sessions", "reports", "justifications"]:
+                s_doc = get_current_school_doc_id()
+                r = firestore_cloud_call("GET", f"attendance_schools/{s_doc}/{coll}?pageSize=300")
+                docs = r.get("documents", []) if r else []
+                if docs:
+                    def _del(d):
+                        name = d.get("name", "")
+                        if f"/{coll}/" in name:
+                            doc_id = name.split(f"/{coll}/")[-1]
+                            firestore_cloud_call("DELETE", f"attendance_schools/{s_doc}/{coll}/{doc_id}")
+                    with ThreadPoolExecutor(max_workers=20) as executor:
+                        list(executor.map(_del, docs))
+
+            try:
+                from auth_engine import to_firestore_value
+            except Exception:
+                from src.auth_engine import to_firestore_value
+            patch_payload = {
+                "updatedAt": now_ms,
+                "resetToken": now_ms,
+                "entryPasses": {},
+                "justifiedAbsences": {}
+            }
+            firestore_cloud_call("PATCH", f"attendance_schools/{s_doc}", {
+                "fields": {k: to_firestore_value(v) for k, v in patch_payload.items()}
+            })
+        except Exception as e:
+            print("[clear_attendance_records_and_reports] cloud wipe error:", e)
 
     return {
-        "updatedAt": 0,
+        "success": True,
+        "message": "تم مسح كافة سجلات الحصص المسجلة وتقارير الغياب وتصفير الإحصائيات بنجاح.",
+        "db": db
+    }
+
+def factory_reset_all_data():
+    """
+    مسح شامل وإعادة ضبط المصنع لجميع معطيات التطبيق:
+    - مسح قاعدة بيانات غياب الأساتذة بالهاتف (المحلية والسحابية)
+    - مسح لوائح التلاميذ والأقسام وجداول الحصص من هواتف الأساتذة
+    - مسح تقارير وتبريرات الغياب وسجلات الحصص
+    - مسح معطيات محرك الحضور ومحرك الحركية
+    - مسح جداول الحصص المحسوبة والأسماء المخصصة للأساتذة والقاعات
+    - الحفاظ الكامل والأكيد على ترخيص وتفعيل البرنامج (hw_anchor.dat / registered_users)
+    """
+    now_ms = int(time.time() * 1000)
+
+    # 1. Reset Attendance Mobile DB
+    clean_db = {
+        "updatedAt": now_ms,
+        "resetToken": now_ms,
         "attendanceSessions": {},
         "justifiedAbsences": {},
+        "entryPasses": {},
+        "dismissalReports": {},
         "settings": {
-            "schoolName": "الثانوية التأهيلية أنفك (045892P)",
+            "schoolName": "المؤسسة التعليمية",
             "principalName": "رئيس المؤسسة",
             "principalCode": "ADMIN888",
             "lateEntryMaxDays": 7,
             "scheduleMode": "NORMAL"
         },
         "timeSlots": [
-            {"index": 1, "start": "08:30", "end": "09:30", "label": "08:30 - 09:30"},
-            {"index": 2, "start": "09:30", "end": "10:30", "label": "09:30 - 10:30"},
-            {"index": 3, "start": "10:30", "end": "11:30", "label": "10:30 - 11:30"},
-            {"index": 4, "start": "11:30", "end": "12:30", "label": "11:30 - 12:30"},
-            {"index": 5, "start": "14:30", "end": "15:30", "label": "14:30 - 15:30"},
-            {"index": 6, "start": "15:30", "end": "16:30", "label": "15:30 - 16:30"},
-            {"index": 7, "start": "16:30", "end": "17:30", "label": "16:30 - 17:30"},
-            {"index": 8, "start": "17:30", "end": "18:30", "label": "17:30 - 18:30"}
+            {"slotIndex": 1, "index": 1, "period": "MORNING", "periodNumber": 1, "label": "08:00 - 09:00", "startTime": "08:00", "endTime": "09:00", "start": "08:00", "end": "09:00"},
+            {"slotIndex": 2, "index": 2, "period": "MORNING", "periodNumber": 2, "label": "09:00 - 10:00", "startTime": "09:00", "endTime": "10:00", "start": "09:00", "end": "10:00"},
+            {"slotIndex": 3, "index": 3, "period": "MORNING", "periodNumber": 3, "label": "10:00 - 11:00", "startTime": "10:00", "endTime": "11:00", "start": "10:00", "end": "11:00"},
+            {"slotIndex": 4, "index": 4, "period": "MORNING", "periodNumber": 4, "label": "11:00 - 12:00", "startTime": "11:00", "endTime": "12:00", "start": "11:00", "end": "12:00"},
+            {"slotIndex": 5, "index": 5, "period": "AFTERNOON", "periodNumber": 1, "label": "14:00 - 15:00", "startTime": "14:00", "endTime": "15:00", "start": "14:00", "end": "15:00"},
+            {"slotIndex": 6, "index": 6, "period": "AFTERNOON", "periodNumber": 2, "label": "15:00 - 16:00", "startTime": "15:00", "endTime": "16:00", "start": "15:00", "end": "16:00"},
+            {"slotIndex": 7, "index": 7, "period": "AFTERNOON", "periodNumber": 3, "label": "16:00 - 17:00", "startTime": "16:00", "endTime": "17:00", "start": "16:00", "end": "17:00"},
+            {"slotIndex": 8, "index": 8, "period": "AFTERNOON", "periodNumber": 4, "label": "17:00 - 18:00", "startTime": "17:00", "endTime": "18:00", "start": "17:00", "end": "18:00"}
         ],
         "teachers": [],
         "classes": [],
@@ -102,23 +589,219 @@ def load_attendance_mobile_db():
         "timetable": []
     }
 
-def save_attendance_mobile_db(db):
+    # Save to local file locations
+    save_attendance_mobile_db(clean_db)
+    for p in [
+        ATTENDANCE_MOBILE_DB_FILE,
+        os.path.join(BASE_DIR, "data", "attendance_mobile_db.json"),
+        os.path.join(os.environ.get("LOCALAPPDATA", ""), "RzzakFet", "data", "attendance_mobile_db.json")
+    ]:
+        if p:
+            try:
+                os.makedirs(os.path.dirname(p), exist_ok=True)
+                with open(p, "w", encoding="utf-8") as f:
+                    json.dump(clean_db, f, ensure_ascii=False, indent=2)
+            except Exception:
+                pass
+
+    # 2. Reset Student Attendance Engine
     try:
-        os.makedirs(os.path.dirname(ATTENDANCE_MOBILE_DB_FILE), exist_ok=True)
-        with open(ATTENDANCE_MOBILE_DB_FILE, "w", encoding="utf-8") as f:
-            json.dump(db, f, ensure_ascii=False, indent=2)
+        attendance_engine.students_by_class = {}
+        attendance_engine.attendance_records = []
+        attendance_engine.save_state()
+        for loc in [
+            getattr(attendance_engine, 'state_file', None),
+            os.path.join(DATA_DIR, "students_attendance_state.json"),
+            os.path.join(BASE_DIR, "data", "students_attendance_state.json"),
+            os.path.join(os.environ.get("LOCALAPPDATA", ""), "RzzakFet", "data", "students_attendance_state.json")
+        ]:
+            if loc and os.path.exists(loc):
+                try:
+                    with open(loc, "w", encoding="utf-8") as f:
+                        json.dump({"students_by_class": {}, "attendance_records": []}, f, ensure_ascii=False, indent=2)
+                except Exception:
+                    pass
     except Exception as e:
-        print("[save_attendance_mobile_db error]:", e)
+        print("[factory_reset_all_data] attendance_engine reset error:", e)
+
+    # 3. Reset Student Mobility Engine
+    try:
+        mobility_engine.initial_students = []
+        mobility_engine.current_students = []
+        mobility_engine.overrides = {}
+        mobility_engine.save_state()
+        for loc in [
+            getattr(mobility_engine, 'state_file', None),
+            os.path.join(DATA_DIR, "student_mobility_state.json"),
+            os.path.join(BASE_DIR, "data", "student_mobility_state.json"),
+            os.path.join(os.environ.get("LOCALAPPDATA", ""), "RzzakFet", "data", "student_mobility_state.json")
+        ]:
+            if loc and os.path.exists(loc):
+                try:
+                    with open(loc, "w", encoding="utf-8") as f:
+                        json.dump({"initial_students": [], "current_students": [], "overrides": {}}, f, ensure_ascii=False, indent=2)
+                except Exception:
+                    pass
+    except Exception as e:
+        print("[factory_reset_all_data] mobility_engine reset error:", e)
+
+    # 4. Clear and wipe all information for interfaces 1 to 6 in APP_STATE:
+    try:
+        # Interface 2: معلومات المؤسسة (Institution Info)
+        APP_STATE.institution.institution_name = ""
+        APP_STATE.institution.province = ""
+        APP_STATE.institution.academy = ""
+        APP_STATE.institution.academic_year = ""
+        APP_STATE.institution.gresa_code = ""
+        APP_STATE.institution.principal_name = ""
+        APP_STATE.institution.logo_base64 = ""
+
+        # Interface 3: البنية التربوية (الأقسام) (Educational Structure)
+        APP_STATE.structure.classes_1_apic = 0
+        APP_STATE.structure.classes_2_apic = 0
+        APP_STATE.structure.classes_3_apic = 0
+        APP_STATE.structure.students_1_apic = 0
+        APP_STATE.structure.students_2_apic = 0
+        APP_STATE.structure.students_3_apic = 0
+        APP_STATE.structure.high_school_streams = {}
+        APP_STATE.structure.high_school_students = {}
+        APP_STATE.structure.custom_high_school_streams = []
+
+        # Interface 4: هيئة التدريس (الأساتذة) (Teachers)
+        APP_STATE.institution.teacher_custom_names = {}
+        APP_STATE.institution.teacher_counts_by_subject = {}
+        APP_STATE.institution.subject_activity_constraints = {}
+        APP_STATE.institution.float_all_general_teachers = False
+
+        # Interface 5: القاعات المتواجدة بالمؤسسة (Rooms List)
+        APP_STATE.institution.general_rooms_count = 0
+        APP_STATE.institution.svt_labs_count = 0
+        APP_STATE.institution.pc_labs_count = 0
+        APP_STATE.institution.multimedia_rooms_count = 0
+        APP_STATE.institution.sports_fields_count = 0
+        APP_STATE.institution.tech_labs_count = 0
+        APP_STATE.institution.family_ed_rooms_count = 0
+        APP_STATE.institution.art_rooms_count = 0
+        APP_STATE.institution.custom_room_types = []
+        APP_STATE.institution.room_custom_names = {}
+
+        # Interface 6: توطين وتوزيع القاعات (Room Allocations)
+        APP_STATE.room_engine.manual_overrides = {}
+
+        # Interface 7: القيود (Constraints)
+        APP_STATE.fet_generator.reset_to_default_constraints()
+
+        # Interfaces 8, 9: إنتاج وطباعة الجداول (Timetables)
+        APP_STATE.timetable_engine = TimetableEngine()
+
+        # Recalculate assignments with 0 classes
+        try:
+            APP_STATE.curriculum_engine.calculate_assignments()
+        except Exception:
+            pass
+
+        # Save to disk
+        APP_STATE.save_to_disk()
+
+        # Sync app_state.json across other locations
+        for d in [os.path.join(BASE_DIR, "data"), os.path.join(os.environ.get("LOCALAPPDATA", ""), "RzzakFet", "data")]:
+            sp = os.path.join(d, "app_state.json")
+            if os.path.exists(d):
+                try:
+                    shutil.copy2(STATE_FILE, sp)
+                except Exception:
+                    pass
+
+        # Remove old timetable results and input FET files
+        for fname in ["timetable_result.json", "current_input.fet"]:
+            for d in [DATA_DIR, os.path.join(BASE_DIR, "data"), os.path.join(os.environ.get("LOCALAPPDATA", ""), "RzzakFet", "data")]:
+                fpath = os.path.join(d, fname)
+                if os.path.exists(fpath):
+                    try:
+                        os.remove(fpath)
+                    except Exception:
+                        pass
+        # Also remove any generated .fet files
+        for d in [DATA_DIR, os.path.join(BASE_DIR, "data"), os.path.join(os.environ.get("LOCALAPPDATA", ""), "RzzakFet", "data")]:
+            if os.path.exists(d):
+                for f in os.listdir(d):
+                    if f.endswith(".fet"):
+                        try:
+                            os.remove(os.path.join(d, f))
+                        except Exception:
+                            pass
+    except Exception as e:
+        print("[factory_reset_all_data] APP_STATE reset error:", e)
+
+    # 5. Cloud Firestore Wipe (Delete sessions, reports, and clear default_school doc in parallel)
+    cloud_deleted_sessions = 0
+    cloud_deleted_reports = 0
+    try:
+        from concurrent.futures import ThreadPoolExecutor
+
+        # Parallel delete helper
+        def _delete_coll(coll):
+            cnt = 0
+            s_doc = get_current_school_doc_id()
+            res = firestore_cloud_call("GET", f"attendance_schools/{s_doc}/{coll}?pageSize=300")
+            docs = res.get("documents", []) if res else []
+            if docs:
+                def _del(d):
+                    name = d.get("name", "")
+                    if f"/{coll}/" in name:
+                        doc_id = name.split(f"/{coll}/")[-1]
+                        firestore_cloud_call("DELETE", f"attendance_schools/{s_doc}/{coll}/{doc_id}")
+                with ThreadPoolExecutor(max_workers=20) as executor:
+                    list(executor.map(_del, docs))
+                cnt = len(docs)
+            return cnt
+
+        cloud_deleted_sessions = _delete_coll("sessions")
+        cloud_deleted_reports = _delete_coll("reports")
+        _delete_coll("justifications")
+
+        # Patch default_school doc with empty collections & resetToken
+        try:
+            from auth_engine import to_firestore_value
+        except Exception:
+            from src.auth_engine import to_firestore_value
+
+        school_payload = {
+            "schoolId": "045892P",
+            "schoolName": "المؤسسة التعليمية",
+            "settings": clean_db.get("settings", {}),
+            "timeSlots": clean_db.get("timeSlots", []),
+            "teachers": [],
+            "classes": [],
+            "students": [],
+            "timetable": [],
+            "entryPasses": {},
+            "justifiedAbsences": {},
+            "updatedAt": now_ms,
+            "resetToken": now_ms
+        }
+        school_fields = {k: to_firestore_value(v) for k, v in school_payload.items()}
+        firestore_cloud_call("PATCH", f"attendance_schools/{s_doc}", {"fields": school_fields})
+    except Exception as e:
+        print("[factory_reset_all_data] Cloud wipe error:", e)
+
+    return {
+        "success": True,
+        "message": "تمت إعادة ضبط المنظومة ومسح كافة المعطيات ولوائح الهواتف بنجاح.",
+        "resetToken": now_ms,
+        "cloudDeletedSessions": cloud_deleted_sessions,
+        "cloudDeletedReports": cloud_deleted_reports
+    }
 
 def generate_teacher_pins_excel(teachers_list):
     import openpyxl
     from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
-    
+
     wb = openpyxl.Workbook()
     ws = wb.active
     ws.title = "أرقام دخول الأساتذة"
     ws.views.sheetView[0].rightToLeft = True
-    
+
     ws.merge_cells("A1:D1")
     t_cell = ws["A1"]
     t_cell.value = "🔑 بطاقات الأرقام التعريفية لولوج الأساتذة (مسك الغياب بالهاتف)"
@@ -126,7 +809,7 @@ def generate_teacher_pins_excel(teachers_list):
     t_cell.fill = PatternFill(start_color="0F766E", end_color="0F766E", fill_type="solid")
     t_cell.alignment = Alignment(horizontal="center", vertical="center")
     ws.row_dimensions[1].height = 32
-    
+
     headers = ["رقم", "اسم الأستاذ(ة)", "المادة المدرسة", "الرقم التعريفي السري (8 خانات)"]
     for col_idx, h in enumerate(headers, 1):
         cell = ws.cell(row=3, column=col_idx, value=h)
@@ -134,30 +817,30 @@ def generate_teacher_pins_excel(teachers_list):
         cell.fill = PatternFill(start_color="1E293B", end_color="1E293B", fill_type="solid")
         cell.alignment = Alignment(horizontal="center", vertical="center")
     ws.row_dimensions[3].height = 24
-    
+
     thin = Side(style="thin", color="CBD5E1")
     border = Border(left=thin, right=thin, top=thin, bottom=thin)
-    
+
     for idx, t in enumerate(teachers_list, 1):
         r = idx + 3
         ws.cell(row=r, column=1, value=idx).alignment = Alignment(horizontal="center", vertical="center")
         ws.cell(row=r, column=2, value=t.get("fullName", t.get("name", ""))).alignment = Alignment(horizontal="right", vertical="center")
         ws.cell(row=r, column=3, value=t.get("subject", "-")).alignment = Alignment(horizontal="center", vertical="center")
-        
+
         c_code = ws.cell(row=r, column=4, value=t.get("code") or t.get("loginCode", ""))
         c_code.font = Font(name="Consolas", size=13, bold=True, color="0F766E")
         c_code.fill = PatternFill(start_color="F0FDFA", end_color="F0FDFA", fill_type="solid")
         c_code.alignment = Alignment(horizontal="center", vertical="center")
-        
+
         for c in range(1, 5):
             ws.cell(row=r, column=c).border = border
         ws.row_dimensions[r].height = 22
-        
+
     ws.column_dimensions["A"].width = 8
     ws.column_dimensions["B"].width = 28
     ws.column_dimensions["C"].width = 22
     ws.column_dimensions["D"].width = 30
-    
+
     buf = io.BytesIO()
     wb.save(buf)
     buf.seek(0)
@@ -166,12 +849,12 @@ def generate_teacher_pins_excel(teachers_list):
 def generate_absentees_excel(absentees_list, sim_date):
     import openpyxl
     from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
-    
+
     wb = openpyxl.Workbook()
     ws = wb.active
     ws.title = "المتغيبون اليوم"
     ws.views.sheetView[0].rightToLeft = True
-    
+
     ws.merge_cells("A1:G1")
     t_cell = ws["A1"]
     t_cell.value = f"🔴 لائحة التلاميذ المتغيبين بتاريخ: {sim_date}"
@@ -179,7 +862,7 @@ def generate_absentees_excel(absentees_list, sim_date):
     t_cell.fill = PatternFill(start_color="991B1B", end_color="991B1B", fill_type="solid")
     t_cell.alignment = Alignment(horizontal="center", vertical="center")
     ws.row_dimensions[1].height = 32
-    
+
     headers = ["رقم", "اسم المتعلم(ة)", "رقم مسار", "القسم", "النوع", "الحصة / المادة", "الأستاذ المسجل"]
     for col_idx, h in enumerate(headers, 1):
         cell = ws.cell(row=3, column=col_idx, value=h)
@@ -187,34 +870,34 @@ def generate_absentees_excel(absentees_list, sim_date):
         cell.fill = PatternFill(start_color="1E293B", end_color="1E293B", fill_type="solid")
         cell.alignment = Alignment(horizontal="center", vertical="center")
     ws.row_dimensions[3].height = 24
-    
+
     thin = Side(style="thin", color="CBD5E1")
     border = Border(left=thin, right=thin, top=thin, bottom=thin)
-    
+
     for idx, item in enumerate(absentees_list, 1):
         st = item.get("student", {})
         cls = item.get("classObj", {})
         sessions = item.get("sessions", [])
         sess_str = " | ".join([f"{s.get('slotLabel', '')} ({s.get('subject', '')})" for s in sessions])
         teachers_str = " | ".join(list(set([s.get("teacherName", "") for s in sessions])))
-        
+
         r = idx + 3
         ws.cell(row=r, column=1, value=idx).alignment = Alignment(horizontal="center", vertical="center")
         ws.cell(row=r, column=2, value=f"{st.get('lastName', '')} {st.get('firstName', '')}".strip() or st.get("name", "")).alignment = Alignment(horizontal="right", vertical="center")
-        
+
         c_m = ws.cell(row=r, column=3, value=st.get("massarCode", st.get("id", "")))
         c_m.font = Font(name="Consolas", size=10, bold=True)
         c_m.alignment = Alignment(horizontal="center", vertical="center")
-        
+
         ws.cell(row=r, column=4, value=cls.get("displayName", cls.get("classCode", ""))).alignment = Alignment(horizontal="center", vertical="center")
         ws.cell(row=r, column=5, value="أنثى" if st.get("gender") == "F" else "ذكر").alignment = Alignment(horizontal="center", vertical="center")
         ws.cell(row=r, column=6, value=sess_str).alignment = Alignment(horizontal="right", vertical="center")
         ws.cell(row=r, column=7, value=teachers_str).alignment = Alignment(horizontal="right", vertical="center")
-        
+
         for c in range(1, 8):
             ws.cell(row=r, column=c).border = border
         ws.row_dimensions[r].height = 22
-        
+
     ws.column_dimensions["A"].width = 8
     ws.column_dimensions["B"].width = 26
     ws.column_dimensions["C"].width = 18
@@ -222,7 +905,7 @@ def generate_absentees_excel(absentees_list, sim_date):
     ws.column_dimensions["E"].width = 10
     ws.column_dimensions["F"].width = 32
     ws.column_dimensions["G"].width = 24
-    
+
     buf = io.BytesIO()
     wb.save(buf)
     buf.seek(0)
@@ -232,8 +915,8 @@ def generate_absentees_excel(absentees_list, sim_date):
 
 def sync_time_slots_from_institution(app_state, mode=None):
     """
-    مزامنة وتطبيق مواقيت الحصص الرسمية من إعدادات المؤسسة
-    إلى قاعدة بيانات مسك الغياب بالهاتف (timeSlots).
+    مزامنة وتطبيق مواقيت الحصص الرسمية من إعدادات المؤسسة (الواجهة 2)
+    إلى قاعدة بيانات مسك الغياب بالهاتف (timeSlots) والسحابة Firestore.
     تدعم التوقيت العادي (NORMAL) وتوقيت شهر رمضان المبارك (RAMADAN).
     """
     try:
@@ -246,52 +929,118 @@ def sync_time_slots_from_institution(app_state, mode=None):
 
         if current_mode == "RAMADAN":
             db["timeSlots"] = [
-                {"slotIndex": 1, "period": "MORNING", "periodNumber": 1, "label": "حصة 1", "startTime": "08:40", "endTime": "09:25"},
-                {"slotIndex": 2, "period": "MORNING", "periodNumber": 2, "label": "حصة 2", "startTime": "09:25", "endTime": "10:10"},
-                {"slotIndex": 3, "period": "MORNING", "periodNumber": 3, "label": "حصة 3", "startTime": "10:25", "endTime": "11:10"},
-                {"slotIndex": 4, "period": "MORNING", "periodNumber": 4, "label": "حصة 4", "startTime": "11:10", "endTime": "11:55"},
-                {"slotIndex": 5, "period": "AFTERNOON", "periodNumber": 1, "label": "حصة 5", "startTime": "12:30", "endTime": "13:15"},
-                {"slotIndex": 6, "period": "AFTERNOON", "periodNumber": 2, "label": "حصة 6", "startTime": "13:15", "endTime": "14:00"},
-                {"slotIndex": 7, "period": "AFTERNOON", "periodNumber": 3, "label": "حصة 7", "startTime": "14:15", "endTime": "15:00"},
-                {"slotIndex": 8, "period": "AFTERNOON", "periodNumber": 4, "label": "حصة 8", "startTime": "15:00", "endTime": "15:45"},
+                {"slotIndex": 1, "index": 1, "period": "MORNING", "periodNumber": 1, "label": "08:40 - 09:25", "startTime": "08:40", "endTime": "09:25", "start": "08:40", "end": "09:25"},
+                {"slotIndex": 2, "index": 2, "period": "MORNING", "periodNumber": 2, "label": "09:25 - 10:10", "startTime": "09:25", "endTime": "10:10", "start": "09:25", "end": "10:10"},
+                {"slotIndex": 3, "index": 3, "period": "MORNING", "periodNumber": 3, "label": "10:25 - 11:10", "startTime": "10:25", "endTime": "11:10", "start": "10:25", "end": "11:10"},
+                {"slotIndex": 4, "index": 4, "period": "MORNING", "periodNumber": 4, "label": "11:10 - 11:55", "startTime": "11:10", "endTime": "11:55", "start": "11:10", "end": "11:55"},
+                {"slotIndex": 5, "index": 5, "period": "AFTERNOON", "periodNumber": 1, "label": "12:30 - 13:15", "startTime": "12:30", "endTime": "13:15", "start": "12:30", "end": "13:15"},
+                {"slotIndex": 6, "index": 6, "period": "AFTERNOON", "periodNumber": 2, "label": "13:15 - 14:00", "startTime": "13:15", "endTime": "14:00", "start": "13:15", "end": "14:00"},
+                {"slotIndex": 7, "index": 7, "period": "AFTERNOON", "periodNumber": 3, "label": "14:15 - 15:00", "startTime": "14:15", "endTime": "15:00", "start": "14:15", "end": "15:00"},
+                {"slotIndex": 8, "index": 8, "period": "AFTERNOON", "periodNumber": 4, "label": "15:00 - 15:45", "startTime": "15:00", "endTime": "15:45", "start": "15:00", "end": "15:45"},
             ]
         else:
-            # NORMAL schedule from Institution Settings
-            inst = app_state.institution
-            m_times = inst.morning_period_times or ["08:30 - 09:30", "09:30 - 10:30", "10:30 - 11:30", "11:30 - 12:30"]
-            e_times = inst.afternoon_period_times or ["14:00 - 15:00", "15:00 - 16:00", "16:00 - 17:00", "17:00 - 18:00"]
+            # NORMAL schedule strictly from Institution Settings (Interface 2)
+            import re
+            def extract_time_bounds(t_str, default_st, default_en):
+                matches = re.findall(r'(\d{1,2}:\d{2})', str(t_str or ''))
+                if len(matches) >= 2:
+                    return matches[0].zfill(5), matches[1].zfill(5)
+                elif len(matches) == 1:
+                    return matches[0].zfill(5), default_en
+                return default_st, default_en
+
+            inst = getattr(app_state, "institution", None)
+            m_times = getattr(inst, "morning_period_times", None) or ["08:00 - 09:00", "09:00 - 10:00", "10:00 - 11:00", "11:00 - 12:00"]
+            e_times = getattr(inst, "afternoon_period_times", None) or ["14:00 - 15:00", "15:00 - 16:00", "16:00 - 17:00", "17:00 - 18:00"]
 
             slots = []
-            for idx, t_str in enumerate(m_times[:4], 1):
-                clean = t_str.replace("–", "-").split("-")
-                st = clean[0].strip() if len(clean) > 0 else f"0{7+idx}:30"
-                en = clean[1].strip() if len(clean) > 1 else f"0{8+idx}:30"
+            for idx in range(1, 5):
+                t_str = m_times[idx - 1] if idx - 1 < len(m_times) else ""
+                def_st = f"0{7 + idx}:00"
+                def_en = f"0{8 + idx}:00"
+                st, en = extract_time_bounds(t_str, def_st, def_en)
                 slots.append({
                     "slotIndex": idx,
+                    "index": idx,
                     "period": "MORNING",
                     "periodNumber": idx,
-                    "label": f"حصة {idx}",
+                    "label": f"{st} - {en}",
                     "startTime": st,
-                    "endTime": en
+                    "endTime": en,
+                    "start": st,
+                    "end": en
                 })
 
-            for idx, t_str in enumerate(e_times[:4], 1):
+            for idx in range(1, 5):
                 s_idx = idx + 4
-                clean = t_str.replace("–", "-").split("-")
-                st = clean[0].strip() if len(clean) > 0 else f"{13+idx}:00"
-                en = clean[1].strip() if len(clean) > 1 else f"{14+idx}:00"
+                t_str = e_times[idx - 1] if idx - 1 < len(e_times) else ""
+                def_st = f"{13 + idx}:00"
+                def_en = f"{14 + idx}:00"
+                st, en = extract_time_bounds(t_str, def_st, def_en)
                 slots.append({
                     "slotIndex": s_idx,
+                    "index": s_idx,
                     "period": "AFTERNOON",
                     "periodNumber": idx,
-                    "label": f"حصة {s_idx}",
+                    "label": f"{st} - {en}",
                     "startTime": st,
-                    "endTime": en
+                    "endTime": en,
+                    "start": st,
+                    "end": en
                 })
+
             db["timeSlots"] = slots
 
         db["updatedAt"] = int(time.time() * 1000)
         save_attendance_mobile_db(db)
+
+        # Sync to all target json and js files:
+        for json_path in [
+            os.path.join(BASE_DIR, "data", "attendance_mobile_db.json"),
+            os.path.join(BASE_DIR, "dist", "RzzakFet", "data", "attendance_mobile_db.json"),
+            os.path.join(BASE_DIR, "dist", "RzzakFet", "_internal", "data", "attendance_mobile_db.json"),
+            os.path.expanduser(r"~\AppData\Local\RzzakFet\data\attendance_mobile_db.json"),
+            os.path.expanduser(r"~\AppData\Local\Programs\RzzakFet\data\attendance_mobile_db.json"),
+        ]:
+            if os.path.exists(os.path.dirname(json_path)):
+                try:
+                    with open(json_path, "w", encoding="utf-8") as _jf:
+                        json.dump(db, _jf, ensure_ascii=False, indent=2)
+                except Exception:
+                    pass
+
+        js_code = f"window.INITIAL_SCHOOL_DATA = {json.dumps(db, ensure_ascii=False, indent=2)};\n"
+        for js_path in [
+            os.path.join(BASE_DIR, "hosting_public", "attendance_school_data.js"),
+            os.path.join(BASE_DIR, "ui", "attendance_school_data.js"),
+            os.path.join(BASE_DIR, "data", "ui", "attendance_school_data.js"),
+            os.path.expanduser(r"~\AppData\Local\Programs\RzzakFet\ui\attendance_school_data.js"),
+            os.path.expanduser(r"~\AppData\Local\RzzakFet\data\ui\attendance_school_data.js"),
+        ]:
+            if os.path.exists(os.path.dirname(js_path)):
+                try:
+                    with open(js_path, "w", encoding="utf-8") as _jsf:
+                        _jsf.write(js_code)
+                except Exception:
+                    pass
+
+        # Also patch Firestore in the background
+        def _bg_cloud_sync():
+            try:
+                from auth_engine import to_firestore_value
+            except Exception:
+                from src.auth_engine import to_firestore_value
+            cloud_payload = {"fields": {"timeSlots": to_firestore_value(db["timeSlots"])}}
+            s_doc = get_current_school_doc_id()
+            firestore_cloud_call("PATCH", f"attendance_schools/{s_doc}?updateMask.fieldPaths=timeSlots", cloud_payload)
+            if s_doc != "default_school":
+                try:
+                    firestore_cloud_call("PATCH", "attendance_schools/default_school?updateMask.fieldPaths=timeSlots", cloud_payload)
+                except Exception:
+                    pass
+        import threading
+        threading.Thread(target=_bg_cloud_sync, daemon=True).start()
+
         return db
     except Exception as err:
         print("[sync_time_slots_from_institution error]:", err)
@@ -299,8 +1048,8 @@ def sync_time_slots_from_institution(app_state, mode=None):
 
 def sync_attendance_mobile_db_from_attendance_engine():
     """
-    تحديث ومزامنة قاعدة بيانات مسك الغياب (attendance_mobile_db.json)
-    تلقائياً بجميع الأقسام والتلاميذ المستوردين في البنية التربوية دون تكرار.
+    مزامنة وتحديث قاعدة بيانات الغياب والموبايل (attendance_mobile_db.json)
+    لتتطابق فورياً مع لوائح التلاميذ والأقسام في محرك الغياب.
     """
     try:
         db = load_attendance_mobile_db()
@@ -321,10 +1070,10 @@ def sync_attendance_mobile_db_from_attendance_engine():
             for st in slist:
                 st_id = st.get("id") or st.get("massar_code")
                 mcode = st.get("massar_code") or st_id
-                full_name = st.get("name") or f"{st.get('last_name', '')} {st.get('first_name', '')}".strip() or str(st_id)
-                gender_ar = "أنثى" if st.get("gender") in ("F", "أنثى", "انثى") else "ذكر"
-                bdate = st.get("birth_date") or "-"
-                order_num = st.get("order")
+                full_name = st.get("name") or st.get("full_name") or f"{st.get('last_name', '')} {st.get('first_name', '')}".strip() or str(st_id)
+                gender_ar = "أنثى" if st.get("gender") in ("F", "أنثى", "فتاة") else "ذكر"
+                bdate = st.get("birth_date") or st.get("dob") or "-"
+                order_num = st.get("order") or st.get("order_num")
                 try:
                     order_num = int(order_num)
                 except Exception:
@@ -343,15 +1092,173 @@ def sync_attendance_mobile_db_from_attendance_engine():
         if new_classes:
             new_classes.sort(key=lambda x: x["classCode"])
             db["classes"] = new_classes
-        if new_students:
-            db["students"] = new_students
-            db["updatedAt"] = int(time.time() * 1000)
-            save_attendance_mobile_db(db)
-            print(f"[Sync Attendance DB]: Synced {len(new_classes)} classes and {len(new_students)} students into attendance_mobile_db.json!")
+        db["students"] = new_students
+
+        # Prune orphan sessions and reports from deleted or outdated classes
+        cur_class_codes = {c["classCode"] for c in new_classes}
+        cur_student_ids = {s["studentId"] for s in new_students}
+        if "attendanceSessions" in db and isinstance(db["attendanceSessions"], dict):
+            pruned_sessions = {}
+            for sid, sess in db["attendanceSessions"].items():
+                if sess.get("classCode") in cur_class_codes:
+                    if "absentStudentIds" in sess and isinstance(sess["absentStudentIds"], list):
+                        sess["absentStudentIds"] = [aid for aid in sess["absentStudentIds"] if aid in cur_student_ids]
+                    pruned_sessions[sid] = sess
+            db["attendanceSessions"] = pruned_sessions
+
+        if "dismissalReports" in db and isinstance(db["dismissalReports"], dict):
+            pruned_reports = {}
+            for rid, rep in db["dismissalReports"].items():
+                if rep.get("student_id") in cur_student_ids or rep.get("class_code") in cur_class_codes:
+                    pruned_reports[rid] = rep
+            db["dismissalReports"] = pruned_reports
+
+        db["updatedAt"] = int(time.time() * 1000)
+        save_attendance_mobile_db(db)
+        print(f"[Sync Attendance DB]: Synced {len(new_classes)} classes and {len(new_students)} students into attendance_mobile_db.json!")
         return db
     except Exception as err:
         print("[sync_attendance_mobile_db_from_attendance_engine error]:", err)
         return None
+
+def sync_attendance_timetable_from_master(app_state, tt_data=None):
+    """
+    مزامنة وتحيين حصص الأساتذة وجدول الحصص الأسبوعي في منظومة مسك الغياب (attendance_mobile_db.json)
+    وفي هواتف الأساتذة وعند المدير مباشرة وفق آخر إنتاج للجدول العام للمدرسين.
+    تحافظ على أرقام المرور (PIN) للأساتذة الحاليين وتسجل أي أساتذة جدد تلقائياً.
+    """
+    try:
+        import secrets, re
+        if tt_data is None:
+            tt_data = app_state.timetable_engine.get_cached_timetable()
+        if not tt_data or not isinstance(tt_data, dict):
+            return {"success": False, "message": "لا يوجد جدول حصص منتج حالياً."}
+
+        teacher_timetables = tt_data.get("teacher_timetables", {})
+        if not teacher_timetables:
+            return {"success": False, "message": "بيانات استعمالات زمن المدرسين غير متوفرة في الجدول المنتج."}
+
+        db = load_attendance_mobile_db()
+        teachers = db.get("teachers", [])
+        if not isinstance(teachers, list):
+            teachers = []
+
+        existing_by_alias = {str(t.get("excelAlias", "")).strip(): t for t in teachers if t.get("excelAlias")}
+        existing_by_name = {str(t.get("fullName", "")).strip(): t for t in teachers if t.get("fullName")}
+        existing_by_id = {str(t.get("teacherId", "")).strip(): t for t in teachers if t.get("teacherId")}
+        used_pins = {str(t.get("loginCode", "")) for t in teachers if t.get("loginCode")}
+
+        # Subject & room lookup
+        subject_by_teacher = {}
+        for m_item in tt_data.get("master_teachers_data", []):
+            t_name = str(m_item.get("teacher", "")).strip()
+            if t_name:
+                subject_by_teacher[t_name] = str(m_item.get("subject", "")).strip()
+                if m_item.get("room"):
+                    subject_by_teacher[f"{t_name}__room"] = str(m_item.get("room", "")).strip()
+
+        DAY_MAP = {
+            "الاثنين": 1, "الإثنين": 1,
+            "الثلاثاء": 2,
+            "الاربعاء": 3, "الأربعاء": 3,
+            "الخميس": 4,
+            "الجمعة": 5,
+            "السبت": 6
+        }
+
+        synced_teachers = list(teachers)
+        teacher_id_map = {}
+
+        for tname in teacher_timetables.keys():
+            t_clean = str(tname).strip()
+            match = existing_by_alias.get(t_clean) or existing_by_name.get(t_clean)
+            if match:
+                tid = match.get("teacherId")
+                teacher_id_map[t_clean] = tid
+                if not match.get("subject") and t_clean in subject_by_teacher:
+                    match["subject"] = subject_by_teacher[t_clean]
+                if not match.get("defaultRoom") and f"{t_clean}__room" in subject_by_teacher:
+                    match["defaultRoom"] = subject_by_teacher[f"{t_clean}__room"]
+            else:
+                next_num = len(synced_teachers) + 1
+                while f"T{next_num:02d}" in existing_by_id:
+                    next_num += 1
+                tid = f"T{next_num:02d}"
+                existing_by_id[tid] = True
+
+                pin = "".join(secrets.choice("ABCDEFGHJKLMNPQRSTUVWXYZ23456789") for _ in range(8))
+                while pin in used_pins:
+                    pin = "".join(secrets.choice("ABCDEFGHJKLMNPQRSTUVWXYZ23456789") for _ in range(8))
+                used_pins.add(pin)
+
+                subj = subject_by_teacher.get(t_clean, "")
+                room = subject_by_teacher.get(f"{t_clean}__room", "")
+
+                new_t = {
+                    "teacherId": tid,
+                    "loginCode": pin,
+                    "excelAlias": t_clean,
+                    "fullName": t_clean,
+                    "subject": subj,
+                    "defaultRoom": room
+                }
+                synced_teachers.append(new_t)
+                teacher_id_map[t_clean] = tid
+
+        # Build full timetable entries from teacher_timetables
+        new_timetable = []
+        for tname, sched in teacher_timetables.items():
+            t_clean = str(tname).strip()
+            tid = teacher_id_map.get(t_clean)
+            if not tid:
+                continue
+
+            for dkey, hours in sched.items():
+                is_pm = " م" in dkey
+                dname = dkey.replace(" ص", "").replace(" م", "").strip()
+                dow = DAY_MAP.get(dname)
+                if not dow:
+                    continue
+
+                for hkey, cell in hours.items():
+                    if not cell or not isinstance(cell, dict):
+                        continue
+                    m = re.search(r'(\d+)', str(hkey))
+                    hnum = int(m.group(1)) if m else 1
+                    slot_idx = (4 if is_pm else 0) + hnum
+
+                    cls = str(cell.get("students") or "").strip()
+                    room = str(cell.get("room") or "").strip()
+                    subj = str(cell.get("subject") or "").strip()
+                    if not cls:
+                        continue
+
+                    slot_id = f"{tid}_{dow}_{slot_idx}"
+                    new_timetable.append({
+                        "slotId": slot_id,
+                        "teacherId": tid,
+                        "classCode": cls,
+                        "dayOfWeek": dow,
+                        "slotIndex": slot_idx,
+                        "room": room,
+                        "subject": subj
+                    })
+
+        db["teachers"] = synced_teachers
+        db["timetable"] = new_timetable
+        db["updatedAt"] = int(time.time() * 1000)
+        save_attendance_mobile_db(db)
+        print(f"[Timetable Attendance Sync]: Synced {len(synced_teachers)} teachers and {len(new_timetable)} sessions from Master Timetable.")
+        return {
+            "success": True,
+            "teachers_count": len(synced_teachers),
+            "timetable_slots_count": len(new_timetable),
+            "message": f"تم بنجاح تحيين {len(new_timetable)} حصة أسبوعية لـ {len(synced_teachers)} أستاذاً في منظومة تتبع الغياب وهواتف الأساتذة وفق آخر جدول عام."
+        }
+    except Exception as e:
+        print("[sync_attendance_timetable_from_master error]:", e)
+        return {"success": False, "error": str(e)}
+
 
 def get_unified_daily_students_attendance(date_str):
     """
@@ -597,7 +1504,7 @@ class RzzakFetAppState:
         try:
             with open(STATE_FILE, "r", encoding="utf-8") as f:
                 data = json.load(f)
-            
+
             # Institution
             inst_data = data.get("institution", {})
             self.institution.institution_name = inst_data.get("name", self.institution.institution_name)
@@ -606,6 +1513,8 @@ class RzzakFetAppState:
             self.institution.academic_year = inst_data.get("academic_year", self.institution.academic_year)
             self.institution.gresa_code = inst_data.get("gresa", self.institution.gresa_code)
             self.institution.principal_name = inst_data.get("principal", self.institution.principal_name)
+            self.institution.general_guard_name = inst_data.get("general_guard", inst_data.get("general_guard_name", getattr(self.institution, "general_guard_name", "")))
+            self.institution.director_studies_name = inst_data.get("director_studies", inst_data.get("director_studies_name", getattr(self.institution, "director_studies_name", "")))
             self.institution.general_rooms_count = inst_data.get("general_rooms", self.institution.general_rooms_count)
             self.institution.svt_labs_count = inst_data.get("svt_labs", self.institution.svt_labs_count)
             self.institution.pc_labs_count = inst_data.get("pc_labs", self.institution.pc_labs_count)
@@ -736,7 +1645,7 @@ class RzzakFetAppState:
         try:
             with open(cache_file, "r", encoding="utf-8") as f:
                 tt = json.load(f)
-            
+
             names_map = self.institution.teacher_custom_names
             if not names_map:
                 return
@@ -800,7 +1709,7 @@ class RzzakFetAppState:
 
     def get_full_state(self):
         is_qualifying = getattr(self.institution, 'institution_cycle', 'middle') == 'qualifying'
-        
+
         def _get_subj_avail(sname, req_default):
             if not self.institution.teacher_counts_by_subject:
                 return req_default
@@ -864,7 +1773,7 @@ class RzzakFetAppState:
             "real_name": self.institution.teacher_custom_names.get(getattr(a, 'def_teacher_name', a.teacher_name), ""),
             "subject": a.subject
         } for a in assignments if a.teacher_name]
-        
+
         # Build default-to-custom teacher list for renaming UI and export
         all_default_teachers = []
         for a in assignments:
@@ -880,7 +1789,7 @@ class RzzakFetAppState:
                     "total_hours": a.total_hours,
                     "assigned_classes": a.assigned_classes_str
                 })
-        
+
         # Build default-to-custom room list for renaming UI
         all_default_rooms = []
         for i in range(1, self.institution.general_rooms_count + 1):
@@ -916,7 +1825,7 @@ class RzzakFetAppState:
             "is_break_enabled": False,
             "has_timetable": False
         }
-        
+
         break_slots = getattr(self.institution, 'break_time_slots', []) or []
         is_break_set = any("الاربعاء م" in (s.get("day", "") or "") or "الأربعاء م" in (s.get("day", "") or "") for s in break_slots)
         wed_status["is_break_enabled"] = is_break_set
@@ -981,6 +1890,8 @@ class RzzakFetAppState:
                 "academic_year": self.institution.academic_year,
                 "gresa": self.institution.gresa_code,
                 "principal": self.institution.principal_name,
+                "general_guard": getattr(self.institution, "general_guard_name", ""),
+                "director_studies": getattr(self.institution, "director_studies_name", ""),
                 "cycle": getattr(self.institution, 'institution_cycle', 'middle'),
                 "general_rooms": self.institution.general_rooms_count,
                 "svt_labs": self.institution.svt_labs_count,
@@ -1110,7 +2021,7 @@ class ProgressiveSolverManager:
         self.should_stop = False
         self.thread = None
         self.lock = threading.Lock()
-        
+
         self.current_step = 0
         self.total_steps = 0
         self.current_constraint_name = ""
@@ -1163,14 +2074,14 @@ class ProgressiveSolverManager:
                 self.log_messages = ["🚀 بدء عملية إنتاج الجداول بنظام التفويج للثالثة إعدادي (3APIC TP)..."]
             else:
                 self.log_messages = ["🚀 بدء عملية إنتاج الجداول الدراسية قيداً بقيد..."]
-            
+
             raw_constraints = self.app_state.fet_generator.all_available_constraints
             active_constraints = [c for c in raw_constraints if c.get("is_active", True)]
 
             active_codes = set(c.get("code") for c in active_constraints if c.get("code"))
             active_ids = set(c.get("id") for c in active_constraints if c.get("id"))
             active_all_identifiers = active_codes.union(active_ids)
-            
+
             initial_stages = [
                 {
                     "id": "base",
@@ -1282,7 +2193,7 @@ class ProgressiveSolverManager:
     def _worker_loop(self):
         assignments = self.app_state.get_current_assignments(enable_grouping=self.enable_grouping)
         rooms = self.app_state.room_engine.allocate_rooms(assignments)
-        
+
         cumulative_codes = set()
         c_by_code = {}
         for c in self.app_state.fet_generator.all_available_constraints:
@@ -1364,6 +2275,1460 @@ class ProgressiveSolverManager:
                 self.status_message = f"تم إنهاء التوليد التراكمي! اعتُمد أفضل جدول محقق لـ ({self.best_achieved_count}/{self.total_steps}) قيود في {self.elapsed_seconds}ث."
             self.log_messages.append("🏁 اكتملت معالجة التوليد التراكمي.")
 
+
+def get_referred_students_data(date_str=None):
+    """
+    استخراج لائحة التلاميذ المحالين على الإدارة بسبب التغيب في الحصص السابقة بدون مبرر.
+    مع تسوية الغيابات المتعددة السابقة دفعة واحدة بإذن دخول واحد مع الحفاظ على احتساب كل الساعات.
+    """
+    if not date_str:
+        date_str = datetime.now().strftime("%Y-%m-%d")
+
+    db = load_attendance_mobile_db()
+    sessions = db.get("attendanceSessions", {})
+    passes = db.get("entryPasses", {})
+    justified = db.get("justifiedAbsences", {})
+    students = db.get("students", [])
+    st_map = {s.get("studentId"): s for s in students if s.get("studentId")}
+    st_massar_map = {s.get("massarCode"): s for s in students if s.get("massarCode")}
+    time_slots = db.get("timeSlots", [])
+    slot_map = {ts.get("slotIndex"): ts for ts in time_slots if ts.get("slotIndex")}
+    teachers = db.get("teachers", [])
+    t_map = {t.get("teacherId"): t for t in teachers if t.get("teacherId")}
+
+    # Group unexcused absences by student
+    student_abs_groups = {}
+
+    sess_list = list(sessions.values())
+    for sess in sess_list:
+        s_date = sess.get("date", "")
+        if not s_date or s_date > date_str:
+            continue
+        slot_idx = sess.get("slotIndex", 1)
+        cls_code = sess.get("classCode", "")
+        t_id = sess.get("teacherId", "")
+        t_obj = t_map.get(t_id, {})
+        t_name = t_obj.get("fullName", t_id)
+        t_subj = t_obj.get("subject", "")
+        slot_obj = slot_map.get(slot_idx, {})
+        slot_label = f"{slot_obj.get('label', f'حصة {slot_idx}')} ({slot_obj.get('startTime', '')} - {slot_obj.get('endTime', '')})"
+
+        abs_ids = sess.get("absentStudentIds", [])
+        att_map = sess.get("attendanceMap", {})
+        all_abs = set(abs_ids)
+        for sid, st in att_map.items():
+            if st == 'A':
+                all_abs.add(sid)
+
+        sess_id = sess.get("sessionId", "")
+
+        for sid in all_abs:
+            st_obj = st_map.get(sid) or st_massar_map.get(sid) or {"studentId": sid, "fullName": sid, "massarCode": sid, "classCode": cls_code}
+            m_code = st_obj.get("massarCode", sid)
+            canonical_key = m_code or sid
+
+            # Check if this particular absence is justified
+            j_key_id = f"{sess_id}_{sid}"
+            j_key_m = f"{sess_id}_{m_code}"
+            j_val_id = justified.get(j_key_id)
+            j_val_m = justified.get(j_key_m)
+
+            is_just = False
+            if isinstance(j_val_id, dict):
+                is_just = bool(j_val_id.get("justified", True))
+            elif j_val_id is True:
+                is_just = True
+            elif isinstance(j_val_m, dict):
+                is_just = bool(j_val_m.get("justified", True))
+            elif j_val_m is True:
+                is_just = True
+            elif (sid in justified and justified[sid] is not False) or (m_code in justified and justified[m_code] is not False):
+                is_just = True
+
+            if is_just:
+                continue
+
+            if canonical_key not in student_abs_groups:
+                student_abs_groups[canonical_key] = {
+                    "student_obj": st_obj,
+                    "student_id": sid,
+                    "massar_code": m_code,
+                    "class_code": cls_code or st_obj.get("classCode", ""),
+                    "sessions": []
+                }
+
+            student_abs_groups[canonical_key]["sessions"].append({
+                "date": s_date,
+                "slot_index": slot_idx,
+                "slot_label": slot_label,
+                "teacher_name": t_name,
+                "subject": t_subj,
+                "session_id": sess_id
+            })
+
+    referred = []
+    valid_passes_list = [p for p in passes.values() if isinstance(p, dict) and p.get("status") != "REVOKED"]
+
+    for canon_key, group in student_abs_groups.items():
+        st_obj = group["student_obj"]
+        sid = group["student_id"]
+        m_code = group["massar_code"]
+        c_code = group["class_code"]
+        abs_sessions = group["sessions"]
+
+        abs_sessions.sort(key=lambda x: (x.get("date", ""), x.get("slot_index", 0)))
+        total_unexcused_hours = len(abs_sessions)
+        if total_unexcused_hours == 0:
+            continue
+
+        earliest_sess = abs_sessions[0]
+        latest_sess = abs_sessions[-1]
+        earliest_date = earliest_sess.get("date", "")
+        latest_date = latest_sess.get("date", "")
+
+        if earliest_date == latest_date:
+            if total_unexcused_hours == 1:
+                period_summary = f"{latest_date} ({latest_sess.get('slot_label', '')})"
+            else:
+                period_summary = f"{latest_date} ({total_unexcused_hours} حصص غياب)"
+        else:
+            period_summary = f"من {earliest_date} إلى {latest_date} ({total_unexcused_hours} حصص غياب)"
+
+        # Check for matching active entry pass
+        # A single entry pass issued on or after the latest absence date (or issued on date_str)
+        # clears all prior consecutive unexcused absences up to that point.
+        matching_pass = None
+        for p in valid_passes_list:
+            p_st_id = p.get("studentId")
+            p_massar = p.get("massarCode")
+            if p_st_id == sid or p_massar == m_code or p_st_id == canon_key or p_massar == canon_key:
+                p_issued = p.get("issuedDate", "")
+                p_abs = p.get("absentDate", "")
+                p_valid = p.get("validForDate", "")
+                if (p_issued >= latest_date) or (p_issued == date_str) or (p_valid == date_str) or (p_abs == latest_date):
+                    matching_pass = p
+                    break
+
+        referred.append({
+            "student_id": sid,
+            "student_name": st_obj.get("fullName", sid),
+            "massar_code": m_code,
+            "class_code": c_code,
+            "absent_date": latest_date,
+            "earliest_date": earliest_date,
+            "absent_slot_index": latest_sess.get("slot_index", 1),
+            "absent_slot_label": latest_sess.get("slot_label", ""),
+            "period_summary": period_summary,
+            "total_unexcused_hours": total_unexcused_hours,
+            "teacher_name": latest_sess.get("teacher_name", ""),
+            "subject": latest_sess.get("subject", ""),
+            "has_entry_pass": matching_pass is not None,
+            "entry_pass": matching_pass,
+            "sessions_list": abs_sessions
+        })
+
+    pending = [r for r in referred if not r["has_entry_pass"]]
+    permitted = [r for r in referred if r["has_entry_pass"]]
+    pending.sort(key=lambda r: (r["absent_date"], r["absent_slot_index"]), reverse=True)
+    permitted.sort(key=lambda r: (r.get("entry_pass", {}).get("issuedDate", "") or r["absent_date"]), reverse=True)
+
+    return pending + permitted
+
+
+def build_single_ticket_html(pass_data, inst_info):
+    """
+    توليد بطاقة واحدة لوصل السماح بالدخول للتلميذ (بدون توقيع الأستاذ وبأبعاد صغيرة 94mm x 45mm).
+    """
+    inst_name = inst_info.get("name", "الثانوية الإعدادية")
+    gresa = inst_info.get("gresa_code") or inst_info.get("gresa", "")
+    acad_year = inst_info.get("academic_year") or inst_info.get("year", "2026-2027")
+
+    logo_src = inst_info.get("logo_base64") or inst_info.get("logo") or "/official_header_logo.png"
+    logo_img_tag = f'<img src="{logo_src}" alt="شعار" style="max-height:22px; max-width:75px; object-fit:contain;">' if logo_src else ''
+
+    raw_pass_id = str(pass_data.get("passId", "")).strip()
+    clean_pass_id = raw_pass_id.replace("BE-", "").replace("PASS-", "").replace("DISM-", "")
+    st_name = pass_data.get("studentName", "")
+    massar = pass_data.get("massarCode", "")
+    c_code = pass_data.get("classCode", "")
+    issued_at = pass_data.get("issuedAt", "")
+    issued_date = pass_data.get("issuedDate", "")
+    notes = pass_data.get("notes") or ""
+
+    pass_type = pass_data.get("passType", "ABSENCE")
+    is_late = (pass_type == "TARDINESS" or "تأخر" in str(pass_type))
+    pass_type_arabic = "استئناف بعد تأخر" if is_late else "استئناف بعد غياب"
+
+    admin_action = pass_data.get("adminAction", "تسوية الوضعية بالحراسة العامة.")
+    period_summary = pass_data.get("periodSummary") or pass_data.get("absentSlotLabel") or "الحصة السابقة"
+
+    admin_role = pass_data.get("adminRole") or pass_data.get("admin_role") or "الحراسة العامة"
+    admin_name = pass_data.get("adminName") or pass_data.get("admin_name") or ""
+    admin_sig_title = f"{admin_role} ({admin_name})" if admin_name else admin_role
+
+    return f"""
+    <div class="ticket-card">
+        <div class="ticket-header">
+            <div class="header-left">
+                <span class="inst-name">{inst_name}</span>
+                <span class="ticket-title">وصل الإذن بالدخول إلى القسم</span>
+            </div>
+            <div class="header-center">
+                {logo_img_tag}
+            </div>
+            <div class="header-right">
+                <span class="pass-code font-mono">رقم: <strong>{clean_pass_id}</strong></span>
+                <span class="pass-time font-mono">{issued_date} • {issued_at}</span>
+            </div>
+        </div>
+
+        <div class="ticket-body">
+            <div class="info-row">
+                <span class="st-info">التلميذ(ة): <strong class="st-name">{st_name}</strong></span>
+                <span class="class-badge font-mono">القسم: <strong>{c_code}</strong></span>
+            </div>
+            <div class="info-row">
+                <span class="massar-badge">مسار: <strong class="font-mono">{massar}</strong></span>
+                <span class="type-badge {'late' if is_late else 'absent'}">{pass_type_arabic}</span>
+            </div>
+            <div class="info-row highlight-period">
+                <span>فترة الغياب: <strong style="color:#b91c1c;">{period_summary}</strong></span>
+                <span class="action-note">{admin_action}</span>
+            </div>
+        </div>
+
+        <div class="ticket-footer">
+            <div class="admin-title">خاتم وتأشيرة {admin_sig_title}</div>
+            <div class="stamp-box">تأشيرة الإدارة التربوية</div>
+        </div>
+    </div>
+    """
+
+
+def render_entry_pass_html(pass_data, inst_info, slot_pos=1):
+    """
+    توليد ورقة A4 لطباعة بطاقة السماح بالدخول مقسمة إلى 12 خانة (شبكة 2x6).
+    تُطبع البطاقة في الموضع المحدد (slot_pos من 1 إلى 12) أو تملأ كل الورقة إذا كان slot_pos=0.
+    """
+    pass_data = fix_arabic_mojibake(pass_data)
+    try:
+        slot_pos = int(slot_pos)
+    except Exception:
+        slot_pos = 1
+
+    single_ticket = build_single_ticket_html(pass_data, inst_info)
+    clean_pass_id = str(pass_data.get("passId", "")).replace("BE-", "").replace("PASS-", "").replace("DISM-", "")
+    st_name = pass_data.get("studentName", "")
+
+    # Build 12 slots for the 2x6 grid
+    slots_html = []
+    for i in range(1, 13):
+        if slot_pos == 0 or slot_pos == i:
+            slots_html.append(f'<div class="grid-slot active-slot" id="slot-{i}">{single_ticket}</div>')
+        else:
+            slots_html.append(f'<div class="grid-slot empty-slot" id="slot-{i}" onclick="setSlot({i})" style="cursor:pointer;" title="انقر للطباعة في هذه الخانة"><span class="slot-marker">خانة {i}<br><small style="font-size:7pt;opacity:0.75;">(انقر للطباعة هنا)</small></span></div>')
+
+    slots_combined = "\n".join(slots_html)
+    ticket_json_escaped = json.dumps(single_ticket)
+
+    return f"""<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>بطاقة السماح بالدخول ({clean_pass_id}) — {st_name}</title>
+    <style>
+        @page {{
+            size: A4 portrait;
+            margin: 6mm 8mm;
+        }}
+        * {{
+            box-sizing: border-box;
+        }}
+        body {{
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f1f5f9;
+            color: #0f172a;
+            direction: rtl;
+            margin: 0;
+            padding: 10px 0;
+        }}
+        .print-toolbar {{
+            max-width: 194mm;
+            margin: 0 auto 10px auto;
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 12px;
+            padding: 8px 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }}
+        .btn-print {{
+            background: #0284c7;
+            color: #ffffff;
+            border: none;
+            padding: 7px 16px;
+            border-radius: 8px;
+            font-weight: 800;
+            font-size: 11pt;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }}
+        .btn-print:hover {{
+            background: #0369a1;
+        }}
+        .slot-nav {{
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 9pt;
+            font-weight: 700;
+        }}
+        .slot-pill {{
+            padding: 3px 8px;
+            border-radius: 6px;
+            border: 1px solid #cbd5e1;
+            background: #f8fafc;
+            color: #334155;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 8.5pt;
+            font-weight: bold;
+            transition: all 0.15s;
+        }}
+        .slot-pill.active {{
+            background: #0284c7;
+            color: #ffffff;
+            border-color: #0284c7;
+        }}
+        .slot-pill:hover:not(.active) {{
+            background: #e2e8f0;
+        }}
+
+        /* A4 Page Grid Container: 194mm x 283mm (Fits portrait A4 with zero overflow) */
+        .a4-grid-container {{
+            width: 194mm;
+            height: 283mm;
+            margin: 0 auto;
+            background: #ffffff;
+            display: grid;
+            grid-template-columns: 94mm 94mm;
+            grid-template-rows: repeat(6, 45mm);
+            gap: 2.5mm 4mm;
+            padding: 0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            page-break-after: avoid;
+            page-break-inside: avoid;
+        }}
+
+        .grid-slot {{
+            width: 94mm;
+            height: 45mm;
+            position: relative;
+            box-sizing: border-box;
+        }}
+
+        .empty-slot {{
+            border: 1.5px dashed #cbd5e1;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: #64748b;
+            font-size: 8pt;
+            font-weight: 700;
+            background: #f8fafc;
+            transition: all 0.2s;
+        }}
+        .empty-slot:hover {{
+            border-color: #0284c7;
+            background: #f0f9ff;
+            color: #0284c7;
+        }}
+
+        .active-slot {{
+            border: none;
+        }}
+
+        /* Compact Official Ticket Card (94mm x 45mm) */
+        .ticket-card {{
+            width: 100%;
+            height: 100%;
+            border: 1.5px solid #0f172a;
+            border-radius: 6px;
+            padding: 3mm 4mm 2.5mm 4mm;
+            background: #ffffff;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            font-size: 7.5pt;
+            line-height: 1.25;
+            box-sizing: border-box;
+            position: relative;
+        }}
+
+        .ticket-header {{
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #0f172a;
+            padding-bottom: 1.5mm;
+            margin-bottom: 1.5mm;
+        }}
+        .header-left {{
+            display: flex;
+            flex-direction: column;
+            text-align: right;
+            width: 48%;
+        }}
+        .inst-name {{
+            font-weight: 900;
+            font-size: 7.5pt;
+            color: #0f172a;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }}
+        .ticket-title {{
+            font-weight: 800;
+            font-size: 7pt;
+            color: #0369a1;
+        }}
+        .header-center {{
+            width: 16%;
+            text-align: center;
+        }}
+        .header-right {{
+            display: flex;
+            flex-direction: column;
+            text-align: left;
+            width: 36%;
+            font-size: 6.5pt;
+            color: #475569;
+        }}
+        .pass-code strong {{
+            color: #0f172a;
+            font-size: 7.5pt;
+        }}
+
+        .ticket-body {{
+            display: flex;
+            flex-direction: column;
+            gap: 1.2mm;
+            flex-grow: 1;
+        }}
+        .info-row {{
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 2mm;
+            font-size: 7.5pt;
+        }}
+        .st-name {{
+            color: #0f172a;
+            font-size: 8pt;
+            font-weight: 900;
+        }}
+        .class-badge {{
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            padding: 0.5px 4px;
+            border-radius: 4px;
+            font-size: 7.5pt;
+            font-weight: 800;
+        }}
+        .massar-badge {{
+            color: #334155;
+            font-size: 7pt;
+        }}
+        .type-badge {{
+            padding: 0.5px 5px;
+            border-radius: 4px;
+            font-weight: 800;
+            font-size: 6.5pt;
+        }}
+        .type-badge.absent {{
+            background: #fee2e2;
+            color: #991b1b;
+            border: 0.5px solid #f87171;
+        }}
+        .type-badge.late {{
+            background: #fef3c7;
+            color: #92400e;
+            border: 0.5px solid #fbbf24;
+        }}
+        .highlight-period {{
+            font-size: 7pt;
+            background: #f8fafc;
+            padding: 1px 3px;
+            border-radius: 4px;
+            border-right: 2px solid #0284c7;
+        }}
+        .action-note {{
+            color: #475569;
+            font-size: 6.5pt;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 48mm;
+        }}
+
+        .ticket-footer {{
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            border-top: 1px dashed #94a3b8;
+            padding-top: 1.5mm;
+            margin-top: 1.5mm;
+        }}
+        .admin-title {{
+            font-size: 6.5pt;
+            font-weight: 800;
+            color: #1e293b;
+        }}
+        .stamp-box {{
+            font-size: 6pt;
+            color: #94a3b8;
+            border: 0.5px dashed #cbd5e1;
+            padding: 1px 6px;
+            border-radius: 3px;
+        }}
+
+        @media print {{
+            body {{
+                background: #ffffff !important;
+                padding: 0 !important;
+            }}
+            .print-toolbar {{
+                display: none !important;
+            }}
+            .a4-grid-container {{
+                box-shadow: none !important;
+                margin: 0 !important;
+                width: 194mm !important;
+                height: 283mm !important;
+            }}
+            .empty-slot {{
+                border-color: transparent !important;
+                color: transparent !important;
+            }}
+            .slot-marker {{
+                display: none !important;
+            }}
+        }}
+    </style>
+</head>
+<body>
+    <div class="print-toolbar">
+        <div style="display:flex; align-items:center; gap:10px;">
+            <button class="btn-print" onclick="window.print()">
+                <span>🖨️</span>
+                <span>طباعة الوصل</span>
+            </button>
+            <span style="font-size:9.5pt; color:#475569;">
+                الموضع الحالي: <strong id="slot-desc-text">{'ملء جميع الخانات (12 بطاقة)' if slot_pos == 0 else f'خانة {slot_pos} من 12'}</strong>
+            </span>
+        </div>
+        <div class="slot-nav">
+            <span style="color:#64748b; font-size:8pt;">تغيير الموضع:</span>
+            {''.join([f'<button type="button" data-slot="{p}" onclick="setSlot({p})" class="slot-pill {"active" if slot_pos==p else ""}">{p}</button>' for p in range(1, 13)])}
+            <button type="button" data-slot="0" onclick="setSlot(0)" class="slot-pill {"active" if slot_pos==0 else ""}">🌟 الكل</button>
+        </div>
+    </div>
+
+    <div class="a4-grid-container">
+        {slots_combined}
+    </div>
+
+    <script>
+        const ticketTemplate = {ticket_json_escaped};
+
+        function setSlot(target) {{
+            target = parseInt(target);
+            if (isNaN(target)) target = 1;
+
+            for (let i = 1; i <= 12; i++) {{
+                const slotEl = document.getElementById('slot-' + i);
+                if (!slotEl) continue;
+                if (target === 0 || target === i) {{
+                    slotEl.className = 'grid-slot active-slot';
+                    slotEl.innerHTML = ticketTemplate;
+                    slotEl.style.cursor = 'default';
+                }} else {{
+                    slotEl.className = 'grid-slot empty-slot';
+                    slotEl.innerHTML = '<span class="slot-marker">خانة ' + i + '<br><small style="font-size:7pt;opacity:0.75;">(انقر للطباعة هنا)</small></span>';
+                    slotEl.style.cursor = 'pointer';
+                }}
+            }}
+
+            document.querySelectorAll('.slot-pill').forEach(btn => {{
+                const p = parseInt(btn.getAttribute('data-slot'));
+                if (p === target) btn.classList.add('active');
+                else btn.classList.remove('active');
+            }});
+
+            const desc = document.getElementById('slot-desc-text');
+            if (desc) {{
+                desc.textContent = target === 0 ? 'ملء جميع الخانات (12 بطاقة)' : ('خانة ' + target + ' من 12');
+            }}
+
+            if (target >= 1 && target <= 12) {{
+                try {{
+                    localStorage.setItem('rzzakfet_last_entry_pass_slot', target.toString());
+                }} catch(e) {{}}
+            }}
+
+            try {{
+                const u = new URL(window.location.href);
+                u.searchParams.set('slot_pos', target);
+                window.history.replaceState({{}}, '', u.toString());
+            }} catch(e) {{}}
+        }}
+
+        if (window.location.search.includes('autoprint=1')) {{
+            window.addEventListener('load', () => {{
+                setTimeout(() => window.print(), 400);
+            }});
+        }}
+    </script>
+</body>
+</html>"""
+
+
+def render_dismissal_report_html(report_data, inst_info):
+    """
+    توليد تقرير رسمي لإخراج تلميذ من الحصة الدراسية وإحالته على الإدارة التربوية.
+    """
+    report_data = fix_arabic_mojibake(report_data)
+    acad_name = inst_info.get("academy", "الأكاديمية الجهوية للتربية والتكوين")
+    prov_name = inst_info.get("province", "المديرية الإقليمية")
+    inst_name = inst_info.get("name", "المؤسسة التعليمية")
+    acad_year = inst_info.get("academic_year") or inst_info.get("year", "2026-2027")
+    gresa = inst_info.get("gresa_code") or inst_info.get("gresa", "")
+
+    logo_src = inst_info.get("logo_base64") or inst_info.get("logo") or "/official_header_logo.png"
+    logo_img_tag = f'<img src="{logo_src}" alt="شعار الوزارة" style="max-height:55px; max-width:260px; object-fit:contain;">' if logo_src else ''
+
+    rep_id = report_data.get("reportId", "")
+    st_name = report_data.get("studentName", "")
+    massar = report_data.get("massarCode", "-")
+    c_code = report_data.get("classCode", "-")
+    t_name = report_data.get("teacherName", "-")
+    subject = report_data.get("subject", "-")
+    rep_date = report_data.get("date", "")
+    rep_time = report_data.get("time", "")
+    slot_idx = report_data.get("slotIndex", 1)
+    slot_label = report_data.get("slotLabel") or f"الحصة {slot_idx}"
+    reason_type = report_data.get("reasonType", "عرقلة السير العادي للدراسة والتشويش")
+    custom_reason = report_data.get("customReason", "").strip()
+
+    return f"""<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>تقرير إخراج تلميذ من الحصة — {st_name}</title>
+    <style>
+        @page {{
+            size: A4 portrait;
+            margin: 8mm 10mm;
+        }}
+        body {{
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8fafc;
+            color: #0f172a;
+            direction: rtl;
+            margin: 0;
+            padding: 12px;
+        }}
+        .report-card {{
+            border: 2px solid #0f172a;
+            border-radius: 8px;
+            padding: 16px 20px;
+            background: #ffffff;
+            box-sizing: border-box;
+            max-width: 750px;
+            margin: 0 auto;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }}
+        .report-header {{
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #0f172a;
+            padding-bottom: 6px;
+            margin-bottom: 10px;
+        }}
+        .inst-info {{
+            text-align: right;
+            font-size: 8.5pt;
+            line-height: 1.4;
+            flex: 1;
+        }}
+        .header-center {{
+            text-align: center;
+            flex: 1.2;
+        }}
+        .report-meta {{
+            text-align: left;
+            font-size: 8pt;
+            line-height: 1.4;
+            flex: 1;
+        }}
+        .report-title {{
+            text-align: center;
+            font-size: 13pt;
+            font-weight: 900;
+            color: #991b1b;
+            margin: 8px 0;
+            background: #fef2f2;
+            padding: 6px;
+            border-radius: 6px;
+            border: 1.5px solid #f87171;
+        }}
+        .grid-2 {{
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px 16px;
+            margin: 10px 0;
+            font-size: 9.5pt;
+        }}
+        .detail-row {{
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px dashed #cbd5e1;
+            padding-bottom: 3px;
+        }}
+        .detail-label {{
+            font-weight: 800;
+            color: #475569;
+        }}
+        .detail-val {{
+            font-weight: 800;
+            color: #0f172a;
+        }}
+        .section-box {{
+            margin: 10px 0;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            padding: 10px 12px;
+            background: #f8fafc;
+        }}
+        .section-box-title {{
+            font-weight: 900;
+            font-size: 9.5pt;
+            color: #1e293b;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }}
+        .reason-badge {{
+            display: inline-block;
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #f87171;
+            border-radius: 6px;
+            padding: 4px 10px;
+            font-weight: 800;
+            font-size: 9.5pt;
+            margin-bottom: 6px;
+        }}
+        .custom-reason-text {{
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 8px 10px;
+            font-size: 9.5pt;
+            line-height: 1.5;
+            color: #1e293b;
+            min-height: 48px;
+            white-space: pre-wrap;
+        }}
+        .admin-decision-box {{
+            margin-top: 10px;
+            border: 1.5px solid #0f172a;
+            border-radius: 6px;
+            padding: 10px 12px;
+            background: #fafafa;
+        }}
+        .admin-options {{
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            font-size: 8.5pt;
+            margin: 6px 0;
+        }}
+        .signatures {{
+            display: flex;
+            justify-content: space-between;
+            margin-top: 14px;
+            gap: 20px;
+        }}
+        .sig-box {{
+            flex: 1;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            padding: 8px 10px;
+            text-align: center;
+            font-size: 8.5pt;
+            font-weight: 800;
+            background: #fff;
+        }}
+        .sig-line {{
+            height: 45px;
+            border-bottom: 1px dotted #94a3b8;
+            margin-top: 8px;
+        }}
+        @media print {{
+            .no-print {{
+                display: none !important;
+            }}
+            body {{
+                padding: 0;
+                background: #fff;
+            }}
+            .report-card {{
+                box-shadow: none;
+                border: 2px solid #000;
+            }}
+        }}
+    </style>
+</head>
+<body>
+    <div class="no-print" style="display:flex; justify-content:center; gap:8px; margin-bottom:12px;">
+        <button onclick="window.print()" style="background:#dc2626; color:#fff; font-weight:800; padding:7px 18px; border:none; border-radius:6px; cursor:pointer; font-size:10pt;">🖨️ طباعة تقرير الإخراج</button>
+        <button onclick="window.close()" style="background:#64748b; color:#fff; font-weight:800; padding:7px 14px; border:none; border-radius:6px; cursor:pointer; font-size:10pt;">✕ إغلاق</button>
+    </div>
+    <div class="report-card">
+        <div class="report-header">
+            <div class="inst-info">
+                <div style="font-weight:800; color:#1e293b;">{acad_name}</div>
+                <div style="font-weight:700; color:#475569;">{prov_name}</div>
+                <div style="font-weight:900; color:#0f172a;">{inst_name}</div>
+            </div>
+            <div class="header-center">
+                {logo_img_tag}
+            </div>
+            <div class="report-meta">
+                <div>رقم التقرير: <strong style="font-family:monospace; color:#b91c1c;">{rep_id}</strong></div>
+                <div>الموسم الدراسي: <strong>{acad_year}</strong></div>
+                <div>رمز المؤسسة: <strong>{gresa}</strong></div>
+            </div>
+        </div>
+
+        <div class="report-title">
+            ⚠️ تقرير إخراج تلميذ(ة) من الحصة الدراسية وإحالته على الإدارة التربوية
+        </div>
+
+        <div class="grid-2">
+            <div class="detail-row">
+                <span class="detail-label">اسم التلميذ(ة):</span>
+                <span class="detail-val" style="color:#0369a1; font-size:10.5pt;">{st_name}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">القسم:</span>
+                <span class="detail-val" style="font-family:monospace; font-size:10.5pt;">{c_code}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">رقم مسار:</span>
+                <span class="detail-val" style="font-family:monospace;">{massar}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">الأستاذ(ة):</span>
+                <span class="detail-val">{t_name}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">مادة التدريس:</span>
+                <span class="detail-val">{subject}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">الحصة الدراسية:</span>
+                <span class="detail-val">{slot_label}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">تاريخ وساعة الإخراج:</span>
+                <span class="detail-val" style="color:#b91c1c; font-family:monospace;">{rep_date} • الساعة {rep_time}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">الإحالة على:</span>
+                <span class="detail-val">الحراسة العامة / إدارة المؤسسة</span>
+            </div>
+        </div>
+
+        <div class="section-box">
+            <div class="section-box-title">
+                <span>📌</span>
+                <span>نوع المخالفة المرتكبة:</span>
+            </div>
+            <div>
+                <span class="reason-badge">⚠️ {reason_type}</span>
+            </div>
+            <div class="section-box-title" style="margin-top:6px;">
+                <span>📝</span>
+                <span>بيان الوقائع وتفاصيل سبب الإخراج:</span>
+            </div>
+            <div class="custom-reason-text">
+                {custom_reason or 'عرقلة السير العادي للحصة الدراسية ومخالفة توجيهات الأستاذ بعد تنبيهات متكررة.'}
+            </div>
+        </div>
+
+        <div class="signatures">
+            <div class="sig-box">
+                <div>توقيع محرر التقرير:</div>
+                <div class="sig-line"></div>
+            </div>
+            <div class="sig-box">
+                <div>تأشيرة الحراسة العامة عند الاستقبال:</div>
+                <div class="sig-line"></div>
+            </div>
+        </div>
+
+        <div class="admin-decision-box">
+            <div style="font-weight:900; font-size:9pt; color:#0f172a; border-bottom:1px solid #cbd5e1; padding-bottom:3px; margin-bottom:5px;">
+                📋 خاص بالإدارة التربوية والحراسة العامة (المعالجة والإجراء المتخذ):
+            </div>
+            <div class="admin-options">
+                <div>☐ الاستماع للتلميذ وتسجيل تعهد بالانضباط</div>
+                <div>☐ استدعاء ولي أمر التلميذ(ة) للحضور للمؤسسة</div>
+                <div>☐ إحالة ملف التلميذ(ة) على مجلس الانضباط</div>
+                <div>☐ تسوية الوضعية وتسليم ورقة السماح بالدخول</div>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-top:8px; font-size:8pt;">
+                <div>ساعة الاستقبال بالإدارة: ...................</div>
+                <div>ملاحظات الحراسة العامة: ...........................................................</div>
+                <div style="text-align:center;">
+                    <div>خاتم وتوقيع رئيس المؤسسة / الحارس العام:</div>
+                    <div style="height:35px; width:150px; border-bottom:1px dotted #64748b; margin-top:3px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        if (window.location.search.includes('autoprint=1')) {{
+            window.addEventListener('load', () => {{
+                setTimeout(() => window.print(), 300);
+            }});
+        }}
+    </script>
+</body>
+</html>"""
+
+
+
+def render_parent_pledge_html(data, inst_info):
+    """
+    توليد وثيقة التزام وتعهد ولي الأمر بصيغة رسمية وأنيقة للطباعة.
+    تتضمن ترويسة المؤسسة وبيانات التلميذ وولي الأمر وفترات الغياب والتعهد الرسمي.
+    """
+    data = fix_arabic_mojibake(data)
+    acad_name = inst_info.get("academy") or "الأكاديمية الجهوية للتربية والتكوين"
+    prov_name = inst_info.get("province") or "المديرية الإقليمية"
+    inst_name = inst_info.get("name") or "المؤسسة التعليمية"
+    acad_year = inst_info.get("academic_year") or "2026/2027"
+
+    logo_src = inst_info.get("logo_base64") or inst_info.get("logo") or "/official_header_logo.png"
+    logo_img_tag = f'<img src="{logo_src}" alt="شعار المؤسسة" class="logo-img">' if logo_src else ''
+
+    student_name = data.get("student_name") or data.get("studentName") or "............................................................"
+    massar_code = data.get("massar_code") or data.get("massarCode") or "............................................................"
+    class_code = data.get("class_code") or data.get("classCode") or "............................................................"
+    parent_name = data.get("parent_name") or data.get("parentName") or "............................................................"
+
+    start_date = data.get("start_date") or data.get("startDate") or "........ / ........ / 2026"
+    end_date = data.get("end_date") or data.get("endDate") or "........ / ........ / 2026"
+    city = data.get("city") or "أنفك"
+    issue_date = data.get("issue_date") or data.get("issuedDate") or datetime.now().strftime("%d / %m / %Y")
+
+    html = f"""<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <title>التزام وتعهد ولي الأمر - {student_name}</title>
+  <style>
+    @page {{
+      size: A4 portrait;
+      margin: 15mm 20mm;
+    }}
+    * {{
+      box-sizing: border-box;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }}
+    body {{
+      font-family: 'Amiri', 'Traditional Arabic', 'Cairo', 'Segoe UI', Tahoma, sans-serif;
+      color: #0f172a;
+      background: #fff;
+      margin: 0;
+      padding: 0;
+      line-height: 1.9;
+      font-size: 15px;
+    }}
+    .no-print {{
+      text-align: center;
+      padding: 12px;
+      background: #f1f5f9;
+      border-bottom: 1px solid #cbd5e1;
+      margin-bottom: 20px;
+    }}
+    .print-btn {{
+      background: #0284c7;
+      color: #fff;
+      border: none;
+      padding: 8px 24px;
+      font-size: 14px;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }}
+    .header-table {{
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 25px;
+    }}
+    .header-table td {{
+      vertical-align: middle;
+    }}
+    .inst-info {{
+      text-align: right;
+      font-weight: bold;
+      font-size: 13.5px;
+      line-height: 1.6;
+    }}
+    .date-info {{
+      text-align: left;
+      font-weight: bold;
+      font-size: 13.5px;
+      line-height: 1.6;
+    }}
+    .logo-container {{
+      text-align: center;
+    }}
+    .logo-img {{
+      max-height: 60px;
+      max-width: 210px;
+      object-fit: contain;
+    }}
+    .doc-title-box {{
+      text-align: center;
+      margin: 20px 0 30px 0;
+    }}
+    .doc-title {{
+      display: inline-block;
+      font-size: 24px;
+      font-weight: 900;
+      border: 2.5px solid #0f172a;
+      padding: 8px 45px;
+      border-radius: 8px;
+      background-color: #f8fafc;
+      letter-spacing: 0.5px;
+    }}
+    .fill-value {{
+      font-weight: bold;
+      color: #0f172a;
+      display: inline-block;
+      border-bottom: 1.5px dotted #334155;
+      padding: 0 10px;
+      min-width: 140px;
+      text-align: center;
+    }}
+    .body-clause {{
+      margin: 16px 0;
+      text-align: justify;
+      font-size: 15.5px;
+      line-height: 2.3;
+    }}
+    .signature-section {{
+      margin-top: 45px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      page-break-inside: avoid;
+    }}
+    .sig-box {{
+      width: 46%;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 14px;
+      min-height: 140px;
+      background: #fafafa;
+      text-align: center;
+    }}
+    .sig-title {{
+      font-weight: bold;
+      font-size: 14px;
+      margin-bottom: 8px;
+      border-bottom: 1px dashed #cbd5e1;
+      padding-bottom: 6px;
+    }}
+    @media print {{
+      .no-print {{ display: none !important; }}
+      body {{ margin: 0; }}
+    }}
+  </style>
+</head>
+<body>
+  <div class="no-print">
+    <button class="print-btn" onclick="window.print()">🖨️ طباعة الالتزام والتعهد</button>
+  </div>
+
+  <table class="header-table">
+    <tr>
+      <td style="width: 38%;" class="inst-info">
+        المملكة المغربية<br>
+        وزارة التربية الوطنية و التعليم الأولي و التكوين المهني و التأهيل<br>
+        الأكاديمية الجهوية: {acad_name}<br>
+        المديرية الإقليمية: {prov_name}<br>
+        <span style="font-size: 15px; font-weight: 900; color: #0284c7;">{inst_name}</span>
+      </td>
+      <td style="width: 24%;" class="logo-container">
+        {logo_img_tag}
+      </td>
+      <td style="width: 38%;" class="date-info">
+        {city} في: {issue_date}<br>
+        الموسم الدراسي: {acad_year}
+      </td>
+    </tr>
+  </table>
+
+  <div class="doc-title-box">
+    <div class="doc-title">التزام وتعهد ولي الأمر</div>
+  </div>
+
+  <div class="body-clause">
+    أنا الموقع(ة) أسفله، السيد(ة): <span class="fill-value">{parent_name}</span><br>
+    بصفتي ولي أمر التلميذ(ة): <span class="fill-value" style="font-size: 16px;">{student_name}</span><br>
+    المسجل(ة) بالقسم: <span class="fill-value" style="font-family: monospace; font-size: 16px;">{class_code}</span><br>
+    رقم مسار(ه/ها): <span class="fill-value" style="font-family: monospace; font-size: 16px;">{massar_code}</span>
+  </div>
+
+  <div class="body-clause">
+    أقر بعلمي بغياب ابني(ابنتي) عن الدراسة من: <span class="fill-value">{start_date}</span> إلى: <span class="fill-value">{end_date}</span>، و/أو تأخره(ها) غير المبرر عن الالتحاق بالفصل الدراسي.
+  </div>
+
+  <div class="body-clause">
+    وبناء عليه، ألتزم وأتعهد بالحرص على مواظبته(ها) المنتظمة على الدراسة، واحترام أوقات الدخول إلى المؤسسة، وتجنب كل غياب أو تأخر غير مبرر، مع تقديم المبررات اللازمة وفق المساطر المعمول بها.
+  </div>
+
+  <div class="body-clause">
+    كما أتعهد بتتبع تمدرس ابني(ابنتي) والتعاون مع إدارة المؤسسة، وأقر بعلمي بأن تكرار هذه المخالفات قد يترتب عنه اتخاذ الإجراءات التربوية والإدارية المعمول بها، طبقا للنظام الداخلي للمؤسسة.
+  </div>
+
+  <div style="margin-top: 25px; font-weight: bold; font-size: 15px;">
+    حرر بـ: <span class="fill-value">{city}</span> بتاريخ: <span class="fill-value">{issue_date}</span>
+  </div>
+
+  <div class="signature-section" style="justify-content: flex-end; margin-top: 35px;">
+    <div class="sig-box" style="width: 48%; min-height: 140px;">
+      <div class="sig-title" style="font-size: 15px; font-weight: 900;">إمضاء ولي الأمر مصادق عليه:</div>
+      <div style="height: 95px;"></div>
+    </div>
+  </div>
+
+  <script>
+    if (new URLSearchParams(window.location.search).get('autoprint') === '1') {{
+      window.addEventListener('DOMContentLoaded', () => setTimeout(() => window.print(), 350));
+    }}
+  </script>
+</body>
+</html>"""
+    return html
+
+
+def render_doctor_visit_html(data, inst_info):
+    """
+    توليد ورقة زيارة الطبيب بصيغة رسمية تتضمن إذن المغادرة وإفادة الطبيب وإثبات العودة.
+    """
+    data = fix_arabic_mojibake(data)
+    acad_name = inst_info.get("academy") or "الأكاديمية الجهوية للتربية والتكوين"
+    prov_name = inst_info.get("province") or "المديرية الإقليمية"
+    inst_name = inst_info.get("name") or "المؤسسة التعليمية"
+    acad_year = inst_info.get("academic_year") or "2026/2027"
+
+    logo_src = inst_info.get("logo_base64") or inst_info.get("logo") or "/official_header_logo.png"
+    logo_img_tag = f'<img src="{logo_src}" alt="شعار المؤسسة" class="logo-img">' if logo_src else ''
+
+    student_name = data.get("student_name") or data.get("studentName") or "............................................................"
+    massar_code = data.get("massar_code") or data.get("massarCode") or "............................................................"
+    class_code = data.get("class_code") or data.get("classCode") or "............................................................"
+    parent_phone = data.get("parent_phone") or data.get("parentPhone") or "............................................................"
+
+    admin_name = data.get("admin_name") or inst_info.get("principal") or "............................................................"
+    admin_role = data.get("admin_role") or "الحارس العام للخارجية"
+    exit_date = data.get("exit_date") or data.get("exitDate") or datetime.now().strftime("%d / %m / %Y")
+    exit_time = data.get("exit_time") or data.get("exitTime") or datetime.now().strftime("%H:%M")
+
+    city = data.get("city") or "أنفك"
+    issue_date = data.get("issue_date") or data.get("issuedDate") or datetime.now().strftime("%d / %m / %Y")
+
+    html = f"""<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <title>ورقة زيارة الطبيب - {student_name}</title>
+  <style>
+    @page {{
+      size: A4 portrait;
+      margin: 8mm 12mm;
+    }}
+    * {{
+      box-sizing: border-box;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }}
+    html, body {{
+      font-family: 'Amiri', 'Traditional Arabic', 'Cairo', 'Segoe UI', Tahoma, sans-serif;
+      color: #0f172a;
+      background: #fff;
+      margin: 0;
+      padding: 0;
+      line-height: 1.45;
+      font-size: 13px;
+    }}
+    .no-print {{
+      text-align: center;
+      padding: 6px;
+      background: #f1f5f9;
+      border-bottom: 1px solid #cbd5e1;
+      margin-bottom: 6px;
+    }}
+    .print-btn {{
+      background: #0284c7;
+      color: #fff;
+      border: none;
+      padding: 6px 20px;
+      font-size: 13px;
+      font-weight: bold;
+      border-radius: 6px;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }}
+    .header-table {{
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 6px;
+    }}
+    .header-table td {{
+      vertical-align: middle;
+    }}
+    .inst-info {{
+      text-align: right;
+      font-weight: bold;
+      font-size: 11.5px;
+      line-height: 1.35;
+    }}
+    .date-info {{
+      text-align: left;
+      font-weight: bold;
+      font-size: 11.5px;
+      line-height: 1.35;
+    }}
+    .logo-container {{
+      text-align: center;
+    }}
+    .logo-img {{
+      max-height: 42px;
+      max-width: 160px;
+      object-fit: contain;
+    }}
+    .doc-title-box {{
+      text-align: center;
+      margin: 3px 0 6px 0;
+    }}
+    .doc-title {{
+      display: inline-block;
+      font-size: 18px;
+      font-weight: 900;
+      border: 1.8px solid #0f172a;
+      padding: 2.5px 30px;
+      border-radius: 6px;
+      background-color: #f8fafc;
+      letter-spacing: 0.5px;
+    }}
+    .section-card {{
+      border: 1.2px solid #64748b;
+      border-radius: 6px;
+      padding: 5px 10px;
+      margin-bottom: 5px;
+      background: #fff;
+    }}
+    .section-title {{
+      font-weight: 900;
+      font-size: 12.5px;
+      color: #0f172a;
+      margin-bottom: 3px;
+      border-bottom: 1px dashed #cbd5e1;
+      padding-bottom: 2px;
+    }}
+    .grid-2 {{
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }}
+    .fill-value {{
+      font-weight: bold;
+      color: #0f172a;
+      display: inline-block;
+      border-bottom: 1.2px dotted #475569;
+      padding: 0 6px;
+      min-width: 100px;
+    }}
+    .checkbox-item {{
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-left: 20px;
+      font-weight: bold;
+    }}
+    .box-check {{
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 1.5px solid #0f172a;
+      border-radius: 3px;
+      vertical-align: middle;
+    }}
+    .notice-box {{
+      background: #f1f5f9;
+      border-right: 3px solid #0284c7;
+      padding: 4px 10px;
+      font-size: 11px;
+      font-weight: bold;
+      margin: 4px 0;
+      border-radius: 4px;
+    }}
+    .footer-row {{
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: bold;
+      font-size: 11.5px;
+      margin-top: 4px;
+    }}
+    @media print {{
+      .no-print {{ display: none !important; }}
+      body {{ margin: 0; padding: 0; }}
+    }}
+  </style>
+</head>
+<body>
+  <div class="no-print">
+    <button class="print-btn" onclick="window.print()">🖨️ طباعة ورقة زيارة الطبيب</button>
+  </div>
+
+  <table class="header-table">
+    <tr>
+      <td style="width: 38%;" class="inst-info">
+        المملكة المغربية<br>
+        وزارة التربية الوطنية و التعليم الأولي و التكوين المهني و التأهيل<br>
+        الأكاديمية الجهوية: {acad_name}<br>
+        المديرية الإقليمية: {prov_name}<br>
+        <span style="font-size: 14.5px; font-weight: 900; color: #0284c7;">{inst_name}</span>
+      </td>
+      <td style="width: 24%;" class="logo-container">
+        {logo_img_tag}
+      </td>
+      <td style="width: 38%;" class="date-info">
+        الموسم الدراسي: {acad_year}
+      </td>
+    </tr>
+  </table>
+
+  <div class="doc-title-box">
+    <div class="doc-title">ورقة زيارة الطبيب</div>
+  </div>
+
+  <!-- أولا: بيانات التلميذ -->
+  <div class="section-card">
+    <div class="section-title">أولا: بيانات التلميذ(ة):</div>
+    <div class="grid-2">
+      <div>الاسم الكامل: <span class="fill-value" style="font-size: 15px;">{student_name}</span></div>
+      <div>رقم مسار: <span class="fill-value" style="font-family: monospace; font-size: 15px;">{massar_code}</span></div>
+      <div>المستوى والقسم: <span class="fill-value" style="font-family: monospace; font-size: 15px;">{class_code}</span></div>
+      <div>رقم هاتف ولي الأمر: <span class="fill-value" style="font-family: monospace;">{parent_phone}</span></div>
+    </div>
+  </div>
+
+  <!-- ثانيا: إذن مغادرة المؤسسة -->
+  <div class="section-card">
+    <div class="section-title">ثانيا: إذن مغادرة المؤسسة:</div>
+    <div style="line-height: 2;">
+      يشهد السيد: <span class="fill-value">{admin_name}</span>
+      بصفته: <span class="fill-value">{admin_role}</span>
+      أن التلميذ(ة) المذكور(ة) أعلاه قد غادر(ت) المؤسسة يوم: <span class="fill-value">{exit_date}</span>
+      على الساعة: <span class="fill-value">{exit_time}</span>،
+      وذلك قصد التوجه إلى الطبيب / المؤسسة الصحية لإجراء فحص طبي.
+    </div>
+    <div style="display: flex; justify-content: flex-end; margin-top: 8px;">
+      <div style="width: 220px; text-align: center; font-weight: bold; font-size: 13px;">
+        توقيع الحارس العام / رئيس المؤسسة:
+        <div style="height: 24px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ثالثا: إفادة الطبيب -->
+  <div class="section-card">
+    <div class="section-title">ثالثا: إفادة الطبيب:</div>
+    <div style="line-height: 2;">
+      يشهد الطبيب الموقع أسفله أن التلميذ(ة) المذكور(ة) أعلاه حضر(ت) إلى عيادته / المؤسسة الصحية بتاريخ:<br>
+      ........ / ........ / ........ على الساعة: ............................
+      وذلك من أجل إجراء فحص طبي.
+    </div>
+    <div class="grid-2" style="margin-top: 8px;">
+      <div>اسم الطبيب: ............................................................</div>
+      <div style="text-align: center; border: 1px dashed #94a3b8; border-radius: 6px; padding: 3px; min-height: 38px;">
+        <span style="font-size: 12px; color: #64748b;">توقيع الطبيب وخاتمه</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- رابعا: العودة إلى المؤسسة -->
+  <div class="section-card">
+    <div class="section-title">رابعا: العودة إلى المؤسسة:</div>
+    <div style="line-height: 2;">
+      عاد التلميذ(ة) إلى المؤسسة يوم: ........ / ........ / ........ على الساعة: ............................
+    </div>
+    <div style="margin: 8px 0;">
+      <span class="checkbox-item"><span class="box-check"></span> عاد إلى الدراسة</span>
+      <span class="checkbox-item"><span class="box-check"></span> تعذر عليه مواصلة الدراسة</span>
+    </div>
+    <div style="line-height: 2;">
+      ملاحظات، عند الاقتضاء: ........................................................................................................................
+    </div>
+    <div style="display: flex; justify-content: flex-end; margin-top: 5px;">
+      <div style="width: 180px; text-align: center; font-weight: bold; font-size: 13px;">
+        خاتم المؤسسة:
+        <div style="height: 24px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ملاحظة وخاتمة -->
+  <div class="notice-box">
+    ملاحظة: يتعين على التلميذ(ة) الإدلاء بهذه الورقة لإدارة المؤسسة عند عودته، مرفقة بإفادة الطبيب عند الاقتضاء.
+  </div>
+
+  <div class="footer-row">
+    <div>حرر بـ: <span class="fill-value">{city}</span> بتاريخ: <span class="fill-value">{issue_date}</span></div>
+  </div>
+
+  <script>
+    if (new URLSearchParams(window.location.search).get('autoprint') === '1') {{
+      window.addEventListener('DOMContentLoaded', () => setTimeout(() => window.print(), 350));
+    }}
+  </script>
+</body>
+</html>"""
+    return html
+
+
 def export_teachers_to_excel(app_state):
     try:
         import openpyxl
@@ -1377,13 +3742,13 @@ def export_teachers_to_excel(app_state):
 
         header_fill = PatternFill(start_color="1E3A8A", end_color="1E3A8A", fill_type="solid")
         header_font = Font(name="Segoe UI", size=11, bold=True, color="FFFFFF")
-        
+
         real_col_fill = PatternFill(start_color="FEF9C3", end_color="FEF9C3", fill_type="solid")
         real_col_font = Font(name="Segoe UI", size=11, bold=True, color="1E3A8A")
-        
+
         data_font = Font(name="Segoe UI", size=10, bold=False, color="0F172A")
         data_font_bold = Font(name="Segoe UI", size=10, bold=True, color="0F172A")
-        
+
         thin_border = Border(
             left=Side(style='thin', color='CBD5E1'),
             right=Side(style='thin', color='CBD5E1'),
@@ -1401,7 +3766,7 @@ def export_teachers_to_excel(app_state):
             "الأقسام المسندة",
             "مجموع الحصص"
         ]
-        
+
         ws.row_dimensions[1].height = 32
         for col_idx, h in enumerate(headers, 1):
             cell = ws.cell(row=1, column=col_idx, value=h)
@@ -1417,7 +3782,7 @@ def export_teachers_to_excel(app_state):
                 continue
             def_name = getattr(a, 'def_teacher_name', '') or a.teacher_name
             real_name = app_state.institution.teacher_custom_names.get(def_name, "")
-            
+
             ws.row_dimensions[row_num].height = 24
 
             c1 = ws.cell(row=row_num, column=1, value=a.row_id)
@@ -1514,7 +3879,7 @@ def import_teachers_from_file(app_state, file_bytes: bytes, filename: str) -> di
                 text = None
         if text is None:
             text = file_bytes.decode('utf-8', errors='ignore')
-        
+
         import csv
         delimiter = ';' if ';' in text else (',' if ',' in text else '\t')
         rows = list(csv.reader(io.StringIO(text), delimiter=delimiter))
@@ -1590,6 +3955,9 @@ PROGRESSIVE_MANAGER = ProgressiveSolverManager(APP_STATE)
 EXPORT_ENGINE = ExportEngine()
 
 def sync_attendance_classes_from_state():
+    """
+    مزامنة الأقسام ولوائح التلاميذ بين البنية التربوية، حركية التلاميذ، ومحرك غياب التلاميذ وقاعدة الموبايل.
+    """
     try:
         inst = getattr(APP_STATE, 'institution', None)
         struct = getattr(APP_STATE, 'structure', None)
@@ -1605,33 +3973,42 @@ def sync_attendance_classes_from_state():
             if hasattr(inst, 'academic_year') and inst.academic_year:
                 attendance_engine.institution_info["academic_year"] = inst.academic_year
 
-        # Prune empty ghost classes if real classes with students exist
-        if any(len(slist) > 0 for slist in attendance_engine.students_by_class.values()):
+        # 1. Prune empty ghost classes if real classes with students exist
+        has_real_students = any(len(slist) > 0 for slist in attendance_engine.students_by_class.values())
+        if has_real_students:
             attendance_engine.students_by_class = {
                 c: slist for c, slist in attendance_engine.students_by_class.items() if len(slist) > 0
             }
 
-        # 1. If attendance engine has no students loaded, import any students present in mobility engine
-        if not attendance_engine.students_by_class and getattr(mobility_engine, 'current_students', None):
-            for s in mobility_engine.current_students:
-                cname = (s.get("class_name") or "").strip()
-                if cname:
-                    if cname not in attendance_engine.students_by_class:
-                        attendance_engine.students_by_class[cname] = []
-                    attendance_engine.students_by_class[cname].append({
-                        "id": f"st_{uuid.uuid4().hex[:8]}",
-                        "order": len(attendance_engine.students_by_class[cname]) + 1,
-                        "massar_code": s.get("massar_code", ""),
-                        "last_name": s.get("last_name", ""),
-                        "first_name": s.get("first_name", ""),
-                        "full_name": s.get("full_name", f"{s.get('first_name', '')} {s.get('last_name', '')}".strip()),
-                        "gender": s.get("gender", "ذكر"),
-                        "dob": s.get("dob", ""),
-                        "birth_place": s.get("birth_place", ""),
-                        "class_name": cname
-                    })
+        # 2. If attendance engine has NO students loaded, try to import from mobility engine
+        if not any(len(slist) > 0 for slist in attendance_engine.students_by_class.values()) and getattr(mobility_engine, 'current_students', None):
+            mob_students = mobility_engine.current_students
+            if mob_students:
+                mob_by_class = {}
+                for s in mob_students:
+                    cname = (s.get("student_class") or s.get("class_name") or s.get("class") or "").strip()
+                    if cname:
+                        if cname not in mob_by_class:
+                            mob_by_class[cname] = []
+                        order_val = s.get("order_num") or s.get("order") or (len(mob_by_class[cname]) + 1)
+                        mcode = s.get("massar_code", "")
+                        st_id = s.get("id") or (f"{cname}_{mcode}" if mcode else f"st_{uuid.uuid4().hex[:8]}")
+                        mob_by_class[cname].append({
+                            "id": st_id,
+                            "order": order_val,
+                            "massar_code": mcode,
+                            "last_name": s.get("last_name", ""),
+                            "first_name": s.get("first_name", ""),
+                            "full_name": s.get("full_name", f"{s.get('first_name', '')} {s.get('last_name', '')}".strip() or mcode),
+                            "gender": s.get("gender", "ذكر"),
+                            "dob": s.get("dob", ""),
+                            "birth_place": s.get("birth_place", ""),
+                            "class_name": cname
+                        })
+                if mob_by_class:
+                    attendance_engine.students_by_class = mob_by_class
 
-        # 2. Sync classes from Educational Structure ONLY if attendance engine is completely empty
+        # 3. Sync classes from Educational Structure ONLY if attendance engine is completely empty
         if not attendance_engine.students_by_class and struct:
             is_qual = (getattr(struct, 'cycle', '') == 'qualifying') or (inst and getattr(inst, 'cycle', '') == 'qualifying') or (inst and getattr(inst, 'institution_cycle', '') == 'qualifying')
             s_classes = []
@@ -1649,7 +4026,7 @@ def sync_attendance_classes_from_state():
                 c2 = int(getattr(struct, 'classes_2_apic', 0) or getattr(struct, 'c2', 0) or 0)
                 c3 = int(getattr(struct, 'classes_3_apic', 0) or getattr(struct, 'c3', 0) or 0)
                 if c1 + c2 + c3 == 0 and not is_qual:
-                    c1, c2, c3 = 12, 10, 10
+                    c1, c2, c3 = 4, 4, 4
                 for i in range(1, c1 + 1): s_classes.append(f"TC-{i}" if is_qual else f"1/{i}")
                 for i in range(1, c2 + 1): s_classes.append(f"1BAC-{i}" if is_qual else f"2/{i}")
                 for i in range(1, c3 + 1): s_classes.append(f"2BAC-{i}" if is_qual else f"3/{i}")
@@ -1658,12 +4035,62 @@ def sync_attendance_classes_from_state():
                 if cname not in attendance_engine.students_by_class:
                     attendance_engine.students_by_class[cname] = []
 
-        # 3. Fallback: ensure attendance engine always has classes so dropdown is never empty
+        # 4. Final prune: if real classes with students exist, remove any empty ghost classes
+        if any(len(slist) > 0 for slist in attendance_engine.students_by_class.values()):
+            attendance_engine.students_by_class = {
+                c: slist for c, slist in attendance_engine.students_by_class.items() if len(slist) > 0
+            }
+
+        # 5. Fallback: ensure attendance engine always has classes so dropdown is never empty
         if not attendance_engine.students_by_class:
             for fallback in ['1/1', '1/2', '1/3', '2/1', '2/2', '2/3', '3/1', '3/2', '3/3']:
                 attendance_engine.students_by_class[fallback] = []
+
+        attendance_engine.save_state()
+        sync_attendance_mobile_db_from_attendance_engine()
     except Exception as e:
         print(f"[Attendance Structure Sync Error]: {e}")
+
+
+_LAST_CLOUD_PULL_TS = 0
+_CLOUD_PULL_LOCK = threading.Lock()
+_BG_WORKER_STARTED = False
+
+def auto_pull_cloud_sessions_if_needed(min_interval=8):
+    global _LAST_CLOUD_PULL_TS
+    now = time.time()
+    if now - _LAST_CLOUD_PULL_TS < min_interval:
+        return
+    if not _CLOUD_PULL_LOCK.acquire(blocking=False):
+        return
+    def _worker():
+        global _LAST_CLOUD_PULL_TS
+        try:
+            sync_attendance_with_cloud(upload_metadata=False)
+            _LAST_CLOUD_PULL_TS = time.time()
+        except Exception:
+            pass
+        finally:
+            try:
+                _CLOUD_PULL_LOCK.release()
+            except Exception:
+                pass
+    threading.Thread(target=_worker, daemon=True, name="AttendanceCloudPullThread").start()
+
+def start_attendance_cloud_background_worker():
+    global _BG_WORKER_STARTED
+    if _BG_WORKER_STARTED:
+        return
+    _BG_WORKER_STARTED = True
+    def _loop():
+        time.sleep(2)
+        while True:
+            try:
+                auto_pull_cloud_sessions_if_needed(min_interval=8)
+            except Exception:
+                pass
+            time.sleep(10)
+    threading.Thread(target=_loop, daemon=True, name="AttendanceCloudSyncLoop").start()
 
 class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
@@ -1708,6 +4135,7 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
         super().end_headers()
 
     def do_GET(self):
+        start_attendance_cloud_background_worker()
         try:
             self._handle_get()
         except Exception as e:
@@ -1780,7 +4208,7 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
                 self.wfile.write(content)
                 return
 
-        
+
         # --- Mobile Attendance PWA & API Routes ---
         if parsed.path in ("/prof", "/m", "/attendance", "/attendance_mobile", "/attendance_mobile.html"):
             candidates = [
@@ -1838,15 +4266,49 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
             local_ip = get_local_ip()
             port = self.server.server_address[1] if hasattr(self.server, "server_address") and len(self.server.server_address) > 1 else 8765
             mobile_url = f"http://{local_ip}:{port}/prof"
-            qr_svg = ""
+            school_doc = get_current_school_doc_id()
+            if school_doc and school_doc != "default_school":
+                cloud_url = f"https://rzzakfet-app.web.app/prof?s={school_doc}"
+            else:
+                cloud_url = "https://rzzakfet-app.web.app/prof"
+            qr_svg_cloud = ""
+            qr_svg_local = ""
+            qr_png_cloud = ""
+            qr_png_local = ""
             try:
                 import qrcode
                 import qrcode.image.svg
-                factory = qrcode.image.svg.SvgImage
-                img = qrcode.make(mobile_url, image_factory=factory)
-                qbuf = io.BytesIO()
-                img.save(qbuf)
-                qr_svg = qbuf.getvalue().decode("utf-8")
+
+                def _generate_qr_b64(url_to_encode):
+                    q = qrcode.QRCode(
+                        version=None,
+                        error_correction=qrcode.constants.ERROR_CORRECT_M,
+                        box_size=10,
+                        border=2,
+                    )
+                    q.add_data(url_to_encode)
+                    q.make(fit=True)
+                    qr_img = q.make_image(fill_color="black", back_color="white")
+                    if hasattr(qr_img, "convert"):
+                        qr_img = qr_img.convert("RGB")
+                    b_io = io.BytesIO()
+                    qr_img.save(b_io, format="PNG")
+                    return f"data:image/png;base64,{base64.b64encode(b_io.getvalue()).decode('ascii')}"
+
+                qr_png_cloud = _generate_qr_b64(cloud_url)
+                qr_png_local = _generate_qr_b64(mobile_url)
+
+                path_factory = getattr(qrcode.image.svg, "SvgPathImage", qrcode.image.svg.SvgImage)
+                # Cloud 24/7 QR
+                img_c = qrcode.make(cloud_url, image_factory=path_factory)
+                qbuf_c = io.BytesIO()
+                img_c.save(qbuf_c)
+                qr_svg_cloud = qbuf_c.getvalue().decode("utf-8")
+                # Local WiFi QR
+                img_l = qrcode.make(mobile_url, image_factory=path_factory)
+                qbuf_l = io.BytesIO()
+                img_l.save(qbuf_l)
+                qr_svg_local = qbuf_l.getvalue().decode("utf-8")
             except Exception as e:
                 print(f"[QR Generation Error]: {e}")
             self.send_json_data({
@@ -1854,12 +4316,55 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
                 "ip": local_ip,
                 "port": port,
                 "mobile_url": mobile_url,
-                "qr_svg": qr_svg
+                "cloud_url": cloud_url,
+                "qr_png": qr_png_cloud or qr_png_local,
+                "qr_png_cloud": qr_png_cloud,
+                "qr_png_local": qr_png_local,
+                "qr_svg": qr_svg_cloud or qr_svg_local,
+                "qr_svg_cloud": qr_svg_cloud,
+                "qr_svg_local": qr_svg_local
+            })
+            return
+
+        if parsed.path == "/api/attendance/sync_cloud":
+            res = sync_attendance_with_cloud(upload_metadata=False)
+            db = load_attendance_mobile_db()
+            self.send_json_data({
+                "success": True,
+                "db": db,
+                "sessionsCount": res.get("sessionsCount", 0),
+                "reportsCount": res.get("reportsCount", 0)
             })
             return
 
         if parsed.path == "/api/sync":
+            force_cloud = query_params.get("force_cloud", ["0"])[0] in ["1", "true"]
+            if force_cloud:
+                try:
+                    sync_attendance_with_cloud(upload_metadata=False)
+                except Exception as _e:
+                    print(f"[/api/sync force_cloud error]: {_e}")
+            else:
+                auto_pull_cloud_sessions_if_needed(min_interval=8)
             db = load_attendance_mobile_db()
+            att_students_cnt = sum(len(sl) for sl in attendance_engine.students_by_class.values())
+            att_classes_cnt = len(attendance_engine.students_by_class)
+            db_classes_cnt = len(db.get("classes", []))
+            db_students_cnt = len(db.get("students", []))
+
+            if db_classes_cnt == 0 or db_students_cnt == 0 or (att_classes_cnt > 0 and db_classes_cnt != att_classes_cnt) or (att_students_cnt > 0 and db_students_cnt != att_students_cnt):
+                try:
+                    sync_attendance_classes_from_state()
+                    db = sync_attendance_mobile_db_from_attendance_engine() or load_attendance_mobile_db()
+                except Exception as ex:
+                    print(f"[/api/sync auto-sync classes error]: {ex}")
+
+            if not db.get("timetable") or len(db.get("timetable", [])) < 10:
+                try:
+                    sync_attendance_timetable_from_master(APP_STATE)
+                    db = load_attendance_mobile_db()
+                except Exception:
+                    pass
             self.send_json_data(db)
             return
 
@@ -2068,6 +4573,136 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
             self.send_header("Content-Length", str(len(file_bytes)))
             self.end_headers()
             self.wfile.write(file_bytes)
+            return
+        elif parsed.path == "/api/backup/export_full":
+            try:
+                gresa = getattr(APP_STATE.institution, "gresa_code", "") or "institution"
+                clean_gresa = re.sub(r'[^a-zA-Z0-9_\-]', '', str(gresa)) or "school"
+                now_str = datetime.now().strftime("%Y%m%d_%H%M%S")
+                filename = f"RzzakFet_Backup_{clean_gresa}_{now_str}.rzf"
+
+                backup_envelope = {
+                    "app": "RzzakFet",
+                    "type": "full_school_backup",
+                    "version": "2.0",
+                    "exported_at": datetime.now().isoformat(),
+                    "institution_name": getattr(APP_STATE.institution, "institution_name", "") or getattr(APP_STATE.institution, "name", ""),
+                    "gresa_code": str(gresa),
+                    "files": {}
+                }
+
+                # Find all files across potential locations (DATA_DIR, LOCALAPPDATA, BASE_DIR)
+                file_targets = {
+                    "app_state": [
+                        STATE_FILE,
+                        os.path.join(os.environ.get("LOCALAPPDATA", ""), "RzzakFet", "data", "app_state.json"),
+                        os.path.join(BASE_DIR, "data", "app_state.json")
+                    ],
+                    "attendance_mobile_db": [
+                        ATTENDANCE_MOBILE_DB_FILE,
+                        os.path.join(os.environ.get("LOCALAPPDATA", ""), "RzzakFet", "data", "attendance_mobile_db.json"),
+                        os.path.join(BASE_DIR, "data", "attendance_mobile_db.json")
+                    ],
+                    "timetable_result": [
+                        os.path.join(DATA_DIR, "timetable_result.json"),
+                        os.path.join(os.environ.get("LOCALAPPDATA", ""), "RzzakFet", "data", "timetable_result.json"),
+                        os.path.join(BASE_DIR, "data", "timetable_result.json")
+                    ],
+                    "students_attendance_state": [
+                        os.path.join(DATA_DIR, "students_attendance_state.json"),
+                        os.path.join(os.environ.get("LOCALAPPDATA", ""), "RzzakFet", "data", "students_attendance_state.json"),
+                        os.path.join(BASE_DIR, "data", "students_attendance_state.json")
+                    ],
+                    "student_mobility_state": [
+                        os.path.join(DATA_DIR, "student_mobility_state.json"),
+                        os.path.join(os.environ.get("LOCALAPPDATA", ""), "RzzakFet", "data", "student_mobility_state.json"),
+                        os.path.join(BASE_DIR, "data", "student_mobility_state.json")
+                    ]
+                }
+
+                for k, paths in file_targets.items():
+                    for fp in paths:
+                        if fp and os.path.exists(fp):
+                            try:
+                                with open(fp, "r", encoding="utf-8") as f:
+                                    backup_envelope["files"][k] = json.load(f)
+                                break
+                            except Exception as ex:
+                                print(f"[Backup] Warn reading {fp}: {ex}")
+
+                content_bytes = json.dumps(backup_envelope, ensure_ascii=False, indent=2).encode("utf-8")
+
+                # Auto-save to Desktop\RzzakFet
+                desktop_dir = os.path.join(os.path.expanduser("~"), "Desktop", "RzzakFet")
+                os.makedirs(desktop_dir, exist_ok=True)
+                desktop_path = os.path.join(desktop_dir, filename)
+                with open(desktop_path, "wb") as f:
+                    f.write(content_bytes)
+
+                # Auto-save to Downloads as well
+                downloads_path = ""
+                try:
+                    downloads_dir = os.path.join(os.path.expanduser("~"), "Downloads")
+                    downloads_path = os.path.join(downloads_dir, filename)
+                    with open(downloads_path, "wb") as f:
+                        f.write(content_bytes)
+                except Exception:
+                    pass
+
+                # Open Explorer with the exported file selected
+                try:
+                    import subprocess
+                    subprocess.Popen(f'explorer /select,"{os.path.abspath(desktop_path)}"')
+                except Exception as ex:
+                    print("Explorer open warning:", ex)
+
+                # If JSON is requested (e.g. format=json or from frontend fetch)
+                fmt = query_params.get("format", [""])[0]
+                accept_hdr = self.headers.get("Accept", "")
+                if fmt == "json" or "application/json" in accept_hdr:
+                    import base64
+                    b64 = base64.b64encode(content_bytes).decode("ascii")
+                    self.send_json_data({
+                        "success": True,
+                        "filename": filename,
+                        "desktop_path": desktop_path,
+                        "downloads_path": downloads_path,
+                        "file_size_kb": round(len(content_bytes) / 1024, 1),
+                        "file_base64": b64,
+                        "institution_name": getattr(APP_STATE.institution, "institution_name", "") or getattr(APP_STATE.institution, "name", ""),
+                        "gresa_code": str(gresa),
+                        "message": f"تم حفظ النسخة الاحتياطية بنجاح على سطح المكتب في مجلد RzzakFet!"
+                    })
+                    return
+
+                # Normal attachment download
+                self.send_response(200)
+                self.send_header("Content-Type", "application/octet-stream")
+                self.send_header("Content-Disposition", f'attachment; filename="{filename}"')
+                self.send_header("Content-Length", str(len(content_bytes)))
+                self.end_headers()
+                self.wfile.write(content_bytes)
+                return
+            except Exception as e:
+                self.send_json_data({"success": False, "error": str(e)}, status=500)
+                return
+        elif parsed.path == "/api/open_folder":
+            try:
+                target = query_params.get("path", [""])[0]
+                if not target:
+                    target = os.path.join(os.path.expanduser("~"), "Desktop", "RzzakFet")
+                if os.path.isfile(target):
+                    import subprocess
+                    subprocess.Popen(f'explorer /select,"{os.path.abspath(target)}"')
+                elif os.path.isdir(target):
+                    os.startfile(target)
+                else:
+                    d = os.path.join(os.path.expanduser("~"), "Desktop", "RzzakFet")
+                    os.makedirs(d, exist_ok=True)
+                    os.startfile(d)
+                self.send_json_data({"success": True})
+            except Exception as ex:
+                self.send_json_data({"success": False, "error": str(ex)})
             return
         elif parsed.path == "/api/export_fet":
             self.send_response(200)
@@ -2297,6 +4932,151 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
                 self.wfile.write(content)
             except Exception as e:
                 self.send_json_data({"success": False, "error": str(e)})
+        elif parsed.path == "/api/attendance/entry_passes":
+            db = load_attendance_mobile_db()
+            passes = db.get("entryPasses", {})
+            self.send_json_data({"success": True, "entry_passes": passes})
+        elif parsed.path == "/api/attendance/referred_students":
+            date_param = query_params.get("date", [datetime.now().strftime("%Y-%m-%d")])[0]
+            referred = get_referred_students_data(date_param)
+            self.send_json_data({"success": True, "date": date_param, "referred_students": referred})
+        elif parsed.path == "/api/attendance/print_parent_pledge":
+            p_data = {
+                "student_name": query_params.get("student_name", [""])[0],
+                "massar_code": query_params.get("massar_code", [""])[0],
+                "class_code": query_params.get("class_code", [""])[0],
+                "parent_name": query_params.get("parent_name", [""])[0],
+                "start_date": query_params.get("start_date", [""])[0],
+                "end_date": query_params.get("end_date", [""])[0],
+                "city": query_params.get("city", ["أنفك"])[0],
+                "issue_date": query_params.get("issue_date", [datetime.now().strftime("%d / %m / %Y")])[0],
+            }
+            try:
+                db_pl = load_attendance_mobile_db()
+                if "parentPledges" not in db_pl or not isinstance(db_pl["parentPledges"], dict):
+                    db_pl["parentPledges"] = {}
+                pl_k = f"PL_{int(time.time() * 1000)}"
+                db_pl["parentPledges"][pl_k] = {
+                    "pledgeId": pl_k,
+                    "studentName": p_data.get("student_name", ""),
+                    "massarCode": p_data.get("massar_code", ""),
+                    "classCode": p_data.get("class_code", ""),
+                    "parentName": p_data.get("parent_name", ""),
+                    "startDate": p_data.get("start_date", ""),
+                    "endDate": p_data.get("end_date", ""),
+                    "issuedDate": p_data.get("issue_date", ""),
+                    "timestamp": int(time.time() * 1000)
+                }
+                save_attendance_mobile_db(db_pl)
+            except Exception as _e_pl:
+                print("[Record Parent Pledge error]:", _e_pl)
+
+            html = render_parent_pledge_html(p_data, APP_STATE.get_full_state()["institution"])
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.end_headers()
+            self.wfile.write(html.encode("utf-8"))
+        elif parsed.path == "/api/attendance/print_doctor_visit":
+            d_data = {
+                "student_name": query_params.get("student_name", [""])[0],
+                "massar_code": query_params.get("massar_code", [""])[0],
+                "class_code": query_params.get("class_code", [""])[0],
+                "parent_phone": query_params.get("parent_phone", [""])[0],
+                "admin_name": query_params.get("admin_name", [""])[0],
+                "admin_role": query_params.get("admin_role", ["الحارس العام للخارجية"])[0],
+                "exit_date": query_params.get("exit_date", [datetime.now().strftime("%d / %m / %Y")])[0],
+                "exit_time": query_params.get("exit_time", [datetime.now().strftime("%H:%M")])[0],
+                "city": query_params.get("city", ["أنفك"])[0],
+                "issue_date": query_params.get("issue_date", [datetime.now().strftime("%d / %m / %Y")])[0],
+            }
+            try:
+                db_dv = load_attendance_mobile_db()
+                if "doctorVisits" not in db_dv or not isinstance(db_dv["doctorVisits"], dict):
+                    db_dv["doctorVisits"] = {}
+                dv_k = f"DV_{int(time.time() * 1000)}"
+                db_dv["doctorVisits"][dv_k] = {
+                    "visitId": dv_k,
+                    "studentName": d_data.get("student_name", ""),
+                    "massarCode": d_data.get("massar_code", ""),
+                    "classCode": d_data.get("class_code", ""),
+                    "parentPhone": d_data.get("parent_phone", ""),
+                    "adminName": d_data.get("admin_name", ""),
+                    "adminRole": d_data.get("admin_role", ""),
+                    "exitDate": d_data.get("exit_date", ""),
+                    "exitTime": d_data.get("exit_time", ""),
+                    "issuedDate": d_data.get("issue_date", ""),
+                    "timestamp": int(time.time() * 1000)
+                }
+                save_attendance_mobile_db(db_dv)
+            except Exception as _e_dv:
+                print("[Record Doctor Visit error]:", _e_dv)
+
+            html = render_doctor_visit_html(d_data, APP_STATE.get_full_state()["institution"])
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.end_headers()
+            self.wfile.write(html.encode("utf-8"))
+        elif parsed.path == "/api/attendance/print_entry_pass":
+            pass_id = query_params.get("pass_id", [""])[0]
+            slot_pos_raw = query_params.get("slot_pos", [query_params.get("slot", ["1"])[0]])[0]
+            try:
+                slot_pos = int(slot_pos_raw)
+            except Exception:
+                slot_pos = 1
+            db = load_attendance_mobile_db()
+            passes = db.get("entryPasses", {})
+            pass_data = passes.get(pass_id)
+            if not pass_data:
+                pass_data = {
+                    "passId": pass_id or f"BE-{datetime.now().strftime('%Y%m%d')}-001",
+                    "studentName": query_params.get("student_name", ["تلميذ(ة)"])[0],
+                    "massarCode": query_params.get("massar_code", ["-"])[0],
+                    "classCode": query_params.get("class_code", ["-"])[0],
+                    "passType": query_params.get("pass_type", ["ABSENCE"])[0],
+                    "adminAction": query_params.get("admin_action", ["إمضاء التزام وتسوية الوضعية بالحراسة العامة."])[0],
+                    "adminRole": query_params.get("admin_role", ["الحراسة العامة / إدارة المؤسسة"])[0],
+                    "adminName": query_params.get("admin_name", [""])[0],
+                    "periodSummary": query_params.get("period_summary", [query_params.get("absent_slot_label", ["الحصة السابقة"])[0]])[0],
+                    "absentDate": query_params.get("absent_date", [datetime.now().strftime("%Y-%m-%d")])[0],
+                    "absentSlotLabel": query_params.get("absent_slot_label", ["الحصة السابقة"])[0],
+                    "issuedAt": datetime.now().strftime("%H:%M:%S"),
+                    "issuedDate": datetime.now().strftime("%Y-%m-%d"),
+                    "notes": query_params.get("notes", ["تسوية الوضعية الإدارية لدى الحراسة العامة."])[0]
+                }
+            html = render_entry_pass_html(pass_data, APP_STATE.get_full_state()["institution"], slot_pos=slot_pos)
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.end_headers()
+            self.wfile.write(html.encode("utf-8"))
+        elif parsed.path == "/api/attendance/dismissal_reports":
+            db = load_attendance_mobile_db()
+            reports = list(db.get("dismissalReports", {}).values())
+            reports.sort(key=lambda r: (r.get("date", ""), r.get("time", ""), r.get("createdAt", 0)), reverse=True)
+            self.send_json_data({"success": True, "dismissal_reports": reports})
+        elif parsed.path == "/api/attendance/print_dismissal_report":
+            report_id = query_params.get("report_id", [""])[0]
+            db = load_attendance_mobile_db()
+            reports = db.get("dismissalReports", {})
+            report_data = reports.get(report_id)
+            if not report_data:
+                report_data = {
+                    "reportId": report_id or f"DISM-{datetime.now().strftime('%Y%m%d')}-001",
+                    "studentName": query_params.get("student_name", ["تلميذ(ة)"])[0],
+                    "massarCode": query_params.get("massar_code", ["-"])[0],
+                    "classCode": query_params.get("class_code", ["-"])[0],
+                    "teacherName": query_params.get("teacher_name", ["الأستاذ(ة)"])[0],
+                    "subject": query_params.get("subject", ["-"])[0],
+                    "date": query_params.get("date", [datetime.now().strftime("%Y-%m-%d")])[0],
+                    "time": query_params.get("time", [datetime.now().strftime("%H:%M")])[0],
+                    "slotIndex": query_params.get("slot_index", [1])[0],
+                    "reasonType": query_params.get("reason_type", ["عرقلة السير العادي للدراسة والتشويش"])[0],
+                    "customReason": query_params.get("custom_reason", [""])[0],
+                }
+            html = render_dismissal_report_html(report_data, APP_STATE.get_full_state()["institution"])
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.end_headers()
+            self.wfile.write(html.encode("utf-8"))
         elif parsed.path == "/export/all_classes":
             tt_data = APP_STATE.timetable_engine.get_cached_timetable()
             if not tt_data:
@@ -2304,7 +5084,7 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
                 rooms = APP_STATE.room_engine.allocate_rooms(assignments)
                 xml_data = APP_STATE.fet_generator.generate_xml(assignments, rooms)
                 tt_data = APP_STATE.timetable_engine.generate_timetable(xml_data, APP_STATE.institution, rooms)
-            
+
             exp_res = EXPORT_ENGINE.export_all(tt_data, APP_STATE.get_full_state())
             with open(exp_res["all_classes_file"], "r", encoding="utf-8") as f:
                 content = f.read()
@@ -2319,7 +5099,7 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
                 rooms = APP_STATE.room_engine.allocate_rooms(assignments)
                 xml_data = APP_STATE.fet_generator.generate_xml(assignments, rooms)
                 tt_data = APP_STATE.timetable_engine.generate_timetable(xml_data, APP_STATE.institution, rooms)
-            
+
             exp_res = EXPORT_ENGINE.export_all(tt_data, APP_STATE.get_full_state())
             with open(exp_res["all_teachers_file"], "r", encoding="utf-8") as f:
                 content = f.read()
@@ -2334,7 +5114,7 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
                 rooms = APP_STATE.room_engine.allocate_rooms(assignments)
                 xml_data = APP_STATE.fet_generator.generate_xml(assignments, rooms)
                 tt_data = APP_STATE.timetable_engine.generate_timetable(xml_data, APP_STATE.institution, rooms)
-            
+
             exp_res = EXPORT_ENGINE.export_all(tt_data, APP_STATE.get_full_state())
             with open(exp_res["master_file"], "r", encoding="utf-8") as f:
                 content = f.read()
@@ -2349,7 +5129,7 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
                 rooms = APP_STATE.room_engine.allocate_rooms(assignments)
                 xml_data = APP_STATE.fet_generator.generate_xml(assignments, rooms)
                 tt_data = APP_STATE.timetable_engine.generate_timetable(xml_data, APP_STATE.institution, rooms)
-            
+
             exp_res = EXPORT_ENGINE.export_all(tt_data, APP_STATE.get_full_state())
             xlsx_path = exp_res.get("master_xlsx") or os.path.join(EXPORT_ENGINE.master_dir, "الجدول_العام_لاستعمالات_الزمن_للمدرسين.xlsx")
             if not os.path.exists(xlsx_path):
@@ -2357,7 +5137,7 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
                 inst_info = tt_data.get("institution_info", {})
                 break_slots = APP_STATE.institution.break_time_slots
                 EXPORT_ENGINE.generate_master_table_excel(master_data, inst_info, break_slots, xlsx_path)
-            
+
             with open(xlsx_path, "rb") as f:
                 xlsx_bytes = f.read()
             self.send_response(200)
@@ -2373,13 +5153,13 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
                 rooms = APP_STATE.room_engine.allocate_rooms(assignments)
                 xml_data = APP_STATE.fet_generator.generate_xml(assignments, rooms)
                 tt_data = APP_STATE.timetable_engine.generate_timetable(xml_data, APP_STATE.institution, rooms)
-            
+
             exp_res = EXPORT_ENGINE.export_all(tt_data, APP_STATE.get_full_state())
             pdf_path = exp_res.get("master_pdf") or os.path.join(EXPORT_ENGINE.master_dir, "الجدول_العام_لاستعمالات_الزمن_للمدرسين.pdf")
             if not os.path.exists(pdf_path):
                 from export_engine import convert_html_to_pdf
                 convert_html_to_pdf(exp_res["master_file"], pdf_path)
-            
+
             if os.path.exists(pdf_path):
                 with open(pdf_path, "rb") as f:
                     pdf_bytes = f.read()
@@ -2400,7 +5180,7 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
                 rooms = APP_STATE.room_engine.allocate_rooms(assignments)
                 xml_data = APP_STATE.fet_generator.generate_xml(assignments, rooms)
                 tt_data = APP_STATE.timetable_engine.generate_timetable(xml_data, APP_STATE.institution, rooms)
-            
+
             exp_res = EXPORT_ENGINE.export_all(tt_data, APP_STATE.get_full_state())
             with open(exp_res["master_file"], "rb") as f:
                 html_bytes = f.read()
@@ -2417,7 +5197,7 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
                 rooms = APP_STATE.room_engine.allocate_rooms(assignments)
                 xml_data = APP_STATE.fet_generator.generate_xml(assignments, rooms)
                 tt_data = APP_STATE.timetable_engine.generate_timetable(xml_data, APP_STATE.institution, rooms)
-            
+
             cat = query_params.get("type", ["class"])[0]
             name = query_params.get("name", [""])[0]
 
@@ -2539,6 +5319,11 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
             supervisor_name = data.get("supervisor_name", "")
             notes = data.get("notes", "")
             students_attendance = data.get("students_attendance", None)
+            week_number = data.get("week_number", "08")
+            inspections = data.get("inspections", [])
+            guidelines = data.get("guidelines", {})
+            extra_compensatory_hours = data.get("extra_compensatory_hours", [])
+            template_type = data.get("template_type", "detailed")
 
             if students_attendance is None:
                 try:
@@ -2559,7 +5344,12 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
                 incidents=incidents,
                 supervisor_name=supervisor_name,
                 notes=notes,
-                students_attendance=students_attendance
+                students_attendance=students_attendance,
+                week_number=week_number,
+                inspections=inspections,
+                guidelines=guidelines,
+                extra_compensatory_hours=extra_compensatory_hours,
+                template_type=template_type
             )
             self.send_json_data(res)
 
@@ -2585,6 +5375,11 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
                 try:
                     file_bytes = base64.b64decode(file_base64)
                     res = mobility_engine.parse_massar_excel(file_bytes, is_initial=is_initial)
+                    try:
+                        sync_attendance_classes_from_state()
+                        sync_attendance_mobile_db_from_attendance_engine()
+                    except Exception as e_syn:
+                        print(f"[mobility import_file sync error]: {e_syn}")
                     self.send_json_data({"success": True, "res": res, "summary": mobility_engine.compute_mobility_analysis()})
                 except Exception as e:
                     self.send_json_data({"success": False, "error": f"خطأ أثناء معالجة الملف: {str(e)}"})
@@ -2600,7 +5395,7 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
         elif parsed.path == "/api/structure/generate_virtual_students":
             lvl = int(data.get("level", 1))
             is_qualifying = getattr(APP_STATE.institution, 'institution_cycle', 'middle') == 'qualifying'
-            
+
             if is_qualifying:
                 hs_streams = getattr(APP_STATE.structure, 'high_school_streams', {})
                 all_cls = high_school_engine.generate_classes_list(hs_streams)
@@ -2609,7 +5404,7 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
                     # Provide default placeholder classes if no classes in this level
                     prefix = "TC" if lvl == 1 else ("1BAC" if lvl == 2 else "2BAC")
                     c_names = [f"{prefix}-1", f"{prefix}-2"]
-                
+
                 gen_res = mobility_engine.generate_virtual_students_for_level(lvl, c_names, cycle="qualifying")
                 if not hasattr(APP_STATE.structure, 'high_school_students') or not APP_STATE.structure.high_school_students:
                     APP_STATE.structure.high_school_students = {}
@@ -2632,8 +5427,13 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
                     APP_STATE.structure.students_2_apic = gen_res["total_students"]
                 else:
                     APP_STATE.structure.students_3_apic = gen_res["total_students"]
-            
+
             APP_STATE.save_to_disk()
+            try:
+                sync_attendance_classes_from_state()
+                sync_attendance_mobile_db_from_attendance_engine()
+            except Exception as e_syn:
+                print(f"[generate_virtual_students sync error]: {e_syn}")
 
             self.send_json_data({
                 "success": True,
@@ -2671,6 +5471,12 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
 
         elif parsed.path == "/api/sync":
             db = load_attendance_mobile_db()
+            if not db.get("timetable") or len(db.get("timetable", [])) < 10:
+                try:
+                    sync_attendance_timetable_from_master(APP_STATE)
+                    db = load_attendance_mobile_db()
+                except Exception:
+                    pass
             incoming_sessions = data.get("attendanceSessions", {})
             if "attendanceSessions" not in db or not isinstance(db["attendanceSessions"], dict):
                 db["attendanceSessions"] = {}
@@ -2684,6 +5490,12 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
                 db["justifiedAbsences"] = {}
             db["justifiedAbsences"].update(incoming_just)
 
+            incoming_reports = data.get("dismissalReports", {})
+            if isinstance(incoming_reports, dict) and incoming_reports:
+                if "dismissalReports" not in db or not isinstance(db["dismissalReports"], dict):
+                    db["dismissalReports"] = {}
+                db["dismissalReports"].update(incoming_reports)
+
             if data.get("isConfigUpdate"):
                 for field in ("settings", "timeSlots", "teachers", "classes", "students", "timetable"):
                     if field in data and data[field]:
@@ -2692,6 +5504,339 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
             db["updatedAt"] = int(time.time() * 1000)
             save_attendance_mobile_db(db)
             self.send_json_data(db)
+
+        elif parsed.path == "/api/attendance/issue_entry_pass":
+            try:
+                import secrets
+                db = load_attendance_mobile_db()
+                if "entryPasses" not in db or not isinstance(db["entryPasses"], dict):
+                    db["entryPasses"] = {}
+
+                st_id = str(data.get("student_id", "")).strip()
+                st_name = str(data.get("student_name", "")).strip()
+                m_code = str(data.get("massar_code", "")).strip()
+                c_code = str(data.get("class_code", "")).strip()
+                pass_type = str(data.get("pass_type") or data.get("passType") or "ABSENCE").strip()
+                admin_action = str(data.get("admin_action") or data.get("adminAction") or "إمضاء التزام وتسوية الوضعية بالحراسة العامة.").strip()
+                admin_role = str(data.get("admin_role") or data.get("adminRole") or "الحارس العام للخارجية").strip()
+                admin_name = str(data.get("admin_name") or data.get("adminName") or "").strip()
+                period_summary = str(data.get("period_summary") or data.get("periodSummary") or "").strip()
+                abs_date = str(data.get("absent_date", datetime.now().strftime("%Y-%m-%d"))).strip()
+                abs_slot_idx = int(data.get("absent_slot_index", 1))
+                abs_slot_label = str(data.get("absent_slot_label", f"حصة {abs_slot_idx}")).strip()
+                notes = str(data.get("notes", "تسوية الوضعية الإدارية بالحراسة العامة.")).strip()
+
+                now = datetime.now()
+                issued_at = now.strftime("%H:%M:%S")
+                issued_date = now.strftime("%Y-%m-%d")
+                pass_id = f"BE-{now.strftime('%Y%m%d')}-{secrets.token_hex(2).upper()}"
+
+                entry_pass = {
+                    "passId": pass_id,
+                    "studentId": st_id,
+                    "studentName": st_name,
+                    "massarCode": m_code,
+                    "classCode": c_code,
+                    "passType": pass_type,
+                    "adminAction": admin_action,
+                    "adminRole": admin_role,
+                    "adminName": admin_name,
+                    "periodSummary": period_summary or abs_slot_label,
+                    "absentDate": abs_date,
+                    "absentSlotIndex": abs_slot_idx,
+                    "absentSlotLabel": abs_slot_label,
+                    "issuedAt": issued_at,
+                    "issuedDate": issued_date,
+                    "validForDate": issued_date,
+                    "notes": notes,
+                    "status": "VALID",
+                    "createdAtTs": int(time.time() * 1000)
+                }
+
+                db["entryPasses"][pass_id] = entry_pass
+                clean_pass_id = str(pass_id).replace("BE-", "").replace("PASS-", "").replace("DISM-", "")
+
+                # Auto-justify past absences if requested
+                if data.get("justify_previous", True):
+                    if "justifiedAbsences" not in db or not isinstance(db["justifiedAbsences"], dict):
+                        db["justifiedAbsences"] = {}
+                    now_ts_j = int(time.time() * 1000)
+                    sig_label = f"{admin_role} ({admin_name})" if admin_name else admin_role
+                    for sk, s_obj in db.get("attendanceSessions", {}).items():
+                        if not s_obj: continue
+                        abs_ids = s_obj.get("absentStudentIds", [])
+                        if st_id in abs_ids or m_code in abs_ids or f"{c_code}_{m_code}" in abs_ids:
+                            j_payload = {
+                                "justifiedAt": now_ts_j,
+                                "justifiedDate": issued_date,
+                                "reason": f"ورقة السماح بالدخول رقم {clean_pass_id}",
+                                "notes": notes,
+                                "admin": sig_label
+                            }
+                            if st_id: db["justifiedAbsences"][f"{sk}_{st_id}"] = j_payload
+                            if m_code: db["justifiedAbsences"][f"{sk}_{m_code}"] = j_payload
+
+                db["updatedAt"] = int(time.time() * 1000)
+                save_attendance_mobile_db(db)
+                self.send_json_data({"success": True, "pass_id": pass_id, "entry_pass": entry_pass})
+            except Exception as e:
+                self.send_json_data({"success": False, "error": str(e)})
+
+        elif parsed.path == "/api/attendance/revoke_entry_pass":
+            try:
+                pass_id = str(data.get("pass_id", "")).strip()
+                db = load_attendance_mobile_db()
+                passes = db.get("entryPasses", {})
+                if pass_id in passes:
+                    passes[pass_id]["status"] = "REVOKED"
+                    db["updatedAt"] = int(time.time() * 1000)
+                    save_attendance_mobile_db(db)
+                self.send_json_data({"success": True})
+            except Exception as e:
+                self.send_json_data({"success": False, "error": str(e)})
+
+        elif parsed.path == "/api/attendance/dismissal_report":
+            try:
+                import secrets
+                db = load_attendance_mobile_db()
+                if "dismissalReports" not in db or not isinstance(db["dismissalReports"], dict):
+                    db["dismissalReports"] = {}
+
+                rep_id = str(data.get("report_id") or data.get("reportId") or "").strip()
+                now = datetime.now()
+                if not rep_id:
+                    rep_id = f"DISM-{now.strftime('%Y%m%d')}-{secrets.token_hex(2).upper()}"
+
+                st_id = str(data.get("student_id") or data.get("studentId") or "").strip()
+                st_name = str(data.get("student_name") or data.get("studentName") or "").strip()
+                m_code = str(data.get("massar_code") or data.get("massarCode") or "").strip()
+                c_code = str(data.get("class_code") or data.get("classCode") or "").strip()
+                t_id = str(data.get("teacher_id") or data.get("teacherId") or "").strip()
+                t_name = str(data.get("teacher_name") or data.get("teacherName") or "").strip()
+                subj = str(data.get("subject") or "").strip()
+                rep_date = str(data.get("date") or now.strftime("%Y-%m-%d")).strip()
+                rep_time = str(data.get("time") or now.strftime("%H:%M")).strip()
+                slot_idx = int(data.get("slot_index") or data.get("slotIndex") or 1)
+                r_type = str(data.get("reason_type") or data.get("reasonType") or "عرقلة السير العادي للدراسة والتشويش").strip()
+                c_reason = str(data.get("custom_reason") or data.get("customReason") or "").strip()
+
+                report_entry = {
+                    "reportId": rep_id,
+                    "studentId": st_id,
+                    "studentName": st_name,
+                    "massarCode": m_code,
+                    "classCode": c_code,
+                    "teacherId": t_id,
+                    "teacherName": t_name,
+                    "subject": subj,
+                    "date": rep_date,
+                    "time": rep_time,
+                    "slotIndex": slot_idx,
+                    "reasonType": r_type,
+                    "customReason": c_reason,
+                    "status": "PENDING_ADMIN",
+                    "createdAt": int(time.time() * 1000)
+                }
+
+                db["dismissalReports"][rep_id] = report_entry
+                db["updatedAt"] = int(time.time() * 1000)
+                save_attendance_mobile_db(db)
+
+                self.send_json_data({"success": True, "report": report_entry})
+            except Exception as e:
+                self.send_json_data({"success": False, "error": str(e)})
+
+        elif parsed.path == "/api/attendance/record_tardiness":
+            try:
+                db = load_attendance_mobile_db()
+                if "attendanceSessions" not in db or not isinstance(db["attendanceSessions"], dict):
+                    db["attendanceSessions"] = {}
+
+                st_id = str(data.get("student_id") or data.get("studentId") or "").strip()
+                st_name = str(data.get("student_name") or data.get("studentName") or "").strip()
+                m_code = str(data.get("massar_code") or data.get("massarCode") or "").strip()
+                c_code = str(data.get("class_code") or data.get("classCode") or "").strip()
+                date_str = str(data.get("date") or datetime.now().strftime("%Y-%m-%d")).strip()
+                slot_idx = int(data.get("slot_index") or data.get("slotIndex") or 1)
+                slot_label = str(data.get("slot_label") or data.get("slotLabel") or f"الحصة {slot_idx}").strip()
+                t_time = str(data.get("time") or datetime.now().strftime("%H:%M")).strip()
+                reason = str(data.get("reason") or "تأخر عن موعد الحصة").strip()
+                notes = str(data.get("notes") or "").strip()
+                reporter = str(data.get("reporter") or "الحراسة العامة / إدارة المؤسسة").strip()
+
+                sess_key = f"{date_str}_{slot_idx}_{c_code}"
+                sess = db["attendanceSessions"].get(sess_key)
+                now_ts = int(time.time() * 1000)
+
+                if not sess:
+                    sess = {
+                        "sessionId": sess_key,
+                        "date": date_str,
+                        "slotIndex": slot_idx,
+                        "classCode": c_code,
+                        "teacherId": "ADMIN",
+                        "teacherName": reporter,
+                        "subject": "متابعة الحراسة العامة",
+                        "status": "ON_TIME",
+                        "submittedDate": date_str,
+                        "submittedAt": t_time,
+                        "totalStudents": 0,
+                        "presentCount": 0,
+                        "absentCount": 0,
+                        "lateCount": 0,
+                        "absentStudentIds": [],
+                        "lateStudentIds": [],
+                        "attendanceMap": {},
+                        "updatedAtTs": now_ts
+                    }
+
+                if "lateStudentIds" not in sess or not isinstance(sess["lateStudentIds"], list):
+                    sess["lateStudentIds"] = []
+                if "attendanceMap" not in sess or not isinstance(sess["attendanceMap"], dict):
+                    sess["attendanceMap"] = {}
+
+                target_id = st_id or (f"{c_code}_{m_code}" if (c_code and m_code) else m_code)
+                if target_id and target_id not in sess["lateStudentIds"]:
+                    sess["lateStudentIds"].append(target_id)
+                if m_code and m_code not in sess["lateStudentIds"]:
+                    sess["lateStudentIds"].append(m_code)
+
+                sess["attendanceMap"][target_id] = "L"
+                if m_code:
+                    sess["attendanceMap"][m_code] = "L"
+
+                sess["lateCount"] = len(sess["lateStudentIds"])
+                sess["updatedAtTs"] = now_ts
+                db["attendanceSessions"][sess_key] = sess
+                db["updatedAt"] = now_ts
+                save_attendance_mobile_db(db)
+
+                self.send_json_data({"success": True, "sessionId": sess_key, "session": sess})
+            except Exception as e:
+                self.send_json_data({"success": False, "error": str(e)})
+
+        elif parsed.path == "/api/attendance/admin_record_absence":
+            try:
+                db = load_attendance_mobile_db()
+                if "attendanceSessions" not in db or not isinstance(db["attendanceSessions"], dict):
+                    db["attendanceSessions"] = {}
+                if "justifiedAbsences" not in db or not isinstance(db["justifiedAbsences"], dict):
+                    db["justifiedAbsences"] = {}
+
+                st_id = str(data.get("student_id") or data.get("studentId") or "").strip()
+                st_name = str(data.get("student_name") or data.get("studentName") or "").strip()
+                m_code = str(data.get("massar_code") or data.get("massarCode") or "").strip()
+                c_code = str(data.get("class_code") or data.get("classCode") or "").strip()
+                date_str = str(data.get("date") or datetime.now().strftime("%Y-%m-%d")).strip()
+                slot_raw = str(data.get("slot_index") if data.get("slot_index") is not None else (data.get("slotIndex") or "MORNING")).strip().upper()
+                if slot_raw in ["MORNING", "M_ALL", "M", "الصباحية", "صباحية", "فترة صباحية", "9"]:
+                    slots_to_mark = [1, 2, 3, 4]
+                elif slot_raw in ["AFTERNOON", "A_ALL", "A", "المسائية", "مسائية", "فترة مسائية", "10"]:
+                    slots_to_mark = [5, 6, 7, 8]
+                elif slot_raw in ["0", "ALL", "DAY_ALL", "كامل اليوم", "اليوم الكامل"]:
+                    slots_to_mark = [1, 2, 3, 4, 5, 6, 7, 8]
+                else:
+                    try:
+                        val = int(slot_raw)
+                        if val == 0:
+                            slots_to_mark = [1, 2, 3, 4, 5, 6, 7, 8]
+                        elif val == 9:
+                            slots_to_mark = [1, 2, 3, 4]
+                        elif val == 10:
+                            slots_to_mark = [5, 6, 7, 8]
+                        elif 1 <= val <= 8:
+                            slots_to_mark = [val]
+                        else:
+                            slots_to_mark = [1]
+                    except Exception:
+                        slots_to_mark = [1]
+
+                rec_type = str(data.get("type") or "ABSENT").upper()
+                is_justified = bool(data.get("justified", False))
+                reason = str(data.get("reason") or "").strip()
+                notes = str(data.get("notes") or "").strip()
+                reporter = str(data.get("reporter") or "الحراسة العامة / إدارة المؤسسة").strip()
+                now_ts = int(time.time() * 1000)
+                target_id = st_id or (f"{c_code}_{m_code}" if (c_code and m_code) else m_code)
+
+                for s_idx in slots_to_mark:
+                    sess_key = f"{date_str}_{s_idx}_{c_code}"
+                    sess = db["attendanceSessions"].get(sess_key)
+                    if not sess:
+                        sess = {
+                            "sessionId": sess_key,
+                            "date": date_str,
+                            "slotIndex": s_idx,
+                            "classCode": c_code,
+                            "teacherId": "ADMIN",
+                            "teacherName": reporter,
+                            "subject": "متابعة الحراسة العامة",
+                            "status": "ON_TIME",
+                            "submittedDate": date_str,
+                            "submittedAt": datetime.now().strftime("%H:%M"),
+                            "totalStudents": 0,
+                            "presentCount": 0,
+                            "absentCount": 0,
+                            "lateCount": 0,
+                            "absentStudentIds": [],
+                            "lateStudentIds": [],
+                            "attendanceMap": {},
+                            "updatedAtTs": now_ts
+                        }
+
+                    if "absentStudentIds" not in sess or not isinstance(sess["absentStudentIds"], list):
+                        sess["absentStudentIds"] = []
+                    if "lateStudentIds" not in sess or not isinstance(sess["lateStudentIds"], list):
+                        sess["lateStudentIds"] = []
+                    if "attendanceMap" not in sess or not isinstance(sess["attendanceMap"], dict):
+                        sess["attendanceMap"] = {}
+
+                    if rec_type == "LATE":
+                        if target_id and target_id not in sess["lateStudentIds"]:
+                            sess["lateStudentIds"].append(target_id)
+                        if m_code and m_code not in sess["lateStudentIds"]:
+                            sess["lateStudentIds"].append(m_code)
+                        sess["absentStudentIds"] = [x for x in sess["absentStudentIds"] if x not in [target_id, m_code]]
+                        sess["attendanceMap"][target_id] = "L"
+                        if m_code:
+                            sess["attendanceMap"][m_code] = "L"
+                    else:
+                        if target_id and target_id not in sess["absentStudentIds"]:
+                            sess["absentStudentIds"].append(target_id)
+                        if m_code and m_code not in sess["absentStudentIds"]:
+                            sess["absentStudentIds"].append(m_code)
+                        sess["lateStudentIds"] = [x for x in sess["lateStudentIds"] if x not in [target_id, m_code]]
+                        sess["attendanceMap"][target_id] = "A"
+                        if m_code:
+                            sess["attendanceMap"][m_code] = "A"
+
+                        if is_justified:
+                            j_info = {
+                                "justifiedAt": now_ts,
+                                "justifiedDate": date_str,
+                                "reason": reason or "تبرير إداري",
+                                "notes": notes,
+                                "admin": reporter
+                            }
+                            if target_id:
+                                db["justifiedAbsences"][f"{sess_key}_{target_id}"] = j_info
+                            if m_code:
+                                db["justifiedAbsences"][f"{sess_key}_{m_code}"] = j_info
+
+                    sess["absentCount"] = len(sess["absentStudentIds"])
+                    sess["lateCount"] = len(sess["lateStudentIds"])
+                    sess["updatedAtTs"] = now_ts
+                    db["attendanceSessions"][sess_key] = sess
+
+                db["updatedAt"] = now_ts
+                save_attendance_mobile_db(db)
+                self.send_json_data({"success": True, "markedCount": len(slots_to_mark)})
+            except Exception as e:
+                self.send_json_data({"success": False, "error": str(e)})
+
+        elif parsed.path == "/api/attendance/sync_latest_timetable":
+            res = sync_attendance_timetable_from_master(APP_STATE)
+            self.send_json_data(res)
 
         elif parsed.path == "/api/attendance/generate_pins":
             db = load_attendance_mobile_db()
@@ -2735,10 +5880,22 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
         elif parsed.path == "/api/attendance/save_justification":
             db = load_attendance_mobile_db()
             j_key = data.get("key")
-            justified = data.get("justified", True)
+            justified_val = data.get("justified", True)
+            admin_action = data.get("admin_action") or data.get("adminAction") or ""
+            notes = data.get("notes") or ""
+
             if "justifiedAbsences" not in db or not isinstance(db["justifiedAbsences"], dict):
                 db["justifiedAbsences"] = {}
-            db["justifiedAbsences"][j_key] = justified
+
+            if isinstance(justified_val, bool) and not justified_val:
+                db["justifiedAbsences"][j_key] = False
+            else:
+                db["justifiedAbsences"][j_key] = {
+                    "justified": True,
+                    "adminAction": admin_action or "تسوية الوضعية الإدارية بالحراسة العامة",
+                    "notes": notes,
+                    "updatedAt": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                }
             db["updatedAt"] = int(time.time() * 1000)
             save_attendance_mobile_db(db)
             self.send_json_data({"success": True, "justifiedAbsences": db["justifiedAbsences"]})
@@ -2757,6 +5914,128 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
                 db["updatedAt"] = int(time.time() * 1000)
                 save_attendance_mobile_db(db)
             self.send_json_data({"success": True, "settings": db["settings"], "timeSlots": db.get("timeSlots", [])})
+
+        elif parsed.path == "/api/attendance/print_parent_pledge":
+            html = render_parent_pledge_html(data, APP_STATE.get_full_state()["institution"])
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.end_headers()
+            self.wfile.write(html.encode("utf-8"))
+        elif parsed.path == "/api/attendance/print_doctor_visit":
+            html = render_doctor_visit_html(data, APP_STATE.get_full_state()["institution"])
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.end_headers()
+            self.wfile.write(html.encode("utf-8"))
+        elif parsed.path == "/api/backup/import_full":
+            try:
+                envelope = data
+                if not isinstance(envelope, dict) or envelope.get("app") != "RzzakFet":
+                    self.send_json_data({"success": False, "error": "ملف النسخة الاحتياطية غير صالح أو تالف."}, status=400)
+                    return
+
+                files = envelope.get("files", {})
+                restored_keys = []
+
+                # 1. Restore attendance_mobile_db
+                if "attendance_mobile_db" in files and isinstance(files["attendance_mobile_db"], dict):
+                    try:
+                        save_attendance_mobile_db(files["attendance_mobile_db"])
+                        restored_keys.append("attendance_mobile_db")
+                    except Exception as ex:
+                        print(f"[Restore] attendance_mobile_db error: {ex}")
+
+                # 2. Restore app_state
+                if "app_state" in files and isinstance(files["app_state"], dict):
+                    try:
+                        targets = [
+                            STATE_FILE,
+                            os.path.join(BASE_DIR, "data", "app_state.json"),
+                            os.path.join(os.environ.get("LOCALAPPDATA", ""), "RzzakFet", "data", "app_state.json")
+                        ]
+                        for tp in targets:
+                            if tp:
+                                os.makedirs(os.path.dirname(tp), exist_ok=True)
+                                with open(tp, "w", encoding="utf-8") as f:
+                                    json.dump(files["app_state"], f, ensure_ascii=False, indent=2)
+                        restored_keys.append("app_state")
+                    except Exception as ex:
+                        print(f"[Restore] app_state error: {ex}")
+
+                # 3. Restore timetable_result
+                if "timetable_result" in files and files["timetable_result"] is not None:
+                    try:
+                        targets = [
+                            os.path.join(DATA_DIR, "timetable_result.json"),
+                            os.path.join(BASE_DIR, "data", "timetable_result.json"),
+                            os.path.join(os.environ.get("LOCALAPPDATA", ""), "RzzakFet", "data", "timetable_result.json")
+                        ]
+                        for tp in targets:
+                            if tp:
+                                os.makedirs(os.path.dirname(tp), exist_ok=True)
+                                with open(tp, "w", encoding="utf-8") as f:
+                                    json.dump(files["timetable_result"], f, ensure_ascii=False, indent=2)
+                        restored_keys.append("timetable_result")
+                    except Exception as ex:
+                        print(f"[Restore] timetable_result error: {ex}")
+
+                # 4. Restore students_attendance_state and student_mobility_state
+                for other_k in ["students_attendance_state", "student_mobility_state"]:
+                    if other_k in files and files[other_k] is not None:
+                        try:
+                            targets = [
+                                os.path.join(DATA_DIR, f"{other_k}.json"),
+                                os.path.join(BASE_DIR, "data", f"{other_k}.json"),
+                                os.path.join(os.environ.get("LOCALAPPDATA", ""), "RzzakFet", "data", f"{other_k}.json")
+                            ]
+                            for tp in targets:
+                                if tp:
+                                    os.makedirs(os.path.dirname(tp), exist_ok=True)
+                                    with open(tp, "w", encoding="utf-8") as f:
+                                        json.dump(files[other_k], f, ensure_ascii=False, indent=2)
+                            restored_keys.append(other_k)
+                        except Exception as ex:
+                            print(f"[Restore] {other_k} error: {ex}")
+
+                try:
+                    APP_STATE.load_from_disk()
+                    sync_attendance_classes_from_state()
+                    import threading
+                    threading.Thread(target=lambda: sync_attendance_with_cloud(upload_metadata=True), daemon=True).start()
+                except Exception as ex:
+                    print(f"[Restore] Warn reloading state: {ex}")
+
+                self.send_json_data({
+                    "success": True,
+                    "message": "تم استيراد كافة معطيات المؤسسة وجدول الحصص بنجاح تام!",
+                    "restored_sections": restored_keys,
+                    "institution_name": getattr(APP_STATE.institution, "institution_name", "") or getattr(APP_STATE.institution, "name", ""),
+                    "gresa_code": getattr(APP_STATE.institution, "gresa_code", "")
+                })
+                return
+            except Exception as e:
+                self.send_json_data({"success": False, "error": f"فشل استرجاع النسخة الاحتياطية: {str(e)}"}, status=500)
+                return
+        elif parsed.path == "/api/attendance/cloud_sync":
+            try:
+                res = sync_attendance_with_cloud()
+                self.send_json_data(res)
+            except Exception as e:
+                self.send_json_data({"success": False, "error": str(e)})
+
+        elif parsed.path in ["/api/attendance/factory_reset", "/api/factory_reset"]:
+            try:
+                res = factory_reset_all_data()
+                self.send_json_data(res)
+            except Exception as e:
+                self.send_json_data({"success": False, "error": str(e)})
+
+        elif parsed.path == "/api/attendance/clear_history":
+            try:
+                res = clear_attendance_records_and_reports(cloud_wipe=True)
+                self.send_json_data(res)
+            except Exception as e:
+                self.send_json_data({"success": False, "error": str(e)})
 
         elif parsed.path == "/api/attendance/sync_institution_timeslots":
             mode_req = data.get("mode") or "NORMAL"
@@ -2940,6 +6219,96 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
                     }
                 }
                 res = attendance_engine.save_attendance_session(session_payload)
+
+                # Sync to attendance_mobile_db.json for consistency across mobile and director tracking
+                try:
+                    mob_db = load_attendance_mobile_db()
+                    if "attendanceSessions" not in mob_db or not isinstance(mob_db["attendanceSessions"], dict):
+                        mob_db["attendanceSessions"] = {}
+                    if "justifiedAbsences" not in mob_db or not isinstance(mob_db["justifiedAbsences"], dict):
+                        mob_db["justifiedAbsences"] = {}
+
+                    p_up = period_id.upper()
+                    if p_up in ["M_ALL", "MORNING"]:
+                        sync_slots = [1, 2, 3, 4]
+                    elif p_up in ["A_ALL", "AFTERNOON"]:
+                        sync_slots = [5, 6, 7, 8]
+                    elif p_up in ["DAY_ALL", "ALL"]:
+                        sync_slots = [1, 2, 3, 4, 5, 6, 7, 8]
+                    elif p_up.startswith("M_"):
+                        try: sync_slots = [int(p_up.split("_")[1])]
+                        except Exception: sync_slots = [1]
+                    elif p_up.startswith("A_"):
+                        try: sync_slots = [4 + int(p_up.split("_")[1])]
+                        except Exception: sync_slots = [5]
+                    else:
+                        sync_slots = [1]
+
+                    t_now = int(time.time() * 1000)
+                    t_target = student_id or (f"{class_name}_{massar_code}" if (class_name and massar_code) else massar_code)
+
+                    for s_idx in sync_slots:
+                        s_key = f"{date_str}_{s_idx}_{class_name}"
+                        s_sess = mob_db["attendanceSessions"].get(s_key)
+                        if not s_sess:
+                            s_sess = {
+                                "sessionId": s_key,
+                                "date": date_str,
+                                "slotIndex": s_idx,
+                                "classCode": class_name,
+                                "teacherId": "ADMIN",
+                                "teacherName": "الحراسة العامة",
+                                "subject": "متابعة الحراسة العامة",
+                                "status": "ON_TIME",
+                                "submittedDate": date_str,
+                                "submittedAt": datetime.now().strftime("%H:%M"),
+                                "totalStudents": 0,
+                                "presentCount": 0,
+                                "absentCount": 0,
+                                "lateCount": 0,
+                                "absentStudentIds": [],
+                                "lateStudentIds": [],
+                                "attendanceMap": {},
+                                "updatedAtTs": t_now
+                            }
+                        if "absentStudentIds" not in s_sess: s_sess["absentStudentIds"] = []
+                        if "lateStudentIds" not in s_sess: s_sess["lateStudentIds"] = []
+                        if "attendanceMap" not in s_sess: s_sess["attendanceMap"] = {}
+
+                        if status == "late":
+                            if t_target and t_target not in s_sess["lateStudentIds"]: s_sess["lateStudentIds"].append(t_target)
+                            if massar_code and massar_code not in s_sess["lateStudentIds"]: s_sess["lateStudentIds"].append(massar_code)
+                            s_sess["absentStudentIds"] = [x for x in s_sess["absentStudentIds"] if x not in [t_target, massar_code]]
+                            s_sess["attendanceMap"][t_target] = "L"
+                            if massar_code: s_sess["attendanceMap"][massar_code] = "L"
+                        else:
+                            if t_target and t_target not in s_sess["absentStudentIds"]: s_sess["absentStudentIds"].append(t_target)
+                            if massar_code and massar_code not in s_sess["absentStudentIds"]: s_sess["absentStudentIds"].append(massar_code)
+                            s_sess["lateStudentIds"] = [x for x in s_sess["lateStudentIds"] if x not in [t_target, massar_code]]
+                            s_sess["attendanceMap"][t_target] = "A"
+                            if massar_code: s_sess["attendanceMap"][massar_code] = "A"
+
+                        s_sess["absentCount"] = len(s_sess["absentStudentIds"])
+                        s_sess["lateCount"] = len(s_sess["lateStudentIds"])
+                        s_sess["updatedAtTs"] = t_now
+                        mob_db["attendanceSessions"][s_key] = s_sess
+
+                        if justified:
+                            j_item = {
+                                "justifiedAt": t_now,
+                                "justifiedDate": date_str,
+                                "reason": reason or "تبرير الحراسة العامة",
+                                "notes": note,
+                                "admin": "الحراسة العامة"
+                            }
+                            if t_target: mob_db["justifiedAbsences"][f"{s_key}_{t_target}"] = j_item
+                            if massar_code: mob_db["justifiedAbsences"][f"{s_key}_{massar_code}"] = j_item
+
+                    mob_db["updatedAt"] = t_now
+                    save_attendance_mobile_db(mob_db)
+                except Exception as _sync_err:
+                    print("[quick_add_student_absence mob_db sync error]:", _sync_err)
+
                 self.send_json_data({"success": True, "message": "تم تسجيل غياب التلميذ(ة) بنجاح.", "res": res})
             except Exception as e:
                 self.send_json_data({"success": False, "error": str(e)})
@@ -2959,7 +6328,17 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
             LATEST_PRINT_DOC = {"title": doc_title, "html": doc_html}
             port = self.server.server_address[1]
             preview_url = f"http://127.0.0.1:{port}/print_preview?t={int(time.time())}"
-            threading.Thread(target=lambda: webbrowser.open(preview_url), daemon=True).start()
+            def _launch_browser(url):
+                try:
+                    import os
+                    os.startfile(url)
+                except Exception:
+                    try:
+                        import webbrowser
+                        webbrowser.open(url)
+                    except Exception:
+                        pass
+            threading.Thread(target=lambda: _launch_browser(preview_url), daemon=True).start()
             self.send_json_data({"success": True, "url": preview_url})
 
         elif parsed.path == "/api/admin/update_user":
@@ -2967,7 +6346,7 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
             if not auth_info.get("is_admin"):
                 self.send_json_data({"success": False, "error": "غير مصرح لك بإجراء هذه العملية"})
                 return
-            
+
             target_email = data.get("email")
             status = data.get("status")
             extend_years = data.get("extend_years")
@@ -2981,7 +6360,7 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
             if not auth_info.get("is_admin"):
                 self.send_json_data({"success": False, "error": "غير مصرح لك بإجراء هذه العملية"})
                 return
-            
+
             target_email = data.get("email")
             res = APP_STATE.auth_engine.delete_user(target_email)
             self.send_json_data(res)
@@ -3126,7 +6505,7 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
                 rooms = APP_STATE.room_engine.allocate_rooms(assignments)
                 xml_data = APP_STATE.fet_generator.generate_xml(assignments, rooms)
                 tt_data = APP_STATE.timetable_engine.generate_timetable(xml_data, APP_STATE.institution, rooms)
-            
+
             res = EXPORT_ENGINE.export_all(tt_data, APP_STATE.get_full_state())
             # Auto-open the folder
             EXPORT_ENGINE.open_desktop_folder()
@@ -3204,6 +6583,11 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
                         xml_content = f.read()
                     res = APP_STATE.timetable_engine.generate_timetable(xml_content, APP_STATE.institution, rooms)
                     res["synced_from"] = latest_xml
+                    if res.get("success"):
+                        try:
+                            sync_attendance_timetable_from_master(APP_STATE, res)
+                        except Exception as _sync_err:
+                            print("[Auto-sync Timetable Attendance Error]:", _sync_err)
                 except Exception as e:
                     res = {"success": False, "error": f"خطأ أثناء قراءة ملف المخرجات: {str(e)}"}
             else:
@@ -3221,6 +6605,11 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
             xml_data = APP_STATE.fet_generator.generate_xml(assignments, rooms, enable_3apic_grouping=enable_grouping)
             res = APP_STATE.timetable_engine.generate_timetable(xml_data, APP_STATE.institution, rooms)
             res["is_grouping"] = enable_grouping
+            if res.get("success"):
+                try:
+                    sync_attendance_timetable_from_master(APP_STATE, res)
+                except Exception as _sync_err:
+                    print("[Auto-sync Timetable Attendance Error]:", _sync_err)
 
             self.send_response(200)
             self.send_header("Content-Type", "application/json; charset=utf-8")
@@ -3242,21 +6631,21 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
                 assignments = APP_STATE.get_current_assignments()
                 rooms = APP_STATE.room_engine.allocate_rooms(assignments)
                 xml_data = APP_STATE.fet_generator.generate_xml(assignments, rooms)
-                
+
                 gresa = APP_STATE.institution.gresa_code or "institution"
                 filename = f"RzzakFet_{gresa}.fet"
-                
+
                 desktop_rzzak_dir = os.path.join(os.path.expanduser("~"), "Desktop", "RzzakFet")
                 os.makedirs(desktop_rzzak_dir, exist_ok=True)
                 desktop_file_path = os.path.join(desktop_rzzak_dir, filename)
-                
+
                 with open(desktop_file_path, "w", encoding="utf-8") as f:
                     f.write(xml_data)
-                    
+
                 data_fet_path = os.path.join(DATA_DIR, filename)
                 with open(data_fet_path, "w", encoding="utf-8") as f:
                     f.write(xml_data)
-                
+
                 res = {
                     "success": True,
                     "filename": filename,
@@ -3280,13 +6669,41 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
             inst.academic_year = data.get("academic_year", inst.academic_year)
             inst.gresa_code = data.get("gresa", inst.gresa_code)
             inst.principal_name = data.get("principal", inst.principal_name)
+            if "general_guard" in data:
+                inst.general_guard_name = str(data["general_guard"]).strip()
+            elif "general_guard_name" in data:
+                inst.general_guard_name = str(data["general_guard_name"]).strip()
+            if "director_studies" in data:
+                inst.director_studies_name = str(data["director_studies"]).strip()
+            elif "director_studies_name" in data:
+                inst.director_studies_name = str(data["director_studies_name"]).strip()
             if "logo_base64" in data:
                 inst.logo_base64 = str(data["logo_base64"]).strip()
-            inst.general_rooms_count = int(data.get("general_rooms", inst.general_rooms_count))
-            inst.svt_labs_count = int(data.get("svt_labs", inst.svt_labs_count))
-            inst.pc_labs_count = int(data.get("pc_labs", inst.pc_labs_count))
-            inst.multimedia_rooms_count = int(data.get("multimedia_rooms", inst.multimedia_rooms_count))
-            inst.sports_fields_count = int(data.get("sports_fields", inst.sports_fields_count))
+            if "general_rooms" in data and str(data["general_rooms"]).strip():
+                try:
+                    inst.general_rooms_count = max(0, int(data["general_rooms"]))
+                except Exception:
+                    pass
+            if "svt_labs" in data and str(data["svt_labs"]).strip():
+                try:
+                    inst.svt_labs_count = max(0, int(data["svt_labs"]))
+                except Exception:
+                    pass
+            if "pc_labs" in data and str(data["pc_labs"]).strip():
+                try:
+                    inst.pc_labs_count = max(0, int(data["pc_labs"]))
+                except Exception:
+                    pass
+            if "multimedia_rooms" in data and str(data["multimedia_rooms"]).strip():
+                try:
+                    inst.multimedia_rooms_count = max(0, int(data["multimedia_rooms"]))
+                except Exception:
+                    pass
+            if "sports_fields" in data and str(data["sports_fields"]).strip():
+                try:
+                    inst.sports_fields_count = max(0, int(data["sports_fields"]))
+                except Exception:
+                    pass
             if "morning_start_hour" in data:
                 inst.morning_start_hour = str(data["morning_start_hour"]).strip()
             if "morning_period_times" in data and isinstance(data["morning_period_times"], list):
@@ -3298,9 +6715,11 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
             APP_STATE.save_to_disk()
             try:
                 sync_time_slots_from_institution(APP_STATE, mode="NORMAL")
+                import threading
+                threading.Thread(target=sync_attendance_with_cloud, daemon=True).start()
             except Exception as _e:
                 print("[Auto-sync TimeSlots Error]:", _e)
-            
+
             self.send_response(200)
             self.send_header("Content-Type", "application/json; charset=utf-8")
             self.end_headers()
@@ -3500,7 +6919,12 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
             if "s3" in data:
                 APP_STATE.structure.students_3_apic = int(data.get("s3", APP_STATE.structure.students_3_apic))
             APP_STATE.save_to_disk()
-            
+            try:
+                sync_attendance_classes_from_state()
+                sync_attendance_mobile_db_from_attendance_engine()
+            except Exception as e_syn:
+                print(f"[update_structure sync error]: {e_syn}")
+
             self.send_response(200)
             self.send_header("Content-Type", "application/json; charset=utf-8")
             self.end_headers()
@@ -3535,7 +6959,7 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
             high_school_engine.register_custom_stream(custom_stream)
             if not hasattr(APP_STATE.structure, 'custom_high_school_streams') or not APP_STATE.structure.custom_high_school_streams:
                 APP_STATE.structure.custom_high_school_streams = []
-            
+
             APP_STATE.structure.custom_high_school_streams = [
                 cs for cs in APP_STATE.structure.custom_high_school_streams if cs.get("id") != stream_id
             ]
@@ -3579,7 +7003,7 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
         elif parsed.path == "/api/update_break_times":
             slots = data.get("slots", [])
             APP_STATE.institution.break_time_slots = slots
-            
+
             for c in APP_STATE.fet_generator.all_available_constraints:
                 if c["id"] in ("t_all_1", "tc_base_2"):
                     c["param_val"] = len(slots)
@@ -3746,7 +7170,7 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
 
             # Check if all active primary constraints are currently active
             active_primaries = [
-                c for c in APP_STATE.fet_generator.all_available_constraints 
+                c for c in APP_STATE.fet_generator.all_available_constraints
                 if c.get("is_primary", False) and c.get("code") != "ConstraintSubjectPreferredRooms"
             ]
             all_active = all(c.get("is_active", False) for c in active_primaries) if active_primaries else False
@@ -3788,7 +7212,7 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
                 cur_map = APP_STATE.institution.subject_activity_constraints
                 if subject not in cur_map:
                     cur_map[subject] = {}
-                
+
                 if "min_days" in data:
                     cur_map[subject]["min_days"] = int(data["min_days"])
                 if "max_days" in data:
@@ -3956,6 +7380,10 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
             self.send_error(404)
 
 def run_server(port=8765):
+    try:
+        start_attendance_cloud_background_worker()
+    except Exception:
+        pass
     try:
         sync_attendance_classes_from_state()
     except Exception as e:

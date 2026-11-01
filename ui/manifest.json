@@ -1,21 +1,48 @@
 {
-  "name": "مسك الغياب — الرزق فت",
-  "short_name": "مسك الغياب",
-  "description": "نظام رقمي ذكي لمسك غياب التلاميذ وتتبع المواظبة داخل المؤسسات التعليمية",
-  "start_url": "/prof",
+  "name": "rzzakfet",
+  "short_name": "rzzakfet",
+  "description": "تطبيق مسك وتتبع غياب التلاميذ - الرزق فت",
+  "id": "/prof",
+  "start_url": "/prof?standalone=true",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#f8fafc",
+  "display_override": [
+    "standalone",
+    "minimal-ui",
+    "window-controls-overlay"
+  ],
+  "capture_links": "existing_client_navigate",
+  "handle_links": "preferred",
+  "launch_handler": {
+    "client_mode": "auto"
+  },
+  "background_color": "#0f766e",
   "theme_color": "#0f766e",
   "orientation": "portrait-primary",
   "dir": "rtl",
   "lang": "ar",
+  "categories": [
+    "education",
+    "productivity"
+  ],
   "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
     {
       "src": "/icon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "purpose": "any"
     }
   ]
 }

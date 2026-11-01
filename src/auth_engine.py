@@ -281,16 +281,25 @@ class AuthEngine:
         doc_id = urllib.parse.quote(m_id, safe="")
         url = self._firestore_url(f"machines/{doc_id}")
         
-        fields = {k: to_firestore_value(v) for k, v in machine_record.items()}
+        # Enforce strict field filtering matching Firestore security rules
+        ALLOWED_FIELDS = {
+            'machine_id', 'bound_email', 'status', 'subscription_type', 'role',
+            'user_name', 'name', 'email', 'expires_at', 'first_activation_date',
+            'trial_expires_at', 'trial_consumed', 'is_admin', 'created_at',
+            'last_login', 'saved_at', 'notes'
+        }
+        filtered = {k: v for k, v in machine_record.items() if k in ALLOWED_FIELDS and v is not None}
+        fields = {k: to_firestore_value(v) for k, v in filtered.items()}
         payload = json.dumps({"fields": fields}).encode("utf-8")
         try:
             req = urllib.request.Request(url, data=payload, headers={
                 "Content-Type": "application/json",
                 "User-Agent": "RzzakFet-Desktop/1.0"
             }, method="PATCH")
-            with urllib.request.urlopen(req, timeout=4) as resp:
+            with urllib.request.urlopen(req, timeout=5) as resp:
                 return True
-        except Exception:
+        except Exception as e:
+            print(f"[AuthEngine] _cloud_save_machine error: {e}")
             return False
 
     def _cloud_list_machines(self):
