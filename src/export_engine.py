@@ -1460,3 +1460,26 @@ class ExportEngine:
             return {"success": True, "path": folder_path}
         except Exception as e:
             return {"success": False, "error": str(e), "path": self.desktop_dir}
+
+    def open_path_in_explorer(self, target_path: str):
+        self.ensure_directories()
+        try:
+            norm = os.path.normpath(target_path)
+            if not os.path.exists(norm):
+                parent = os.path.dirname(norm)
+                norm = parent if (parent and os.path.exists(parent)) else self.desktop_dir
+                os.makedirs(norm, exist_ok=True)
+            if os.name == 'nt':
+                if os.path.isfile(norm):
+                    subprocess.Popen(['explorer.exe', f'/select,{norm}'])
+                else:
+                    subprocess.Popen(['explorer.exe', norm])
+            else:
+                p = norm if os.path.isdir(norm) else os.path.dirname(norm)
+                subprocess.Popen(['xdg-open', p])
+            return {"success": True, "path": norm}
+        except Exception as e:
+            return {"success": False, "error": str(e), "path": target_path}
+
+    def open_master_folder(self):
+        return self.open_path_in_explorer(self.master_dir)

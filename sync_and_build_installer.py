@@ -2,9 +2,14 @@
 import os, sys, time, shutil, subprocess
 
 def main():
+    import os
+    workspace = os.path.dirname(os.path.abspath(__file__))
+    os.chdir(workspace)
+    print(f"Working directory set to: {workspace}")
     print("1. Terminating any running instances of RzzakFet.exe...")
     os.system('taskkill /F /IM RzzakFet.exe 2>nul')
     os.system('taskkill /F /IM fet-cl.exe 2>nul')
+    os.system('taskkill /F /IM SmartAttendance.exe 2>nul')
     time.sleep(2)
 
     print("0. Syncing entire ui/ folder and assets...")
@@ -53,10 +58,16 @@ def main():
     state_files = ['attendance_mobile_db.json', 'students_attendance_state.json', 'student_mobility_state.json', 'app_state.json']
     for state_filename in state_files:
         src_state = os.path.abspath(os.path.join('data', state_filename))
-        if os.path.exists(src_state) and os.path.getsize(src_state) > 10:
-            target_user_file = os.path.join(user_data_dir, state_filename)
+        target_user_file = os.path.join(user_data_dir, state_filename)
+        # Preserve user custom configurations
+        if os.path.exists(target_user_file) and os.path.getsize(target_user_file) > 10:
+            shutil.copy2(target_user_file, src_state)
+            print(f"   Preserved and back-synced user {state_filename} -> {src_state}")
+        elif os.path.exists(src_state) and os.path.getsize(src_state) > 10:
             shutil.copy2(src_state, target_user_file)
-            print(f"   Seeded {state_filename} -> {target_user_file}")
+            print(f"   Seeded initial {state_filename} -> {target_user_file}")
+
+        if os.path.exists(src_state):
             for d_target in [
                 os.path.abspath(os.path.join('dist/RzzakFet/data', state_filename)),
                 os.path.abspath(os.path.join('dist/RzzakFet/_internal/data', state_filename))
@@ -64,6 +75,14 @@ def main():
                 if os.path.exists(os.path.dirname(d_target)):
                     os.makedirs(os.path.dirname(d_target), exist_ok=True)
                     shutil.copy2(src_state, d_target)
+
+    print("1b. Compiling latest Python binaries via PyInstaller RzzakFet.spec...")
+    cmd = [sys.executable, '-m', 'PyInstaller', 'RzzakFet.spec', '--noconfirm']
+    pyi_res = subprocess.run(cmd)
+    if pyi_res.returncode != 0:
+        print(f"   ERROR: PyInstaller compilation failed with code {pyi_res.returncode}")
+        return
+    print("   SUCCESS: RzzakFet binary compiled successfully!")
 
     dist = os.path.abspath('dist/RzzakFet')
     target = os.path.expandvars(r'%LOCALAPPDATA%\Programs\RzzakFet')

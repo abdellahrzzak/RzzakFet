@@ -1116,16 +1116,146 @@ def sync_attendance_mobile_db_from_attendance_engine():
         db["updatedAt"] = int(time.time() * 1000)
         save_attendance_mobile_db(db)
         print(f"[Sync Attendance DB]: Synced {len(new_classes)} classes and {len(new_students)} students into attendance_mobile_db.json!")
+        try:
+            cur_t = db.get("teachers", [])
+            dummy_markers = ["عمر بنجلون", "محمد الإدريسي", "فاطمة الزهراء الفاسي", "أستاذ الفرنسية", "أستاذ الفيزياء", "أستاذ الرياضيات", "أستاذ اللغة"]
+            if len(cur_t) != 23 or any(any(m in str(t.get("fullName", "")) for m in dummy_markers) for t in cur_t):
+                db = sync_attendance_teachers_from_state(APP_STATE)
+        except Exception:
+            pass
         return db
     except Exception as err:
         print("[sync_attendance_mobile_db_from_attendance_engine error]:", err)
         return None
 
-def sync_attendance_timetable_from_master(app_state, tt_data=None):
+
+
+REAL_TEACHERS_CANONICAL = [
+    {"teacherId": "T01", "defName": "أستاذ اللغة  العربية 1", "fullName": "عبد العزيز بتوكنوت", "subject": "اللغة العربية", "defaultRoom": "عامة", "loginCode": "RBT7KRZ4"},
+    {"teacherId": "T02", "defName": "أستاذ اللغة  العربية 2", "fullName": "عمر اعتزري", "subject": "اللغة العربية", "defaultRoom": "عامة", "loginCode": "YDXETPCL"},
+    {"teacherId": "T03", "defName": "أستاذ اللغة  العربية 3", "fullName": "فتحية أزكي", "subject": "اللغة العربية", "defaultRoom": "عامة", "loginCode": "3RLM2AJM"},
+    {"teacherId": "T04", "defName": "أستاذ اللغة  الفرنسية 1", "fullName": "رقية أجديك", "subject": "اللغة الفرنسية", "defaultRoom": "عامة", "loginCode": "T94LL6NW"},
+    {"teacherId": "T05", "defName": "أستاذ اللغة  الفرنسية 2", "fullName": "إبراهيم ادبي", "subject": "اللغة الفرنسية", "defaultRoom": "عامة", "loginCode": "SEN7YCAJ"},
+    {"teacherId": "T06", "defName": "أستاذ اللغة  الفرنسية 3", "fullName": "غزلان جادور", "subject": "اللغة الفرنسية", "defaultRoom": "عامة", "loginCode": "G7MFUWTJ"},
+    {"teacherId": "T07", "defName": "أستاذ اللغة  الفرنسية 4", "fullName": "فاطمة فهمي", "subject": "اللغة الفرنسية", "defaultRoom": "عامة", "loginCode": "A5R9MW7C"},
+    {"teacherId": "T08", "defName": "أستاذ اللغة الإنجليزية 1", "fullName": "رشيد ادات", "subject": "اللغة الإنجليزية", "defaultRoom": "عامة", "loginCode": "D4E2UMZH"},
+    {"teacherId": "T09", "defName": "أستاذ اللغة الإنجليزية 2", "fullName": "الصديق بوعلي", "subject": "اللغة الإنجليزية", "defaultRoom": "عامة", "loginCode": "SQK8HTFD"},
+    {"teacherId": "T10", "defName": "أستاذ اللغة الإنجليزية 3", "fullName": "هدى هباز", "subject": "اللغة الإنجليزية", "defaultRoom": "عامة", "loginCode": "TRRYUGQV"},
+    {"teacherId": "T11", "defName": "أستاذ الرياضيات 1", "fullName": "مصطفى أكواس", "subject": "الرياضيات", "defaultRoom": "عامة", "loginCode": "E3Q4ZQDF"},
+    {"teacherId": "T12", "defName": "أستاذ الرياضيات 2", "fullName": "عبد المغيث البوزيدي", "subject": "الرياضيات", "defaultRoom": "عامة", "loginCode": "8MDYLKYC"},
+    {"teacherId": "T13", "defName": "أستاذ الرياضيات 3", "fullName": "لطيفة لكوش", "subject": "الرياضيات", "defaultRoom": "عامة", "loginCode": "MK2NUW86"},
+    {"teacherId": "T14", "defName": "أستاذ الفيزياء والكيمياء 1", "fullName": "عبد الله اغلاس", "subject": "الفيزياء والكيمياء", "defaultRoom": "مختبر الفيزياء", "loginCode": "XU8WY35H"},
+    {"teacherId": "T15", "defName": "أستاذ الفيزياء والكيمياء 2", "fullName": "بونعطان ياسين", "subject": "الفيزياء والكيمياء", "defaultRoom": "مختبر الفيزياء", "loginCode": "8QWF7ESH"},
+    {"teacherId": "T16", "defName": "أستاذ علوم الحياة  والأرض 1", "fullName": "حسناء أكجي", "subject": "علوم الحياة والأرض", "defaultRoom": "مختبر ع ح أ", "loginCode": "N2E9VQ3B"},
+    {"teacherId": "T17", "defName": "أستاذ علوم الحياة  والأرض 2", "fullName": "محمد زين الدين", "subject": "علوم الحياة والأرض", "defaultRoom": "مختبر ع ح أ", "loginCode": "NFJCLKLU"},
+    {"teacherId": "T18", "defName": "أستاذ التاريخ والجغرافيا 1", "fullName": "محمد داعنو", "subject": "التاريخ والجغرافيا", "defaultRoom": "عامة", "loginCode": "XQ9YTBR3"},
+    {"teacherId": "T19", "defName": "أستاذ التاريخ والجغرافيا 2", "fullName": "علي ازري", "subject": "التاريخ والجغرافيا", "defaultRoom": "عامة", "loginCode": "Z8PVLU9E"},
+    {"teacherId": "T20", "defName": "أستاذ الفلسفة 1", "fullName": "عائشة السخني", "subject": "الفلسفة", "defaultRoom": "عامة", "loginCode": "WYNSE5GY"},
+    {"teacherId": "T21", "defName": "أستاذ التربية الإسلامية 1", "fullName": "مليكة أمين", "subject": "التربية الإسلامية", "defaultRoom": "عامة", "loginCode": "N7YQJJR2"},
+    {"teacherId": "T22", "defName": "أستاذ التربية البدنية والرياضة 1", "fullName": "زكرياء مهتدي", "subject": "التربية البدنية والرياضة", "defaultRoom": "ملاعب", "loginCode": "W4KHTCYS"},
+    {"teacherId": "T23", "defName": "أستاذ التربية البدنية والرياضة 2", "fullName": "بكر السادي", "subject": "التربية البدنية والرياضة", "defaultRoom": "ملاعب", "loginCode": "QKTBNT93"}
+]
+
+REAL_TEACHERS_MAPPING = {
+    "أستاذ اللغة  العربية 1": "عبد العزيز بتوكنوت",
+    "أستاذ اللغة العربية 1": "عبد العزيز بتوكنوت",
+    "أستاذ اللغة  العربية 2": "عمر اعتزري",
+    "أستاذ اللغة العربية 2": "عمر اعتزري",
+    "أستاذ اللغة  العربية 3": "فتحية أزكي",
+    "أستاذ اللغة العربية 3": "فتحية أزكي",
+    "أستاذ اللغة  الفرنسية 1": "رقية أجديك",
+    "أستاذ اللغة الفرنسية 1": "رقية أجديك",
+    "أستاذ اللغة  الفرنسية 2": "إبراهيم ادبي",
+    "أستاذ اللغة الفرنسية 2": "إبراهيم ادبي",
+    "أستاذ اللغة  الفرنسية 3": "غزلان جادور",
+    "أستاذ اللغة الفرنسية 3": "غزلان جادور",
+    "أستاذ اللغة  الفرنسية 4": "فاطمة فهمي",
+    "أستاذ اللغة الفرنسية 4": "فاطمة فهمي",
+    "أستاذ اللغة الإنجليزية 1": "رشيد ادات",
+    "أستاذ اللغة الإنجليزية 2": "الصديق بوعلي",
+    "أستاذ اللغة الإنجليزية 3": "هدى هباز",
+    "أستاذ الرياضيات 1": "مصطفى أكواس",
+    "أستاذ الرياضيات 2": "عبد المغيث البوزيدي",
+    "أستاذ الرياضيات 3": "لطيفة لكوش",
+    "أستاذ الفيزياء والكيمياء 1": "عبد الله اغلاس",
+    "أستاذ الفيزياء والكيمياء 2": "بونعطان ياسين",
+    "أستاذ علوم الحياة  والأرض 1": "حسناء أكجي",
+    "أستاذ علوم الحياة والأرض 1": "حسناء أكجي",
+    "أستاذ علوم الحياة  والأرض 2": "محمد زين الدين",
+    "أستاذ علوم الحياة والأرض 2": "محمد زين الدين",
+    "أستاذ التاريخ والجغرافيا 1": "محمد داعنو",
+    "أستاذ التاريخ والجغرافيا 2": "علي ازري",
+    "أستاذ الفلسفة 1": "عائشة السخني",
+    "أستاذ التربية الإسلامية 1": "مليكة أمين",
+    "أستاذ التربية البدنية والرياضة 1": "زكرياء مهتدي",
+    "أستاذ التربية البدنية والرياضة 2": "بكر السادي"
+}
+
+def sync_attendance_teachers_from_state(app_state, force=False):
     """
-    مزامنة وتحيين حصص الأساتذة وجدول الحصص الأسبوعي في منظومة مسك الغياب (attendance_mobile_db.json)
-    وفي هواتف الأساتذة وعند المدير مباشرة وفق آخر إنتاج للجدول العام للمدرسين.
-    تحافظ على أرقام المرور (PIN) للأساتذة الحاليين وتسجل أي أساتذة جدد تلقائياً.
+    اعتماد ومزامنة الأساتذة الحقيقيين الـ 23 لمؤسسة الثانوي التأهيلي أنفك في منظومة مسك الغياب
+    مع تعيين أرقام PIN المعتمدة المكونة من 8 خانات وبدون أي أسماء شكلية أو تراكم.
+    """
+    try:
+        import secrets
+        db = load_attendance_mobile_db()
+        existing_teachers = db.get("teachers", [])
+        if not isinstance(existing_teachers, list):
+            existing_teachers = []
+
+        # Map existing PINs by teacherId or fullName
+        existing_pins_by_tid = {}
+        existing_pins_by_name = {}
+        for t in existing_teachers:
+            pin = str(t.get("loginCode") or t.get("code") or "").strip()
+            tid = str(t.get("teacherId") or "").strip()
+            fn = str(t.get("fullName") or t.get("name") or "").strip()
+            if pin and len(pin) >= 4:
+                if tid: existing_pins_by_tid[tid] = pin
+                if fn: existing_pins_by_name[fn] = pin
+
+        synced_teachers = []
+        for canon in REAL_TEACHERS_CANONICAL:
+            tid = canon["teacherId"]
+            fn = canon["fullName"]
+            def_n = canon["defName"]
+            subj = canon["subject"]
+            room = canon["defaultRoom"]
+
+            pin = None
+            if not force:
+                pin = existing_pins_by_tid.get(tid) or existing_pins_by_name.get(fn) or canon.get("loginCode")
+            if not pin:
+                clean_chars = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ"
+                pin = "".join(secrets.choice(clean_chars) for _ in range(8))
+
+            t_obj = {
+                "teacherId": tid,
+                "loginCode": pin,
+                "code": pin,
+                "excelAlias": fn,
+                "fullName": fn,
+                "defName": def_n,
+                "subject": subj,
+                "defaultRoom": room,
+                "assignedClasses": "",
+                "totalHours": 0
+            }
+            synced_teachers.append(t_obj)
+
+        db["teachers"] = synced_teachers
+        db["updatedAt"] = int(time.time() * 1000)
+        save_attendance_mobile_db(db)
+        print(f"[Sync Teachers]: Successfully synced {len(synced_teachers)} canonical real teachers into attendance_mobile_db.json!")
+        return db
+    except Exception as exc:
+        print(f"[sync_attendance_teachers_from_state error]: {exc}")
+        return load_attendance_mobile_db()
+
+def sync_attendance_timetable_from_master(app_state, tt_data=None, reset_sessions=False):
+    """
+    مزامنة واعتماد حصص الأساتذة الحقيقيين الـ 23 وجدول الحصص الأسبوعي في منظومة مسك الغياب
+    مع استبدال الجدول السابق بالكامل بدون أي تكرار أو تراكم.
     """
     try:
         import secrets, re
@@ -1139,23 +1269,42 @@ def sync_attendance_timetable_from_master(app_state, tt_data=None):
             return {"success": False, "message": "بيانات استعمالات زمن المدرسين غير متوفرة في الجدول المنتج."}
 
         db = load_attendance_mobile_db()
-        teachers = db.get("teachers", [])
-        if not isinstance(teachers, list):
-            teachers = []
 
-        existing_by_alias = {str(t.get("excelAlias", "")).strip(): t for t in teachers if t.get("excelAlias")}
-        existing_by_name = {str(t.get("fullName", "")).strip(): t for t in teachers if t.get("fullName")}
-        existing_by_id = {str(t.get("teacherId", "")).strip(): t for t in teachers if t.get("teacherId")}
-        used_pins = {str(t.get("loginCode", "")) for t in teachers if t.get("loginCode")}
+        if reset_sessions:
+            now_ms = int(time.time() * 1000)
+            db["resetToken"] = now_ms
+            db["attendanceSessions"] = {}
+            db["justifiedAbsences"] = {}
+            db["dismissalReports"] = {}
+            try:
+                attendance_engine.attendance_records = []
+                attendance_engine.save_state()
+            except Exception:
+                pass
 
-        # Subject & room lookup
-        subject_by_teacher = {}
-        for m_item in tt_data.get("master_teachers_data", []):
-            t_name = str(m_item.get("teacher", "")).strip()
-            if t_name:
-                subject_by_teacher[t_name] = str(m_item.get("subject", "")).strip()
-                if m_item.get("room"):
-                    subject_by_teacher[f"{t_name}__room"] = str(m_item.get("room", "")).strip()
+        # 1. Start with the strictly 23 canonical real teachers
+        state_db = sync_attendance_teachers_from_state(app_state, force=False)
+        synced_teachers = list(state_db.get("teachers", []))
+        
+        # Build quick lookups for teacher mapping
+        teacher_id_by_name = {}
+        for t in synced_teachers:
+            fn = str(t.get("fullName", "")).strip()
+            def_n = str(t.get("defName", "")).strip()
+            tid = t.get("teacherId")
+            if fn:
+                teacher_id_by_name[fn] = tid
+                teacher_id_by_name[" ".join(fn.split())] = tid
+            if def_n:
+                teacher_id_by_name[def_n] = tid
+                teacher_id_by_name[" ".join(def_n.split())] = tid
+
+        # Also add mapping from REAL_TEACHERS_MAPPING
+        for k, v in REAL_TEACHERS_MAPPING.items():
+            mapped_tid = teacher_id_by_name.get(v)
+            if mapped_tid:
+                teacher_id_by_name[k] = mapped_tid
+                teacher_id_by_name[" ".join(k.split())] = mapped_tid
 
         DAY_MAP = {
             "الاثنين": 1, "الإثنين": 1,
@@ -1166,52 +1315,23 @@ def sync_attendance_timetable_from_master(app_state, tt_data=None):
             "السبت": 6
         }
 
-        synced_teachers = list(teachers)
-        teacher_id_map = {}
-
-        for tname in teacher_timetables.keys():
-            t_clean = str(tname).strip()
-            match = existing_by_alias.get(t_clean) or existing_by_name.get(t_clean)
-            if match:
-                tid = match.get("teacherId")
-                teacher_id_map[t_clean] = tid
-                if not match.get("subject") and t_clean in subject_by_teacher:
-                    match["subject"] = subject_by_teacher[t_clean]
-                if not match.get("defaultRoom") and f"{t_clean}__room" in subject_by_teacher:
-                    match["defaultRoom"] = subject_by_teacher[f"{t_clean}__room"]
-            else:
-                next_num = len(synced_teachers) + 1
-                while f"T{next_num:02d}" in existing_by_id:
-                    next_num += 1
-                tid = f"T{next_num:02d}"
-                existing_by_id[tid] = True
-
-                pin = "".join(secrets.choice("ABCDEFGHJKLMNPQRSTUVWXYZ23456789") for _ in range(8))
-                while pin in used_pins:
-                    pin = "".join(secrets.choice("ABCDEFGHJKLMNPQRSTUVWXYZ23456789") for _ in range(8))
-                used_pins.add(pin)
-
-                subj = subject_by_teacher.get(t_clean, "")
-                room = subject_by_teacher.get(f"{t_clean}__room", "")
-
-                new_t = {
-                    "teacherId": tid,
-                    "loginCode": pin,
-                    "excelAlias": t_clean,
-                    "fullName": t_clean,
-                    "subject": subj,
-                    "defaultRoom": room
-                }
-                synced_teachers.append(new_t)
-                teacher_id_map[t_clean] = tid
-
         # Build full timetable entries from teacher_timetables
         new_timetable = []
         for tname, sched in teacher_timetables.items():
             t_clean = str(tname).strip()
-            tid = teacher_id_map.get(t_clean)
+            tid = teacher_id_by_name.get(t_clean) or teacher_id_by_name.get(" ".join(t_clean.split()))
+            if not tid:
+                # Try fallback matching
+                for canon in synced_teachers:
+                    if canon["fullName"] in t_clean or t_clean in canon["fullName"]:
+                        tid = canon["teacherId"]
+                        break
             if not tid:
                 continue
+
+            matched_teacher = next((t for t in synced_teachers if t["teacherId"] == tid), None)
+            real_tname = matched_teacher["fullName"] if matched_teacher else t_clean
+            subj_default = matched_teacher["subject"] if matched_teacher else ""
 
             for dkey, hours in sched.items():
                 is_pm = " م" in dkey
@@ -1229,7 +1349,7 @@ def sync_attendance_timetable_from_master(app_state, tt_data=None):
 
                     cls = str(cell.get("students") or "").strip()
                     room = str(cell.get("room") or "").strip()
-                    subj = str(cell.get("subject") or "").strip()
+                    subj = str(cell.get("subject") or "").strip() or subj_default
                     if not cls:
                         continue
 
@@ -1237,6 +1357,7 @@ def sync_attendance_timetable_from_master(app_state, tt_data=None):
                     new_timetable.append({
                         "slotId": slot_id,
                         "teacherId": tid,
+                        "teacherName": real_tname,
                         "classCode": cls,
                         "dayOfWeek": dow,
                         "slotIndex": slot_idx,
@@ -1244,21 +1365,177 @@ def sync_attendance_timetable_from_master(app_state, tt_data=None):
                         "subject": subj
                     })
 
+        # REPLACE previous timetable completely (NO ACCUMULATION)
         db["teachers"] = synced_teachers
         db["timetable"] = new_timetable
         db["updatedAt"] = int(time.time() * 1000)
         save_attendance_mobile_db(db)
         print(f"[Timetable Attendance Sync]: Synced {len(synced_teachers)} teachers and {len(new_timetable)} sessions from Master Timetable.")
+        try:
+            import threading
+            threading.Thread(target=sync_attendance_with_cloud, daemon=True).start()
+        except Exception as _e_cloud:
+            print("[Auto-sync timetable with cloud error]:", _e_cloud)
         return {
             "success": True,
             "teachers_count": len(synced_teachers),
             "timetable_slots_count": len(new_timetable),
-            "message": f"تم بنجاح تحيين {len(new_timetable)} حصة أسبوعية لـ {len(synced_teachers)} أستاذاً في منظومة تتبع الغياب وهواتف الأساتذة وفق آخر جدول عام."
+            "message": f"تم بنجاح تحيين واعتماد {len(new_timetable)} حصة أسبوعية لـ {len(synced_teachers)} أستاذاً حقيقياً في منظومة تتبع الغياب وإرسالها للسيرفر وهواتف الأساتذة وفق آخر جدول عام."
         }
     except Exception as e:
         print("[sync_attendance_timetable_from_master error]:", e)
         return {"success": False, "error": str(e)}
 
+def cancel_student_absence_records(student_id="", class_code="", date_str="", session_id=None, massar_code="", student_name=""):
+    """
+    إلغاء وحذف غياب أو تأخر التلميذ المسجل عن طريق الخطأ،
+    مع مسحه نهائياً من قاعدة بيانات الحصص وسجلات التلميذ وتحديث الإحصائيات.
+    """
+    cancelled_count = 0
+    matched_student_name = student_name or ""
+
+    # 1. Update attendance_mobile_db.json
+    try:
+        mobile_db = load_attendance_mobile_db()
+        sessions = mobile_db.get("attendanceSessions", {})
+        justified_map = mobile_db.get("justifiedAbsences", {})
+        students = mobile_db.get("students", [])
+
+        # Find matching student details
+        target_sids = set()
+        if student_id: target_sids.add(str(student_id))
+        if massar_code: target_sids.add(str(massar_code))
+        if class_code and massar_code: target_sids.add(f"{class_code}_{massar_code}")
+        if class_code and student_id: target_sids.add(f"{class_code}_{student_id}")
+
+        for st in students:
+            st_id = str(st.get("studentId", ""))
+            st_m = str(st.get("massarCode", ""))
+            st_name = str(st.get("fullName", ""))
+            st_cls = str(st.get("classCode", ""))
+            is_match = False
+            if student_id and (st_id == student_id or st_m == student_id):
+                is_match = True
+            elif massar_code and st_m == massar_code:
+                is_match = True
+            elif student_name and st_name and st_name.strip() == student_name.strip():
+                is_match = True
+
+            if is_match:
+                if not matched_student_name:
+                    matched_student_name = st_name
+                target_sids.add(st_id)
+                if st_m: target_sids.add(st_m)
+                if st_cls and st_m: target_sids.add(f"{st_cls}_{st_m}")
+                if st_cls and st_id: target_sids.add(f"{st_cls}_{st_id}")
+
+        # Scan sessions
+        for s_key, sess in sessions.items():
+            if not sess: continue
+            s_date = sess.get("date", "")
+            s_cls = sess.get("classCode", "")
+            s_id = sess.get("sessionId", s_key)
+
+            # Filter by date or session_id
+            if session_id and session_id != "ALL" and s_id != session_id and s_key != session_id:
+                continue
+            if date_str and s_date and s_date != date_str:
+                continue
+            if class_code:
+                c_norm1 = class_code.replace("-", "").replace("_", "").replace(" ", "").upper()
+                c_norm2 = s_cls.replace("-", "").replace("_", "").replace(" ", "").upper()
+                if c_norm1 and c_norm2 and c_norm1 != c_norm2:
+                    continue
+
+            # Check absentStudentIds
+            abs_ids = sess.get("absentStudentIds", [])
+            new_abs_ids = []
+            modified = False
+            for sid in abs_ids:
+                sid_str = str(sid)
+                sid_part = sid_str.split("_")[-1] if "_" in sid_str else sid_str
+                if sid_str in target_sids or sid_part in target_sids:
+                    modified = True
+                    cancelled_count += 1
+                else:
+                    new_abs_ids.append(sid)
+
+            if modified:
+                sess["absentStudentIds"] = new_abs_ids
+                sess["absentCount"] = len(new_abs_ids)
+
+            # Check lateStudentIds
+            late_ids = sess.get("lateStudentIds", [])
+            new_late_ids = []
+            for sid in late_ids:
+                sid_str = str(sid)
+                sid_part = sid_str.split("_")[-1] if "_" in sid_str else sid_str
+                if sid_str in target_sids or sid_part in target_sids:
+                    modified = True
+                else:
+                    new_late_ids.append(sid)
+
+            if len(new_late_ids) != len(late_ids):
+                sess["lateStudentIds"] = new_late_ids
+                sess["lateCount"] = len(new_late_ids)
+
+            # Check attendanceMap
+            att_map = sess.get("attendanceMap", {})
+            for k in list(att_map.keys()):
+                k_part = k.split("_")[-1] if "_" in k else k
+                if k in target_sids or k_part in target_sids:
+                    if att_map[k] in ("A", "L"):
+                        att_map[k] = "P"
+                        modified = True
+
+            if modified:
+                sess["presentCount"] = sum(1 for v in att_map.values() if v == "P")
+                sess["updatedAt"] = int(time.time() * 1000)
+
+            # Clean justifiedAbsences
+            for sid in target_sids:
+                j_k1 = f"{s_id}_{sid}"
+                j_k2 = f"{s_key}_{sid}"
+                if j_k1 in justified_map: del justified_map[j_k1]
+                if j_k2 in justified_map: del justified_map[j_k2]
+
+        mobile_db["updatedAt"] = int(time.time() * 1000)
+        save_attendance_mobile_db(mobile_db)
+    except Exception as e_mob:
+        print(f"[cancel_student_absence mobile_db error]: {e_mob}")
+
+    # 2. Update attendance_engine (students_attendance_state.json)
+    try:
+        if hasattr(attendance_engine, "attendance_records"):
+            eng_modified = False
+            for r in attendance_engine.attendance_records:
+                r_date = r.get("date", "")
+                r_cls = r.get("class_name", "")
+                if date_str and r_date and r_date != date_str:
+                    continue
+                if class_code:
+                    c_norm1 = class_code.replace("-", "").replace("_", "").replace(" ", "").upper()
+                    c_norm2 = r_cls.replace("-", "").replace("_", "").replace(" ", "").upper()
+                    if c_norm1 and c_norm2 and c_norm1 != c_norm2:
+                        continue
+
+                recs = r.get("records", {})
+                for k in list(recs.keys()):
+                    if k in target_sids or (massar_code and massar_code in k):
+                        del recs[k]
+                        eng_modified = True
+                        cancelled_count += 1
+            if eng_modified:
+                attendance_engine.save_state()
+    except Exception as e_eng:
+        print(f"[cancel_student_absence attendance_engine error]: {e_eng}")
+
+    return {
+        "success": True,
+        "message": f"تم إلغاء وحذف الغياب بنجاح للتلميذ(ة) {matched_student_name or student_id} ومسحه نهائياً من قاعدة البيانات.",
+        "student_name": matched_student_name or student_id,
+        "cancelled_count": cancelled_count
+    }
 
 def get_unified_daily_students_attendance(date_str):
     """
@@ -3850,6 +4127,295 @@ def export_teachers_to_excel(app_state):
 
     return file_bytes, dest_path
 
+
+def parse_master_timetable_from_excel(file_bytes: bytes) -> dict:
+    try:
+        import openpyxl, io, re
+        wb = openpyxl.load_workbook(io.BytesIO(file_bytes), data_only=True)
+
+        REAL_TEACHER_NAMES_LIST = [
+            "عبد العزيز بتوكنوت", "عمر اعتزري", "فتحية أزكي",
+            "رقية أجديك", "إبراهيم ادبي", "غزلان جادور", "فاطمة فهمي",
+            "رشيد ادات", "الصديق بوعلي", "هدى هباز",
+            "مصطفى أكواس", "عبد المغيث البوزيدي", "لطيفة لكوش",
+            "عبد الله اغلاس", "بونعطان ياسين",
+            "حسناء أكجي", "محمد زين الدين",
+            "محمد داعنو", "علي ازري",
+            "عائشة السخني", "مليكة أمين",
+            "زكرياء مهتدي", "بكر السادي"
+        ]
+
+        DAY_MAP = {
+            "الإثنين": "الاثنين", "الاثنين": "الاثنين",
+            "الثلاثاء": "الثلاثاء",
+            "الأربعاء": "الاربعاء", "الاربعاء": "الاربعاء",
+            "الخميس": "الخميس",
+            "الجمعة": "الجمعة",
+            "السبت": "السبت"
+        }
+
+        # 0. Check for individual class sheets (e.g. TCSEF-1, 1BACSEF-1...) - PREFERRED & MOST ACCURATE
+        class_sheets = [
+            s for s in wb.sheetnames
+            if s not in ['الجدول العام للحصص', 'لائحة الأساتذة', 'المصادر والمراجعة', 'الجدول العام', 'Sheet', 'Feuil1']
+            and any(lvl in s for lvl in ['TC', '1BAC', '2BAC', 'TCS', '1APIC', '2APIC', '3APIC'])
+        ]
+
+        if len(class_sheets) >= 3:
+            teacher_timetables = {}
+            master_teachers = []
+            teachers_seen = set()
+
+            for cname in class_sheets:
+                ws = wb[cname]
+                for r in range(3, 9):
+                    day_raw = str(ws.cell(r, 1).value or '').strip()
+                    dname = DAY_MAP.get(day_raw)
+                    if not dname:
+                        continue
+
+                    for slot_idx in range(1, 9):
+                        col = slot_idx + 1
+                        cell_val = ws.cell(r, col).value
+                        if not cell_val:
+                            continue
+                        val_str = str(cell_val).strip()
+                        if not val_str or val_str.lower() == 'none':
+                            continue
+
+                        parts = [p.strip() for p in val_str.split('\n') if p.strip()]
+                        subj = parts[0]
+                        tname = ""
+                        room = ""
+                        for p in parts[1:]:
+                            if any(t in p for t in REAL_TEACHER_NAMES_LIST):
+                                tname = next(t for t in REAL_TEACHER_NAMES_LIST if t in p)
+                            elif 'قاعة' in p or 'القاعة' in p or p.isdigit() or len(p) <= 3:
+                                room = p.replace('القاعة', '').replace('قاعة', '').strip()
+
+                        if not tname:
+                            for p in parts[1:]:
+                                if 'قاعة' not in p and 'القاعة' not in p:
+                                    tname = p
+                                    break
+
+                        if not tname:
+                            tname = "أستاذ " + subj
+
+                        is_pm = slot_idx > 4
+                        half_day = f"{dname} {'م' if is_pm else 'ص'}"
+                        hour_key = f"ساعة {((slot_idx - 1) % 4) + 1}"
+
+                        if tname not in teacher_timetables:
+                            teacher_timetables[tname] = {}
+                            teachers_seen.add(tname)
+                            master_teachers.append({"teacher": tname, "subject": subj, "room": room})
+
+                        if half_day not in teacher_timetables[tname]:
+                            teacher_timetables[tname][half_day] = {}
+
+                        teacher_timetables[tname][half_day][hour_key] = {
+                            "students": cname,
+                            "subject": subj,
+                            "room": room
+                        }
+
+            return {
+                "success": True,
+                "teachers_count": len(teachers_seen),
+                "master_teachers_data": master_teachers,
+                "teacher_timetables": teacher_timetables,
+                "format": "class_sheets"
+            }
+
+        # 1. Check for list-based master timetable format (القسم, اليوم, الفترة, المادة, الأستاذ...)
+        list_ws = None
+        for name in wb.sheetnames:
+            ws_cand = wb[name]
+            header_vals = [str(ws_cand.cell(1, c).value or "").strip() for c in range(1, 10)]
+            if any("أستاذ" in h or "استاذ" in h or "الأستاذ" in h for h in header_vals) and any("قسم" in h or "القسم" in h for h in header_vals):
+                list_ws = ws_cand
+                break
+
+        if list_ws is not None:
+            header_vals = [str(list_ws.cell(1, c).value or "").strip() for c in range(1, list_ws.max_column + 1)]
+            cls_col = next((i+1 for i, h in enumerate(header_vals) if "قسم" in h), 1)
+            day_col = next((i+1 for i, h in enumerate(header_vals) if "يوم" in h), 2)
+            per_col = next((i+1 for i, h in enumerate(header_vals) if "فترة" in h or "حصة" in h or "وقت" in h or "توقيت" in h), 3)
+            sub_col = next((i+1 for i, h in enumerate(header_vals) if "مادة" in h), 4)
+            tea_col = next((i+1 for i, h in enumerate(header_vals) if "أستاذ" in h or "استاذ" in h), 5)
+            rom_col = next((i+1 for i, h in enumerate(header_vals) if "قاعة" in h), 6)
+
+            DAY_MAP = {
+                "الإثنين": "الاثنين", "الاثنين": "الاثنين",
+                "الثلاثاء": "الثلاثاء",
+                "الأربعاء": "الاربعاء", "الاربعاء": "الاربعاء",
+                "الخميس": "الخميس",
+                "الجمعة": "الجمعة",
+                "السبت": "السبت"
+            }
+
+            teacher_timetables = {}
+            master_teachers = []
+            teachers_seen = set()
+
+            for r in range(2, list_ws.max_row + 1):
+                tname = str(list_ws.cell(r, tea_col).value or "").strip()
+                if not tname:
+                    continue
+                cname = str(list_ws.cell(r, cls_col).value or "").strip()
+                dname_raw = str(list_ws.cell(r, day_col).value or "").strip()
+                pname_raw = str(list_ws.cell(r, per_col).value or "").strip()
+                sname = str(list_ws.cell(r, sub_col).value or "").strip()
+                rname = str(list_ws.cell(r, rom_col).value or "").strip()
+
+                dname = DAY_MAP.get(dname_raw, dname_raw)
+
+                slot_idx = 1
+                m = re.findall(r'\d+', pname_raw)
+                if m:
+                    h = int(m[0])
+                    if h == 8: slot_idx = 1
+                    elif h == 9: slot_idx = 2
+                    elif h == 10: slot_idx = 3
+                    elif h == 11: slot_idx = 4
+                    elif h in (14, 2): slot_idx = 5
+                    elif h in (15, 3): slot_idx = 6
+                    elif h in (16, 4): slot_idx = 7
+                    elif h in (17, 5): slot_idx = 8
+                    elif 1 <= h <= 8: slot_idx = h
+
+                is_pm = slot_idx > 4
+                half_day = f"{dname} {'م' if is_pm else 'ص'}"
+                hour_key = f"ساعة {((slot_idx - 1) % 4) + 1}"
+
+                if tname not in teachers_seen:
+                    teachers_seen.add(tname)
+                    master_teachers.append({
+                        "teacher": tname,
+                        "subject": sname,
+                        "room": rname
+                    })
+                    teacher_timetables[tname] = {}
+
+                if half_day not in teacher_timetables[tname]:
+                    teacher_timetables[tname][half_day] = {}
+
+                teacher_timetables[tname][half_day][hour_key] = {
+                    "students": cname,
+                    "subject": sname,
+                    "room": rname
+                }
+
+            return {
+                "success": True,
+                "teachers_count": len(teachers_seen),
+                "master_teachers_data": master_teachers,
+                "teacher_timetables": teacher_timetables,
+                "format": "list"
+            }
+        ws = None
+        for name in wb.sheetnames:
+            if "الجدول العام" in name or "الجدول" in name or "master" in name.lower():
+                ws = wb[name]
+                break
+        if ws is None:
+            ws = wb.active
+
+        merged_lookup = {}
+        for rng in ws.merged_cells.ranges:
+            top_val = ws.cell(row=rng.min_row, column=rng.min_col).value
+            if top_val is not None:
+                for r in range(rng.min_row, rng.max_row + 1):
+                    for c in range(rng.min_col, rng.max_col + 1):
+                        merged_lookup[(r, c)] = top_val
+
+        def get_val(r, c):
+            return merged_lookup.get((r, c), ws.cell(row=r, column=c).value)
+
+        header_row = 5
+        for r in range(1, 12):
+            row_vals = [str(ws.cell(row=r, column=c).value or "") for c in range(1, 10)]
+            if any("أستاذ" in v or "استاذ" in v or "الأستاذ" in v for v in row_vals):
+                header_row = r
+                break
+
+        DAYS_12 = [
+            "الاثنين ص", "الاثنين م",
+            "الثلاثاء ص", "الثلاثاء م",
+            "الاربعاء ص", "الاربعاء م",
+            "الخميس ص", "الخميس م",
+            "الجمعة ص", "الجمعة م",
+            "السبت ص", "السبت م"
+        ]
+
+        master_teachers = []
+        teacher_timetables = {}
+        start_data_row = header_row + 2
+
+        for row in range(start_data_row, ws.max_row + 1):
+            teacher = ws.cell(row=row, column=1).value
+            if not teacher or str(teacher).strip() == "":
+                continue
+            teacher = str(teacher).strip()
+            if any(w in teacher for w in ["المجموع", "العدد", "المادة", "الأستاذ", "الإدارة"]):
+                continue
+            subject = str(ws.cell(row=row, column=2).value or "").strip()
+            default_room = str(ws.cell(row=row, column=3).value or "").strip()
+
+            schedule = {}
+            for col in range(4, min(52, ws.max_column + 1)):
+                d_idx = (col - 4) // 4
+                if d_idx >= len(DAYS_12):
+                    break
+                day = DAYS_12[d_idx]
+                p_num = str((col - 4) % 4 + 1)
+                
+                raw_val = get_val(row, col)
+                if not raw_val or str(raw_val).strip() in ("", "✕", "X", "x", "-", "None"):
+                    continue
+
+                raw_str = str(raw_val).strip()
+                lines = [l.strip() for l in raw_str.split("\n") if l.strip()]
+                students = lines[0] if lines else ""
+                room = default_room
+                if len(lines) > 1:
+                    room = lines[1].strip("() ")
+
+                if students:
+                    if day not in schedule:
+                        schedule[day] = {}
+                    schedule[day][p_num] = {
+                        "subject": subject,
+                        "students": students,
+                        "room": room
+                    }
+
+            if schedule:
+                master_teachers.append({
+                    "teacher": teacher,
+                    "subject": subject,
+                    "room": default_room,
+                    "schedule": schedule
+                })
+                teacher_timetables[teacher] = schedule
+
+        if not master_teachers:
+            return {"success": False, "error": "لم يتم العثور على جداول حصص صالحة في ملف الإكسيل."}
+
+        inst_name = str(ws.cell(2, 10).value or "المؤسسة")
+        return {
+            "success": True,
+            "master_teachers_data": master_teachers,
+            "teacher_timetables": teacher_timetables,
+            "institution_info": {
+                "name": inst_name,
+                "academic_year": str(ws.cell(1, 45).value or "2026-2027")
+            }
+        }
+    except Exception as exc:
+        return {"success": False, "error": f"خطأ أثناء قراءة ملف الإكسيل: {exc}"}
+
 def import_teachers_from_file(app_state, file_bytes: bytes, filename: str) -> dict:
     if not file_bytes:
         return {"success": False, "error": "لم يتم استلام أي بيانات في الملف."}
@@ -4091,6 +4657,36 @@ def start_attendance_cloud_background_worker():
                 pass
             time.sleep(10)
     threading.Thread(target=_loop, daemon=True, name="AttendanceCloudSyncLoop").start()
+
+def _convert_html_to_pdf_edge(html_filepath, pdf_filepath):
+    import subprocess
+    edge_paths = [
+        r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
+        r"C:\Program Files\Microsoft\Edge\Application\msedge.exe",
+        r"C:\Program Files\Google\Chrome\Application\chrome.exe",
+        r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
+    ]
+    browser_bin = next((p for p in edge_paths if os.path.exists(p)), None)
+    if not browser_bin:
+        print("[PDF] No browser executable found!")
+        return False
+    cmd = [
+        browser_bin,
+        "--headless",
+        "--disable-gpu",
+        "--no-pdf-header-footer",
+        f"--print-to-pdf={pdf_filepath}",
+        html_filepath
+    ]
+    try:
+        res = subprocess.run(cmd, capture_output=True, text=True, timeout=25)
+        success = os.path.exists(pdf_filepath) and os.path.getsize(pdf_filepath) > 0
+        print(f"[PDF Conversion] Result: {success}, size: {os.path.getsize(pdf_filepath) if success else 0} bytes")
+        return success
+    except Exception as e:
+        print(f"[PDF Conversion Error]: {e}")
+        return False
+
 
 class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
@@ -4365,12 +4961,21 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
                     db = load_attendance_mobile_db()
                 except Exception:
                     pass
+
+            cur_teachers = db.get("teachers", [])
+            dummy_markers = ["عمر بنجلون", "محمد الإدريسي", "فاطمة الزهراء الفاسي", "أستاذ الفرنسية", "أستاذ الفيزياء", "أستاذ الرياضيات", "أستاذ اللغة"]
+            if len(cur_teachers) != 23 or any(any(m in str(t.get("fullName", "")) for m in dummy_markers) for t in cur_teachers):
+                db = sync_attendance_teachers_from_state(APP_STATE)
+
             self.send_json_data(db)
             return
 
         if parsed.path == "/api/attendance/export_pins":
             db = load_attendance_mobile_db()
             teachers = db.get("teachers", [])
+            if len(teachers) != 23 or any(any(m in str(t.get("fullName", "")) for m in ["عمر بنجلون", "محمد الإدريسي", "فاطمة الزهراء الفاسي"]) for t in teachers):
+                db = sync_attendance_teachers_from_state(APP_STATE)
+                teachers = db.get("teachers", [])
             excel_bytes = generate_teacher_pins_excel(teachers)
             self.send_response(200)
             self.send_header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
@@ -4736,6 +5341,70 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
             self.end_headers()
             res = EXPORT_ENGINE.open_desktop_folder()
             self.wfile.write(json.dumps(res, ensure_ascii=False).encode("utf-8"))
+
+        elif parsed.path == "/api/open_master_folder":
+            try:
+                EXPORT_ENGINE.ensure_directories()
+                xlsx_path = os.path.join(EXPORT_ENGINE.master_dir, "الجدول_العام_لاستعمالات_الزمن_للمدرسين.xlsx")
+                if not os.path.exists(xlsx_path):
+                    tt_data = APP_STATE.timetable_engine.get_cached_timetable()
+                    if tt_data:
+                        master_data = tt_data.get("master_teachers_data", [])
+                        inst_info = tt_data.get("institution_info", {})
+                        break_slots = APP_STATE.institution.break_time_slots
+                        EXPORT_ENGINE.generate_master_table_excel(master_data, inst_info, break_slots, xlsx_path)
+            except Exception:
+                pass
+            res = EXPORT_ENGINE.open_master_folder()
+            self.send_json_data(res)
+
+        elif parsed.path == "/api/export/master_excel_open":
+            try:
+                EXPORT_ENGINE.ensure_directories()
+                xlsx_path = os.path.join(EXPORT_ENGINE.master_dir, "الجدول_العام_لاستعمالات_الزمن_للمدرسين.xlsx")
+                tt_data = APP_STATE.timetable_engine.get_cached_timetable()
+                if tt_data:
+                    master_data = tt_data.get("master_teachers_data", [])
+                    inst_info = tt_data.get("institution_info", {})
+                    break_slots = APP_STATE.institution.break_time_slots
+                    EXPORT_ENGINE.generate_master_table_excel(master_data, inst_info, break_slots, xlsx_path)
+                res = EXPORT_ENGINE.open_path_in_explorer(xlsx_path)
+                self.send_json_data({"success": True, "path": xlsx_path, "message": "تم تصدير ملف Excel وفتح المجلد بنجاح."})
+            except Exception as e_xl:
+                self.send_json_data({"success": False, "error": str(e_xl)})
+
+        elif parsed.path == "/api/export/master_pdf_open":
+            try:
+                EXPORT_ENGINE.ensure_directories()
+                pdf_path = os.path.join(EXPORT_ENGINE.master_dir, "الجدول_العام_لاستعمالات_الزمن_للمدرسين.pdf")
+                if not os.path.exists(pdf_path):
+                    tt_data = APP_STATE.timetable_engine.get_cached_timetable()
+                    if tt_data:
+                        exp_res = EXPORT_ENGINE.export_all(tt_data, APP_STATE.get_full_state())
+                        pdf_path = exp_res.get("master_pdf") or pdf_path
+                res = EXPORT_ENGINE.open_path_in_explorer(pdf_path)
+                self.send_json_data({"success": True, "path": pdf_path, "message": "تم تصدير ملف PDF وفتح المجلد بنجاح."})
+            except Exception as e_pdf:
+                self.send_json_data({"success": False, "error": str(e_pdf)})
+
+        elif parsed.path == "/api/attendance/export_pins_open":
+            try:
+                db = load_attendance_mobile_db()
+                teachers = db.get("teachers", [])
+                if len(teachers) != 23 or any(any(m in str(t.get("fullName", "")) for m in ["عمر بنجلون", "محمد الإدريسي", "فاطمة الزهراء الفاسي"]) for t in teachers):
+                    db = sync_attendance_teachers_from_state(APP_STATE)
+                    teachers = db.get("teachers", [])
+                excel_bytes = generate_teacher_pins_excel(teachers)
+                pins_dir = os.path.join(os.path.expanduser("~"), "Desktop", "RzzakFet", "أرقام_وبطاقات_الأساتذة")
+                os.makedirs(pins_dir, exist_ok=True)
+                pins_file = os.path.join(pins_dir, "بطاقات_وأرقام_الأساتذة_PIN.xlsx")
+                with open(pins_file, "wb") as f_pin:
+                    f_pin.write(excel_bytes)
+                EXPORT_ENGINE.open_path_in_explorer(pins_file)
+                self.send_json_data({"success": True, "path": pins_file, "message": "تم تصدير ملف بطاقات وأرقام الأساتذة Excel وفتح المجلد بنجاح."})
+            except Exception as e_pin:
+                self.send_json_data({"success": False, "error": str(e_pin)})
+
         elif parsed.path == "/api/exams/presets":
             self.send_json_data({"success": True, "presets": DEFAULT_EXAM_PRESETS})
         elif parsed.path == "/api/golden_window/analyze":
@@ -4886,6 +5555,66 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
                     "institution": attendance_engine.institution_info,
                     "periods": DEFAULT_PERIODS
                 })
+        elif parsed.path == "/api/surveillance/saved_reports":
+            db_path = os.path.join(DATA_DIR, "daily_surveillance_reports_db.json")
+            db = {}
+            if os.path.exists(db_path):
+                try:
+                    with open(db_path, "r", encoding="utf-8") as f:
+                        db = json.load(f)
+                except Exception:
+                    db = {}
+            self.send_json_data({"success": True, "reports": list(db.values())})
+
+        elif parsed.path == "/api/omr/classes":
+            from .omr_engine import omr_engine
+            res = omr_engine.get_classes_catalog(APP_STATE, attendance_engine)
+            self.send_json_data({"success": True, "classes": res})
+
+        elif parsed.path == "/api/omr/sheet_data":
+            from .omr_engine import omr_engine
+            c_code = query_params.get("class_code", [""])[0]
+            mode = query_params.get("mode", ["3days_1"])[0]
+            day_b = query_params.get("day_base", ["الاثنين"])[0]
+            week_n = query_params.get("week_number", ["12"])[0]
+            d_str = query_params.get("date_str", [""])[0]
+            res = omr_engine.generate_sheet_data(
+                app_state=APP_STATE,
+                attendance_engine=attendance_engine,
+                class_code=c_code,
+                mode=mode,
+                day_base=day_b,
+                week_number=week_n,
+                date_str=d_str
+            )
+            self.send_json_data(res)
+
+        elif parsed.path == "/api/omr/print_sheet":
+            from .omr_engine import omr_engine
+            c_code = query_params.get("class_code", [""])[0]
+            mode = query_params.get("mode", ["3days_1"])[0]
+            day_b = query_params.get("day_base", ["الاثنين"])[0]
+            week_n = query_params.get("week_number", ["12"])[0]
+            d_str = query_params.get("date_str", [""])[0]
+            autoprint_str = query_params.get("autoprint", ["1"])[0]
+            sheet_data = omr_engine.generate_sheet_data(
+                app_state=APP_STATE,
+                attendance_engine=attendance_engine,
+                class_code=c_code,
+                mode=mode,
+                day_base=day_b,
+                week_number=week_n,
+                date_str=d_str
+            )
+            html = omr_engine.render_sheet_html(sheet_data, autoprint=(autoprint_str in ("1", "true", "yes")))
+            encoded = html.encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_header("Cache-Control", "no-cache, no-store, must-revalidate")
+            self.send_header("Content-Length", str(len(encoded)))
+            self.end_headers()
+            self.wfile.write(encoded)
+
         elif parsed.path == "/api/attendance/classes":
             sync_attendance_classes_from_state()
             classes_summary = attendance_engine.get_classes_summary()
@@ -4900,6 +5629,26 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
             period_id = query_params.get("period_id", ["M_ALL"])[0]
             session = attendance_engine.get_attendance_session(cname, date_str, period_id)
             self.send_json_data({"success": True, "session": session})
+        elif parsed.path == "/api/attendance/cancel_student_absence":
+            st_id = query_params.get("student_id", [""])[0]
+            cls_code = query_params.get("class_code", [""])[0]
+            d_str = query_params.get("date", [""])[0]
+            sess_id = query_params.get("session_id", [None])[0]
+            m_code = query_params.get("massar_code", [""])[0]
+            st_name = query_params.get("student_name", [""])[0]
+            try:
+                res = cancel_student_absence_records(
+                    student_id=st_id,
+                    class_code=cls_code,
+                    date_str=d_str,
+                    session_id=sess_id,
+                    massar_code=m_code,
+                    student_name=st_name
+                )
+                self.send_json_data(res)
+            except Exception as e:
+                self.send_json_data({"success": False, "error": str(e)})
+
         elif parsed.path == "/api/attendance/history":
             cname = query_params.get("class_name", [None])[0]
             date_str = query_params.get("date", [None])[0]
@@ -5252,6 +6001,7 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
                 pass
 
     def _handle_post(self):
+        import json
         parsed = urllib.parse.urlparse(self.path)
         content_len = int(self.headers.get("Content-Length", 0))
         body = self.rfile.read(content_len) if content_len > 0 else b""
@@ -5350,6 +6100,236 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
                 guidelines=guidelines,
                 extra_compensatory_hours=extra_compensatory_hours,
                 template_type=template_type
+            )
+            try:
+                db_mob = load_attendance_mobile_db()
+                res["teachers_catalog"] = db_mob.get("teachers", [])
+                res["timetable_slots"] = db_mob.get("timetable", [])
+                res["time_slots_def"] = db_mob.get("timeSlots", [])
+                res["all_classes"] = db_mob.get("classes", [])
+            except Exception as e:
+                print(f"[Surveillance DB Enrichment Error]: {e}")
+            self.send_json_data(res)
+
+        elif parsed.path == "/api/surveillance/save_report":
+            report_date = data.get("report_date", datetime.now().strftime("%Y-%m-%d"))
+            day_name = data.get("day_name", "الاثنين")
+            week_number = data.get("week_number", "08")
+            template_type = data.get("template_type", "field_word")
+            matrix = data.get("matrix", [])
+            staff_absences = data.get("staff_absences", [])
+            inspections = data.get("inspections", [])
+            guidelines = data.get("guidelines", [])
+            extra_hours = data.get("extra_hours", [])
+            total_students = data.get("total_students", 0)
+            total_absent = data.get("total_absent", 0)
+            absent_rate = data.get("absent_rate", "00.00%")
+            supervisor_name = data.get("supervisor_name", "")
+            html_content = data.get("html", "")
+
+            # 1. Save into local DB (data/daily_surveillance_reports_db.json)
+            db_path = os.path.join(DATA_DIR, "daily_surveillance_reports_db.json")
+            db = {}
+            if os.path.exists(db_path):
+                try:
+                    with open(db_path, "r", encoding="utf-8") as f:
+                        db = json.load(f)
+                except Exception:
+                    db = {}
+
+            rep_id = f"REP-{report_date}-{template_type}"
+            record = {
+                "report_id": rep_id,
+                "report_date": report_date,
+                "day_name": day_name,
+                "week_number": week_number,
+                "template_type": template_type,
+                "matrix": matrix,
+                "staff_absences": staff_absences,
+                "inspections": inspections,
+                "guidelines": guidelines,
+                "extra_hours": extra_hours,
+                "total_students": total_students,
+                "total_absent": total_absent,
+                "absent_rate": absent_rate,
+                "supervisor_name": supervisor_name,
+                "updated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            }
+            db[rep_id] = record
+            try:
+                with open(db_path, "w", encoding="utf-8") as f:
+                    json.dump(db, f, ensure_ascii=False, indent=2)
+                user_db_path = os.path.expandvars(r"%LOCALAPPDATA%\RzzakFet\data\daily_surveillance_reports_db.json")
+                if os.path.exists(os.path.dirname(user_db_path)):
+                    with open(user_db_path, "w", encoding="utf-8") as f:
+                        json.dump(db, f, ensure_ascii=False, indent=2)
+            except Exception as e:
+                print(f"[Save Surveillance DB Error]: {e}")
+
+            # 2. Save PDF file directly into Desktop/RzzakFet/تقارير اليومية (No JSON files as requested)
+            desktop_base = os.path.join(os.path.expanduser("~"), "Desktop")
+            rzzak_candidates = [
+                os.path.join(desktop_base, "RzzakFet"),
+                os.path.join(desktop_base, "rzzakfet"),
+            ]
+            desktop_rzzak = rzzak_candidates[0]
+            for cand in rzzak_candidates:
+                if os.path.exists(cand):
+                    desktop_rzzak = cand
+                    break
+
+            reports_dir = os.path.join(desktop_rzzak, "تقارير اليومية")
+            try:
+                os.makedirs(reports_dir, exist_ok=True)
+                # Clean up any old .json files in reports_dir per user request
+                for f_name in os.listdir(reports_dir):
+                    if f_name.endswith(".json"):
+                        try:
+                            os.remove(os.path.join(reports_dir, f_name))
+                        except Exception:
+                            pass
+            except Exception:
+                pass
+
+            clean_day = day_name.replace(" ", "_")
+            pdf_filename = f"التقرير_اليومي_النموذج2_{clean_day}_{report_date}.pdf"
+            pdf_filepath = os.path.join(reports_dir, pdf_filename)
+            temp_html_path = os.path.join(reports_dir, f"_temp_report_{clean_day}_{report_date}.html")
+
+            pdf_generated_ok = False
+            try:
+                if html_content:
+                    with open(temp_html_path, "w", encoding="utf-8") as f:
+                        f.write(html_content)
+                    pdf_generated_ok = _convert_html_to_pdf_edge(temp_html_path, pdf_filepath)
+                    if os.path.exists(temp_html_path):
+                        os.remove(temp_html_path)
+            except Exception as e:
+                print(f"[Generate PDF Error]: {e}")
+                if os.path.exists(temp_html_path):
+                    try:
+                        os.remove(temp_html_path)
+                    except Exception:
+                        pass
+
+            final_file = pdf_filepath if pdf_generated_ok else ""
+            msg = f"تم حفظ التقرير بنجاح بصيغة PDF في مجلد التقارير اليومية على سطح المكتب:\n{pdf_filepath}" if pdf_generated_ok else "تم حفظ معطيات التقرير في قاعدة البيانات المحلية"
+
+            self.send_json_data({
+                "success": True,
+                "saved_to_db": True,
+                "pdf_created": pdf_generated_ok,
+                "saved_file": final_file,
+                "reports_dir": reports_dir,
+                "message": msg
+            })
+
+        elif parsed.path == "/api/surveillance/open_reports_dir":
+            desktop_base = os.path.join(os.path.expanduser("~"), "Desktop")
+            rzzak_candidates = [
+                os.path.join(desktop_base, "RzzakFet"),
+                os.path.join(desktop_base, "rzzakfet"),
+            ]
+            desktop_rzzak = rzzak_candidates[0]
+            for cand in rzzak_candidates:
+                if os.path.exists(cand):
+                    desktop_rzzak = cand
+                    break
+            reports_dir = os.path.join(desktop_rzzak, "تقارير اليومية")
+            os.makedirs(reports_dir, exist_ok=True)
+            try:
+                os.startfile(reports_dir)
+                self.send_json_data({"success": True, "path": reports_dir})
+            except Exception as e:
+                self.send_json_data({"success": False, "error": str(e)})
+
+        elif parsed.path == "/api/omr/classes":
+            from .omr_engine import omr_engine
+            res = omr_engine.get_classes_catalog(APP_STATE, attendance_engine)
+            self.send_json_data({"success": True, "classes": res})
+
+        elif parsed.path == "/api/omr/sheet_data":
+            from .omr_engine import omr_engine
+            c_code = data.get("class_code", "")
+            mode = data.get("mode", "3days_1")
+            day_b = data.get("day_base", "الاثنين")
+            week_n = data.get("week_number", "12")
+            d_str = data.get("date_str", "")
+            res = omr_engine.generate_sheet_data(
+                app_state=APP_STATE,
+                attendance_engine=attendance_engine,
+                class_code=c_code,
+                mode=mode,
+                day_base=day_b,
+                week_number=week_n,
+                date_str=d_str
+            )
+            self.send_json_data(res)
+
+        elif parsed.path == "/api/omr/print_sheet":
+            from .omr_engine import omr_engine
+            c_code = data.get("class_code", "")
+            mode = data.get("mode", "3days_1")
+            day_b = data.get("day_base", "الاثنين")
+            week_n = data.get("week_number", "12")
+            d_str = data.get("date_str", "")
+            autoprint_val = data.get("autoprint", True)
+            sheet_data = omr_engine.generate_sheet_data(
+                app_state=APP_STATE,
+                attendance_engine=attendance_engine,
+                class_code=c_code,
+                mode=mode,
+                day_base=day_b,
+                week_number=week_n,
+                date_str=d_str
+            )
+            html = omr_engine.render_sheet_html(sheet_data, autoprint=bool(autoprint_val))
+            encoded = html.encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_header("Cache-Control", "no-cache, no-store, must-revalidate")
+            self.send_header("Content-Length", str(len(encoded)))
+            self.end_headers()
+            self.wfile.write(encoded)
+
+        elif parsed.path == "/api/omr/open_in_browser":
+            c_code = data.get("class_code", "")
+            mode = data.get("mode", "3days_1")
+            day_b = data.get("day_base", "الاثنين")
+            week_n = data.get("week_number", "12")
+            d_str = data.get("date_str", "")
+            port = self.server.server_address[1]
+            from urllib.parse import quote
+            target_url = f"http://127.0.0.1:{port}/api/omr/print_sheet?class_code={quote(str(c_code))}&mode={quote(str(mode))}&day_base={quote(str(day_b))}&week_number={quote(str(week_n))}&date_str={quote(str(d_str))}&autoprint=1"
+            def _launch(u):
+                try:
+                    import os
+                    os.startfile(u)
+                except Exception:
+                    try:
+                        import webbrowser
+                        webbrowser.open(u)
+                    except Exception:
+                        pass
+            import threading
+            threading.Thread(target=lambda: _launch(target_url), daemon=True).start()
+            self.send_json_data({"success": True, "url": target_url})
+
+        elif parsed.path == "/api/omr/save_attendance":
+            from .omr_engine import omr_engine
+            c_code = data.get("class_code", "")
+            d_str = data.get("date_str", "")
+            week_n = data.get("week_number", "12")
+            mode = data.get("mode", "3days_1")
+            absences = data.get("absences", [])
+            res = omr_engine.save_attendance_from_omr(
+                app_state=APP_STATE,
+                attendance_engine=attendance_engine,
+                class_code=c_code,
+                date_str=d_str,
+                week_number=week_n,
+                mode=mode,
+                absences_list=absences
             )
             self.send_json_data(res)
 
@@ -5728,28 +6708,53 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
                 m_code = str(data.get("massar_code") or data.get("massarCode") or "").strip()
                 c_code = str(data.get("class_code") or data.get("classCode") or "").strip()
                 date_str = str(data.get("date") or datetime.now().strftime("%Y-%m-%d")).strip()
-                slot_raw = str(data.get("slot_index") if data.get("slot_index") is not None else (data.get("slotIndex") or "MORNING")).strip().upper()
-                if slot_raw in ["MORNING", "M_ALL", "M", "الصباحية", "صباحية", "فترة صباحية", "9"]:
-                    slots_to_mark = [1, 2, 3, 4]
-                elif slot_raw in ["AFTERNOON", "A_ALL", "A", "المسائية", "مسائية", "فترة مسائية", "10"]:
-                    slots_to_mark = [5, 6, 7, 8]
-                elif slot_raw in ["0", "ALL", "DAY_ALL", "كامل اليوم", "اليوم الكامل"]:
-                    slots_to_mark = [1, 2, 3, 4, 5, 6, 7, 8]
+                # Multi-select slots support (list of slots or comma-separated string)
+                slots_input = data.get("slots") or data.get("slot_indices")
+                if isinstance(slots_input, list) and len(slots_input) > 0:
+                    slots_to_mark = []
+                    for s in slots_input:
+                        try:
+                            si = int(s)
+                            if 1 <= si <= 8 and si not in slots_to_mark:
+                                slots_to_mark.append(si)
+                        except Exception:
+                            pass
+                    if not slots_to_mark:
+                        slots_to_mark = [1, 2, 3, 4]
                 else:
-                    try:
-                        val = int(slot_raw)
-                        if val == 0:
-                            slots_to_mark = [1, 2, 3, 4, 5, 6, 7, 8]
-                        elif val == 9:
-                            slots_to_mark = [1, 2, 3, 4]
-                        elif val == 10:
-                            slots_to_mark = [5, 6, 7, 8]
-                        elif 1 <= val <= 8:
-                            slots_to_mark = [val]
-                        else:
+                    slot_raw = str(data.get("slot_index") if data.get("slot_index") is not None else (data.get("slotIndex") or "MORNING")).strip().upper()
+                    if "," in slot_raw:
+                        slots_to_mark = []
+                        for part in slot_raw.split(","):
+                            try:
+                                si = int(part.strip())
+                                if 1 <= si <= 8 and si not in slots_to_mark:
+                                    slots_to_mark.append(si)
+                            except Exception:
+                                pass
+                        if not slots_to_mark:
                             slots_to_mark = [1]
-                    except Exception:
-                        slots_to_mark = [1]
+                    elif slot_raw in ["MORNING", "M_ALL", "M", "الصباحية", "صباحية", "فترة صباحية", "9"]:
+                        slots_to_mark = [1, 2, 3, 4]
+                    elif slot_raw in ["AFTERNOON", "A_ALL", "A", "المسائية", "مسائية", "فترة مسائية", "10"]:
+                        slots_to_mark = [5, 6, 7, 8]
+                    elif slot_raw in ["0", "ALL", "DAY_ALL", "كامل اليوم", "اليوم الكامل"]:
+                        slots_to_mark = [1, 2, 3, 4, 5, 6, 7, 8]
+                    else:
+                        try:
+                            val = int(slot_raw)
+                            if val == 0:
+                                slots_to_mark = [1, 2, 3, 4, 5, 6, 7, 8]
+                            elif val == 9:
+                                slots_to_mark = [1, 2, 3, 4]
+                            elif val == 10:
+                                slots_to_mark = [5, 6, 7, 8]
+                            elif 1 <= val <= 8:
+                                slots_to_mark = [val]
+                            else:
+                                slots_to_mark = [1]
+                        except Exception:
+                            slots_to_mark = [1]
 
                 rec_type = str(data.get("type") or "ABSENT").upper()
                 is_justified = bool(data.get("justified", False))
@@ -5834,12 +6839,165 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
             except Exception as e:
                 self.send_json_data({"success": False, "error": str(e)})
 
+        elif parsed.path == "/api/attendance/load_master_desktop":
+            try:
+                # Look for master excel file on Desktop
+                desktop_candidates = [
+                    os.path.join(os.path.expanduser("~"), "Desktop", "RzzakFet", "الجدول_العام_لاستعمالات_الزمن_للمدرسين.xlsx"),
+                    os.path.join(os.path.expanduser("~"), "Desktop", "RzzakFet", "الجدول_العام", "الجدول_العام_لاستعمالات_الزمن_للمدرسين.xlsx"),
+                    os.path.join(os.path.expanduser("~"), "Desktop", "الجدول_العام_لاستعمالات_الزمن_للمدرسين.xlsx"),
+                ]
+                found_path = None
+                for c in desktop_candidates:
+                    if os.path.exists(c):
+                        found_path = c
+                        break
+
+                if not found_path:
+                    # Search Desktop recursively for xlsx with الجدول_العام
+                    desktop_dir = os.path.join(os.path.expanduser("~"), "Desktop")
+                    for root, _, files in os.walk(desktop_dir):
+                        for f in files:
+                            if f.endswith(".xlsx") and ("الجدول_العام" in f or "مدرسين" in f or "حصص" in f):
+                                found_path = os.path.join(root, f)
+                                break
+                        if found_path:
+                            break
+
+                if not found_path or not os.path.exists(found_path):
+                    self.send_json_data({"success": False, "error": "لم يتم العثور على ملف الجدول العام (الجدول_العام_لاستعمالات_الزمن_للمدرسين.xlsx) في سطح المكتب."})
+                    return
+
+                with open(found_path, "rb") as fp:
+                    file_bytes = fp.read()
+
+                parsed_tt = parse_master_timetable_from_excel(file_bytes)
+                if not parsed_tt.get("success"):
+                    self.send_json_data({"success": False, "error": parsed_tt.get("error", "فشل تحليل ملف الجدول العام من سطح المكتب.")})
+                    return
+
+                APP_STATE.timetable_engine.cached_timetable = parsed_tt
+                sync_res = sync_attendance_timetable_from_master(APP_STATE, parsed_tt, reset_sessions=True)
+                try:
+                    import threading
+                    threading.Thread(target=sync_attendance_with_cloud, daemon=True).start()
+                except Exception:
+                    pass
+
+                self.send_json_data({
+                    "success": True,
+                    "message": f"تم بنجاح تحميل واعتماد الجدول العام من سطح المكتب ({os.path.basename(found_path)}) وتحديث حصص الغياب ({sync_res.get('timetable_slots_count', 0)} حصة لـ {sync_res.get('teachers_count', 0)} أستاذاً حقيقياً) وإرسالها للسيرفر.",
+                    "slots_count": sync_res.get("timetable_slots_count", 0),
+                    "teachers_count": sync_res.get("teachers_count", 0),
+                    "path": found_path
+                })
+            except Exception as e_ld:
+                self.send_json_data({"success": False, "error": str(e_ld)})
+
+        elif parsed.path == "/api/attendance/upload_timetable_file":
+            try:
+                is_b64 = data.get("is_base64", False)
+                raw_content = data.get("file_content", "")
+                filename = data.get("filename", "")
+                if not raw_content:
+                    self.send_json_data({"success": False, "error": "محتوى الملف فارغ."})
+                    return
+
+                if is_b64:
+                    import base64
+                    if isinstance(raw_content, str) and ";base64," in raw_content:
+                        raw_content = raw_content.split(";base64,")[1]
+                    file_bytes = base64.b64decode(raw_content)
+                    raw_xml = file_bytes.decode("utf-8", errors="ignore")
+                else:
+                    file_bytes = raw_content.encode("utf-8") if isinstance(raw_content, str) else raw_content
+                    raw_xml = raw_content
+
+                assignments = APP_STATE.get_current_assignments()
+                rooms = APP_STATE.room_engine.allocate_rooms(assignments)
+
+                # 1. JSON Timetable import
+                if filename.lower().endswith(".json") or raw_xml.strip().startswith("{"):
+                    try:
+                        j_data = json.loads(raw_xml)
+                        tt_data = j_data.get("timetable") or j_data
+                        if isinstance(tt_data, dict) and ("teacher_timetables" in tt_data or "master_teachers_data" in tt_data):
+                            APP_STATE.timetable_engine.cached_timetable = tt_data
+                            sync_res = sync_attendance_timetable_from_master(APP_STATE, tt_data, reset_sessions=True)
+                            try:
+                                import threading
+                                threading.Thread(target=sync_attendance_with_cloud, daemon=True).start()
+                            except Exception:
+                                pass
+                            self.send_json_data({
+                                "success": True,
+                                "message": f"تم بنجاح تحميل واعتماد الجدول العام من ملف ({filename}) وإرساله للسيرفر ({sync_res.get('timetable_slots_count', 0)} حصة).",
+                                "slots_count": sync_res.get("timetable_slots_count", 0),
+                                "teachers_count": sync_res.get("teachers_count", 0)
+                            })
+                            return
+                    except Exception:
+                        pass
+
+                # 2. XML / FET Timetable import
+                if "<fet" in raw_xml.lower() or "<timetable" in raw_xml.lower() or "<activities_timetable" in raw_xml.lower():
+                    temp_fet = os.path.join(DATA_DIR, "uploaded_timetable.fet")
+                    with open(temp_fet, "w", encoding="utf-8") as f:
+                        f.write(raw_xml)
+                    res = APP_STATE.timetable_engine.generate_timetable(raw_xml, APP_STATE.institution, rooms)
+                    if res.get("success"):
+                        sync_res = sync_attendance_timetable_from_master(APP_STATE, res, reset_sessions=True)
+                        try:
+                            import threading
+                            threading.Thread(target=sync_attendance_with_cloud, daemon=True).start()
+                        except Exception:
+                            pass
+                        self.send_json_data({
+                            "success": True,
+                            "message": f"تم بنجاح تحميل واعتماد الجدول العام من ملف ({filename}) وحساب حصص التلاميذ والغياب وإرسالها للسيرفر ({sync_res.get('timetable_slots_count', 0)} حصة).",
+                            "slots_count": sync_res.get("timetable_slots_count", 0),
+                            "teachers_count": sync_res.get("teachers_count", 0)
+                        })
+                    else:
+                        self.send_json_data({"success": False, "error": res.get("error", "فشل تحليل واحتساب ملف الجدول.")})
+                # 3. Excel (.xlsx) Master Timetable import
+                elif filename.lower().endswith((".xlsx", ".xlsm", ".xls")) or (len(file_bytes) > 4 and file_bytes[:4] == b'PK\x03\x04'):
+                    parsed_tt = parse_master_timetable_from_excel(file_bytes)
+                    if parsed_tt.get("success"):
+                        APP_STATE.timetable_engine.cached_timetable = parsed_tt
+                        sync_res = sync_attendance_timetable_from_master(APP_STATE, parsed_tt, reset_sessions=True)
+                        try:
+                            import threading
+                            threading.Thread(target=sync_attendance_with_cloud, daemon=True).start()
+                        except Exception:
+                            pass
+                        self.send_json_data({
+                            "success": True,
+                            "message": f"تم بنجاح تحميل واعتماد الجدول العام من ملف الإكسيل ({filename}) وتحديث حصص الغياب ({sync_res.get('timetable_slots_count', 0)} حصة) وإرسالها للسيرفر.",
+                            "slots_count": sync_res.get("timetable_slots_count", 0),
+                            "teachers_count": sync_res.get("teachers_count", 0)
+                        })
+                    else:
+                        self.send_json_data({
+                            "success": False,
+                            "error": parsed_tt.get("error", "تعذر استخراج بيانات جدول الحصص من ملف الإكسيل.")
+                        })
+                else:
+                    self.send_json_data({"success": False, "error": "صيغة الملف غير مدعومة (يرجى تحميل ملف جدول حصص بصيغة XML أو FET أو JSON أو XLSX)."})
+            except Exception as e_up:
+                self.send_json_data({"success": False, "error": str(e_up)})
+
         elif parsed.path == "/api/attendance/sync_latest_timetable":
             res = sync_attendance_timetable_from_master(APP_STATE)
             self.send_json_data(res)
 
+        elif parsed.path == "/api/attendance/sync_teachers_from_state":
+            force_regen = data.get("force_pins", False)
+            db = sync_attendance_teachers_from_state(APP_STATE, force=force_regen)
+            self.send_json_data({"success": True, "teachers": db.get("teachers", [])})
+
         elif parsed.path == "/api/attendance/generate_pins":
-            db = load_attendance_mobile_db()
+            db = sync_attendance_teachers_from_state(APP_STATE, force=False)
             teachers = db.get("teachers", [])
             reset_all = data.get("reset_all", False)
             import random
@@ -5867,6 +7025,14 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
             if idx is not None and 0 <= idx < len(teachers):
                 if name:
                     teachers[idx]["fullName"] = name
+                    teachers[idx]["excelAlias"] = name
+                    def_n = teachers[idx].get("defName") or teachers[idx].get("teacherId")
+                    if def_n and hasattr(APP_STATE, "institution"):
+                        APP_STATE.institution.teacher_custom_names[def_n] = name
+                        try:
+                            APP_STATE.save_to_json()
+                        except Exception:
+                            pass
                 if pin:
                     teachers[idx]["loginCode"] = pin
                     teachers[idx]["code"] = pin
@@ -6310,6 +7476,26 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
                     print("[quick_add_student_absence mob_db sync error]:", _sync_err)
 
                 self.send_json_data({"success": True, "message": "تم تسجيل غياب التلميذ(ة) بنجاح.", "res": res})
+            except Exception as e:
+                self.send_json_data({"success": False, "error": str(e)})
+
+        elif parsed.path == "/api/attendance/cancel_student_absence":
+            st_id = data.get("student_id", "")
+            cls_code = data.get("class_code", "")
+            d_str = data.get("date", "")
+            sess_id = data.get("session_id", None)
+            m_code = data.get("massar_code", "")
+            st_name = data.get("student_name", "")
+            try:
+                res = cancel_student_absence_records(
+                    student_id=st_id,
+                    class_code=cls_code,
+                    date_str=d_str,
+                    session_id=sess_id,
+                    massar_code=m_code,
+                    student_name=st_name
+                )
+                self.send_json_data(res)
             except Exception as e:
                 self.send_json_data({"success": False, "error": str(e)})
 

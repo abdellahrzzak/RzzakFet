@@ -99,7 +99,7 @@ class SurveillanceDailyReportEngine:
         self,
         day_base: str,
         date_str: str,
-        absent_teachers: List[Dict[str, Any]],
+        absent_teachers: List[Dict[str, Any]] = None,
         student_stats: Dict[str, Any] = None,
         incidents: str = "",
         supervisor_name: str = "",
@@ -114,6 +114,8 @@ class SurveillanceDailyReportEngine:
         """
         توليد التقرير اليومي الكامل مع المؤشرات الرياضية والإدارية وسجل غيابات وتأخرات التلاميذ
         """
+        if absent_teachers is None:
+            absent_teachers = []
         sched = self.get_scheduled_day_summary(day_base)
         total_scheduled = sched["total_sessions_scheduled"]
 
@@ -174,11 +176,29 @@ class SurveillanceDailyReportEngine:
             if not student_stats.get("late_students_count"):
                 student_stats["late_students_count"] = calc_late
 
-        inst_name = getattr(self.institution, "institution_name", "المؤسسة التعليمية") if self.institution else "المؤسسة التعليمية"
-        academy = getattr(self.institution, "academy", "الأكاديمية الجهوية للتربية والتكوين") if self.institution else ""
-        province = getattr(self.institution, "province", "المديرية الإقليمية") if self.institution else ""
-        year = getattr(self.institution, "academic_year", "2026-2027") if self.institution else "2026-2027"
-        principal = getattr(self.institution, "principal_name", "رئيس المؤسسة") if self.institution else "رئيس المؤسسة"
+        inst_name = getattr(self.institution, "institution_name", "") if self.institution else ""
+        principal = getattr(self.institution, "principal_name", "") if self.institution else ""
+        year = getattr(self.institution, "academic_year", "") if self.institution else ""
+        academy = getattr(self.institution, "academy", "") if self.institution else ""
+        province = getattr(self.institution, "province", "") if self.institution else ""
+
+        try:
+            from .desktop_server import load_attendance_mobile_db
+            mdb = load_attendance_mobile_db()
+            m_set = mdb.get("settings", {})
+            if not inst_name or inst_name == "المؤسسة التعليمية":
+                inst_name = m_set.get("schoolName", "") or "الثانوية التأهيلية أنفك"
+            if not principal or principal == "رئيس المؤسسة":
+                principal = m_set.get("principalName", "") or "رئيس المؤسسة"
+        except Exception:
+            pass
+
+        if not inst_name or inst_name == "المؤسسة التعليمية":
+            inst_name = "الثانوية التأهيلية أنفك"
+        if not year:
+            year = "2026/2027"
+        if not principal:
+            principal = "رئيس المؤسسة"
 
         # Build dynamic classes matrix for the horizontal matrix table (Word Template 2)
         classes_matrix = []
@@ -190,18 +210,17 @@ class SurveillanceDailyReportEngine:
 
         def _get_short_name(cname):
             u = cname.upper().replace(' ', '').replace('-', '').replace('_', '')
-            if 'TCSF' in u or 'TCSC' in u: return 'علمي'
-            if 'TCLSHF1' in u or 'TCLSH1' in u: return 'أدبي 1'
-            if 'TCLSHF2' in u or 'TCLSH2' in u: return 'أدبي 2'
-            if 'TCLSH' in u: return 'أدبي'
-            if '1BACSEF1' in u or '1BACEXP1' in u: return 'ع تج 1'
-            if '1BACSEF2' in u or '1BACEXP2' in u: return 'ع تج 2'
-            if '1BACSHF1' in u or '1BACLSH1' in u: return 'آ ع إ 1'
-            if '1BACSHF2' in u or '1BACLSH2' in u: return 'آ ع إ 2'
-            if '2BACSPF' in u or '2BACPC' in u: return 'ع فزيائية'
-            if '2BACSVT' in u: return 'ع ح أ'
-            if '2BACSH' in u: return 'ع إنسانية'
-            if '2BACLF' in u or '2BACL' in u: return 'آداب'
+            if 'TCSF' in u or 'TCSC' in u or 'TCS' in u or 'جذععلم' in u: return 'TCSF-1'
+            if 'TCLSHF1' in u or 'TCLSH1' in u or (('TCLSH' in u or 'جذعآداب' in u) and '2' not in u): return 'TCLSHF-1'
+            if 'TCLSHF2' in u or 'TCLSH2' in u or 'جذعآداب2' in u: return 'TCLSHF-2'
+            if '1BACSEF1' in u or '1BACEXP1' in u or '1BACEXPF1' in u or '1BACSE1' in u or 'أولىعلوَمتجريبية1' in u: return '1BACSEF-1'
+            if '1BACSEF2' in u or '1BACEXP2' in u or '1BACEXPF2' in u or '1BACSE2' in u or 'أولىعلوَمتجريبية2' in u: return '1BACSEF-2'
+            if '1BACSHF1' in u or '1BACLSH1' in u or '1BACSH1' in u or 'أولىآداب1' in u: return '1BACSHF-1'
+            if '1BACSHF2' in u or '1BACLSH2' in u or '1BACSH2' in u or 'أولىآداب2' in u: return '1BACSHF-2'
+            if '2BACLF' in u or '2BACL' in u or 'ثانيةآداب' in u: return '2BACLF-1'
+            if '2BACSH' in u or 'ثانيةعلومإنسانية' in u: return '2BACSHF-1'
+            if '2BACSPF' in u or '2BACPC' in u or 'ثانيةفيزياء' in u: return '2BACSPF-1'
+            if '2BACSVT' in u or 'ثانيةعلومالحياة' in u: return '2BACSVTF-1'
             if '1AC' in u or '1APIC' in u: return cname.replace('1AC', '1/').replace('1APIC', '1/')
             if '2AC' in u or '2APIC' in u: return cname.replace('2AC', '2/').replace('2APIC', '2/')
             if '3AC' in u or '3APIC' in u: return cname.replace('3AC', '3/').replace('3APIC', '3/')
@@ -239,10 +258,9 @@ class SurveillanceDailyReportEngine:
 
         order_weights = {'TC': 1, '1BAC': 2, '2BAC': 3, '1AC': 4, '2AC': 5, '3AC': 6, 'OTHER': 7}
         short_name_weights = {
-            'علمي': 1, 'أدبي 1': 2, 'أدبي 2': 3, 'أدبي': 3,
-            'ع تج 1': 4, 'ع تج 2': 5, 'ع تجريبية': 5,
-            'آ ع إ 1': 6, 'آ ع إ 2': 7, 'آداب و ع إ': 7,
-            'ع فزيائية': 8, 'ع ح أ': 9, 'ع إنسانية': 10, 'آداب': 11
+            'TCSF-1': 1, 'TCLSHF-1': 2, 'TCLSHF-2': 3,
+            '1BACSEF-1': 4, '1BACSEF-2': 5, '1BACSHF-1': 6, '1BACSHF-2': 7,
+            '2BACLF-1': 8, '2BACSHF-1': 9, '2BACSPF-1': 10, '2BACSVTF-1': 11
         }
         classes_matrix.sort(key=lambda x: (
             order_weights.get(x["level"], 99),
@@ -303,5 +321,6 @@ class SurveillanceDailyReportEngine:
             "extra_compensatory_hours": extra_compensatory_hours or [],
             "template_type": template_type or "detailed",
             "banner_base64": banner_b64,
+            "institution_logo_base64": getattr(self.institution, "logo_base64", "") if self.institution else "",
             "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         }

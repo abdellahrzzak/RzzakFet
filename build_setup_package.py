@@ -159,6 +159,7 @@ if __name__ == '__main__':
 '''
 
 def build_setup():
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
     dist_dir = os.path.join(os.getcwd(), "dist", "RzzakFet")
     if not os.path.exists(dist_dir):
         print(f"Error: {dist_dir} does not exist.")

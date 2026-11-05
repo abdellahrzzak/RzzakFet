@@ -17,7 +17,7 @@ from src.desktop_server import RzzakFetHandler
 
 APP_PORT = 8765
 APP_ID = "rzzakfet.timetable.desktop.2.0"
-APP_TITLE = "RzzakFet v2.0 - برنامج إسناد وتوليد الجداول المدرسية (النسخة الثانية المتقدمة)"
+APP_TITLE = "RzzakFet v2.0 - تدبير وتوزيع جداول الحصص والغياب (المملكة المغربية)"
 
 # 1. Set explicit Windows AppUserModelID before any GUI creation
 try:
@@ -80,7 +80,7 @@ def apply_taskbar_icon(title, icon_path):
     except Exception:
         pass
 
-def is_server_alive(port=APP_PORT, timeout=0.25):
+def is_server_alive(port=APP_PORT, timeout=0.3):
     try:
         req = urllib.request.urlopen(f"http://127.0.0.1:{port}/api/ping", timeout=timeout)
         if req.status == 200:
@@ -89,7 +89,7 @@ def is_server_alive(port=APP_PORT, timeout=0.25):
         pass
     return False
 
-def start_server(port=APP_PORT):
+def start_server_daemon(port=APP_PORT):
     try:
         ThreadingHTTPServer.allow_reuse_address = True
         server = ThreadingHTTPServer(('0.0.0.0', port), RzzakFetHandler)
@@ -97,12 +97,24 @@ def start_server(port=APP_PORT):
     except Exception as e:
         print(f"[RzzakFet Server Notice]: {e}")
 
+def server_watchdog(port=APP_PORT):
+    """Monitors server health every 2 seconds. If unresponsive, re-launches server."""
+    while True:
+        try:
+            time.sleep(2.0)
+            if not is_server_alive(port, timeout=0.5):
+                t = threading.Thread(target=start_server_daemon, args=(port,), daemon=True)
+                t.start()
+                wait_for_server(port, timeout=4.0)
+        except Exception:
+            pass
+
 def wait_for_server(port=APP_PORT, timeout=5.0):
     start = time.time()
     while time.time() - start < timeout:
         if is_server_alive(port, timeout=0.15):
             return True
-        time.sleep(0.02)
+        time.sleep(0.05)
     return False
 
 def dismiss_splash():
@@ -119,9 +131,13 @@ def main():
 
     # 1. Start local background server
     if not is_server_alive(APP_PORT):
-        t = threading.Thread(target=start_server, args=(APP_PORT,), daemon=True)
+        t = threading.Thread(target=start_server_daemon, args=(APP_PORT,), daemon=True)
         t.start()
         wait_for_server(APP_PORT)
+
+    # 2. Start server watchdog to guarantee persistence
+    wd = threading.Thread(target=server_watchdog, args=(APP_PORT,), daemon=True)
+    wd.start()
 
     url = f"http://127.0.0.1:{APP_PORT}/?v={int(time.time())}"
     icon_path = get_app_icon_path()
@@ -131,7 +147,7 @@ def main():
     failsafe.daemon = True
     failsafe.start()
 
-    # 2. Launch Native Windows Desktop Window using pywebview
+    # 3. Launch Native Windows Desktop Window using pywebview
     try:
         import webview
         window = webview.create_window(
@@ -161,7 +177,7 @@ def main():
         dismiss_splash()
         print(f"[Native Window Notice]: {e}")
 
-    # 3. Fallback to default browser
+    # 4. Fallback to default browser
     dismiss_splash()
     webbrowser.open(url)
     while True:
@@ -173,4 +189,3 @@ def main():
 if __name__ == "__main__":
     multiprocessing.freeze_support()
     main()
-
