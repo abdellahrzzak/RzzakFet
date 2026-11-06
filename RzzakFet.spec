@@ -32,6 +32,8 @@ a = Analysis(
         'src.student_mobility_engine',
         'src.student_attendance_engine',
         'src.high_school_curriculum',
+        'src.massar_bridge_engine',
+        'massar_bridge_engine',
         'openpyxl',
         'qrcode',
         'qrcode.image.svg',

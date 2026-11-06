@@ -4962,6 +4962,10 @@
           <button type="button" onclick="setAttDirectorTab('settings')" id="att-subtab-btn-settings" class="px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer bg-slate-850 text-slate-300 hover:text-white hover:bg-slate-800">
             ⚙️ التوقيت المدرسي وضوابط المسك
           </button>
+          <button type="button" onclick="setAttDirectorTab('massar')" id="att-subtab-btn-massar" class="px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer bg-slate-850 text-emerald-400 hover:text-white hover:bg-slate-800 flex items-center gap-1.5 border border-emerald-600/40 shadow-sm" title="مسك وحقن غيابات مسار تلقائياً بنقرة زر واحدة">
+            <span>🚀</span>
+            <span>مسك الغياب في مسار</span>
+          </button>
         </div>
         </div><!-- END att-director-full-header -->
 
@@ -5199,6 +5203,180 @@
                 <span>⚡</span>
                 <span>استيراد سريع وتحديث كامل اللوائح</span>
               </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Subtab 5: Massar Absence Bridge (مسك الغياب في مسار) -->
+        <div id="att-subtab-massar" class="space-y-4 hidden">
+          <!-- 1. Header Card & Control Toolbar -->
+          <div class="bg-gradient-to-r from-slate-900 via-teal-950/60 to-slate-900 border border-teal-700/60 rounded-2xl p-5 shadow-xl space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-3 border-b border-teal-800/40 pb-3">
+              <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-teal-700 to-emerald-600 flex items-center justify-center text-2xl shadow-lg border border-teal-400/40 text-white">
+                  🚀
+                </div>
+                <div>
+                  <h3 class="font-black text-white text-base flex items-center gap-2">
+                    <span>منظومة الربط الذكي مع مسار (Massar Absence Bridge)</span>
+                    <span class="px-2.5 py-0.5 rounded-full text-[10.5px] bg-emerald-950 text-emerald-300 border border-emerald-700 font-bold">حساب وحقن فوري بنقرة زر</span>
+                  </h3>
+                  <p class="text-xs text-slate-400 mt-0.5">
+                    يقوم التطبيق بحساب غيابات التلاميذ المبررة وغير المبررة بدقة، وحقنها آلياً في جدول مسار مع تصفير باقي التلاميذ، أو تصديرها كملف Excel رسمي.
+                  </p>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <a href="https://massar.men.gov.ma" target="_blank" class="px-3.5 py-2 bg-gradient-to-r from-blue-700 to-indigo-700 hover:from-blue-600 hover:to-indigo-600 text-white rounded-xl text-xs font-black transition flex items-center gap-1.5 shadow-md border border-blue-400/40">
+                  <span>🌐</span>
+                  <span>فتح بوابة مسار الرسمية</span>
+                </a>
+              </div>
+            </div>
+
+            <!-- Filter Controls Bar -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              <!-- Class Select -->
+              <div>
+                <label class="block text-xs font-bold text-slate-300 mb-1">القسم المستهدف:</label>
+                <select id="massar-bridge-class-select" onchange="fetchAndRenderMassarAbsenceData()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white font-bold focus:border-teal-500 focus:outline-none">
+                  <!-- Dynamically populated -->
+                </select>
+              </div>
+
+              <!-- Period Type -->
+              <div>
+                <label class="block text-xs font-bold text-slate-300 mb-1">نوع الفترة في مسار:</label>
+                <select id="massar-bridge-period-type" onchange="onMassarPeriodTypeChanged()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-teal-300 font-bold focus:border-teal-500 focus:outline-none">
+                  <option value="MONTHLY" selected>📅 الغياب الشهري حسب القسم (الرسمي)</option>
+                  <option value="DAILY">📆 الغياب اليومي حسب القسم</option>
+                  <option value="TERM1">🏆 مجموع الدورة الأولى</option>
+                  <option value="TERM2">🏆 مجموع الدورة الثانية</option>
+                  <option value="CUSTOM">⏱️ فترة مخصصة (بين تاريخين)</option>
+                </select>
+              </div>
+
+              <!-- Month Selection (Active when MONTHLY) -->
+              <div id="massar-control-month">
+                <label class="block text-xs font-bold text-slate-300 mb-1">الشهر الدراسي والسنة:</label>
+                <div class="flex items-center gap-1.5">
+                  <select id="massar-bridge-month-select" onchange="fetchAndRenderMassarAbsenceData()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-2.5 py-2 text-xs text-white font-bold focus:border-teal-500 focus:outline-none">
+                    <option value="9">شتنبر (09)</option>
+                    <option value="10">أكتوبر (10)</option>
+                    <option value="11" selected>نونبر (11)</option>
+                    <option value="12">دجنبر (12)</option>
+                    <option value="1">يناير (01)</option>
+                    <option value="2">فبراير (02)</option>
+                    <option value="3">مارس (03)</option>
+                    <option value="4">أبريل (04)</option>
+                    <option value="5">ماي (05)</option>
+                    <option value="6">يونيو (06)</option>
+                  </select>
+                  <input type="number" id="massar-bridge-year-input" value="2026" onchange="fetchAndRenderMassarAbsenceData()" class="w-20 bg-slate-950 border border-slate-700 rounded-xl px-2 py-2 text-xs text-white font-mono text-center">
+                </div>
+              </div>
+
+              <!-- Date Selection (Active when DAILY) -->
+              <div id="massar-control-date" class="hidden">
+                <label class="block text-xs font-bold text-slate-300 mb-1">تاريخ اليوم المحدد:</label>
+                <input type="date" id="massar-bridge-date-input" onchange="fetchAndRenderMassarAbsenceData()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white font-mono">
+              </div>
+
+              <!-- Custom Range (Active when CUSTOM) -->
+              <div id="massar-control-custom" class="hidden">
+                <label class="block text-xs font-bold text-slate-300 mb-1">الفترة من - إلى:</label>
+                <div class="flex items-center gap-1">
+                  <input type="date" id="massar-bridge-start-date" onchange="fetchAndRenderMassarAbsenceData()" class="w-1/2 bg-slate-950 border border-slate-700 rounded-xl px-1.5 py-2 text-[11px] text-white font-mono">
+                  <input type="date" id="massar-bridge-end-date" onchange="fetchAndRenderMassarAbsenceData()" class="w-1/2 bg-slate-950 border border-slate-700 rounded-xl px-1.5 py-2 text-[11px] text-white font-mono">
+                </div>
+              </div>
+
+              <!-- Recalculate Button -->
+              <div class="flex items-end">
+                <button type="button" onclick="fetchAndRenderMassarAbsenceData()" class="w-full px-4 py-2 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white rounded-xl text-xs font-black transition flex items-center justify-center gap-2 shadow-lg shadow-teal-950/60 cursor-pointer">
+                  <span>🔄</span>
+                  <span>حساب ومعاينة غيابات مسار</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- KPI Cards -->
+            <div id="massar-kpi-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 pt-1">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <!-- 2. Action Tools Bar (The 3 Power Tools) -->
+          <div class="bg-slate-900/90 border border-teal-800/60 rounded-2xl p-4 shadow-lg flex flex-wrap items-center justify-between gap-3">
+            <div class="flex flex-wrap items-center gap-2.5">
+              <!-- Magic Button 1: Copy Injection Script -->
+              <button type="button" onclick="copyMassarInjectionScript()" class="px-4 py-2.5 bg-gradient-to-r from-amber-600 via-orange-600 to-amber-700 hover:from-amber-500 hover:to-orange-500 text-white font-black text-xs rounded-xl transition flex items-center gap-2 shadow-lg shadow-amber-950/50 cursor-pointer border border-amber-400/40 transform hover:scale-105 active:scale-95">
+                <span>⚡</span>
+                <span>نسخ كود الحقن التلقائي لمسار (F12)</span>
+              </button>
+
+              <!-- Magic Button 2: Drag/Use Bookmarklet -->
+              <a id="massar-bookmarklet-link" href="#" onclick="showBookmarkletInstructions(event)" class="px-4 py-2.5 bg-gradient-to-r from-emerald-700 to-teal-700 hover:from-emerald-600 hover:to-teal-600 text-white font-black text-xs rounded-xl transition flex items-center gap-2 shadow-lg shadow-emerald-950/50 cursor-move border border-emerald-400/40" title="اسحب هذا الزر إلى شريط المفضلة في متصفحك أو انقر لمعرفة طريقة الاستخدام">
+                <span>⭐</span>
+                <span>زر المفضلة السحري (بنقرة واحدة في مسار)</span>
+              </a>
+
+              <!-- Magic Button 3: Official Excel Download -->
+              <button type="button" onclick="downloadMassarOfficialExcel()" class="px-4 py-2.5 bg-gradient-to-r from-teal-800 to-cyan-800 hover:from-teal-700 hover:to-cyan-700 text-white font-black text-xs rounded-xl transition flex items-center gap-2 shadow-lg shadow-teal-950/50 cursor-pointer border border-teal-400/40">
+                <span>📑</span>
+                <span>تصدير إكسيل مسار الرسمي (Excel)</span>
+              </button>
+            </div>
+
+            <div class="text-[11px] text-slate-400 flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span>مطابق لشبكة مسار 100% مع تصفير غير المتغيبين</span>
+            </div>
+          </div>
+
+          <!-- 3. Preview Table Matching Massar Columns -->
+          <div class="rounded-2xl border border-slate-800 bg-slate-950/80 overflow-hidden shadow-2xl space-y-0">
+            <div class="bg-slate-900/90 px-5 py-3 border-b border-slate-800 flex flex-wrap items-center justify-between gap-3">
+              <div class="flex items-center gap-2">
+                <span class="text-lg">📋</span>
+                <h4 id="massar-table-title" class="font-black text-white text-xs sm:text-sm">
+                  لائحة مسك غياب مسار — جاري التحميل...
+                </h4>
+              </div>
+              <div class="text-xs text-slate-400 font-mono" id="massar-table-subtitle">
+                <!-- Subtitle with counts -->
+              </div>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full text-right text-xs">
+                <thead class="bg-slate-900 text-slate-300 font-bold border-b border-slate-800 text-[11px]">
+                  <tr>
+                    <th class="py-3 px-3 text-center w-12">ر.ت</th>
+                    <th class="py-3 px-4 text-center w-36">رقم التلميذ (رمز مسار)</th>
+                    <th class="py-3 px-4">الاسم والنسب</th>
+                    <th class="py-3 px-3 text-center bg-teal-950/50 text-teal-300 border-x border-teal-900/40">
+                      <div>الغياب مبرر</div>
+                      <div class="grid grid-cols-2 text-[10px] text-teal-400/80 mt-1 font-normal">
+                        <span>الأيام</span>
+                        <span>الساعات</span>
+                      </div>
+                    </th>
+                    <th class="py-3 px-3 text-center bg-rose-950/40 text-rose-300 border-x border-rose-900/40">
+                      <div>الغياب غير مبرر</div>
+                      <div class="grid grid-cols-2 text-[10px] text-rose-400/80 mt-1 font-normal">
+                        <span>الأيام</span>
+                        <span>الساعات</span>
+                      </div>
+                    </th>
+                    <th class="py-3 px-3 text-center w-28">حالة التلميذ</th>
+                    <th class="py-3 px-3 text-center w-20">بطاقة التلميذ</th>
+                  </tr>
+                </thead>
+                <tbody id="massar-bridge-table-tbody" class="divide-y divide-slate-800/60 text-slate-200">
+                  <!-- Populated dynamically -->
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
@@ -19965,19 +20143,27 @@
         if (standaloneHeader) standaloneHeader.classList.add('hidden');
       }
       currentDirectorTab = tab;
-      const subtabs = ['live', 'students', 'teachers', 'settings'];
+      const subtabs = ['live', 'students', 'teachers', 'settings', 'massar'];
       subtabs.forEach(t => {
         const elDiv = document.getElementById(`att-subtab-${t}`);
         const elBtn = document.getElementById(`att-subtab-btn-${t}`);
         if (t === tab) {
           if (elDiv) elDiv.classList.remove('hidden');
           if (elBtn) {
-            elBtn.className = 'px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer bg-teal-600 text-white shadow';
+            if (t === 'massar') {
+              elBtn.className = 'px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg border border-emerald-400/50';
+            } else {
+              elBtn.className = 'px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer bg-teal-600 text-white shadow';
+            }
           }
         } else {
           if (elDiv) elDiv.classList.add('hidden');
           if (elBtn) {
-            elBtn.className = 'px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer bg-slate-850 text-slate-300 hover:text-white hover:bg-slate-800';
+            if (t === 'massar') {
+              elBtn.className = 'px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer bg-slate-850 text-emerald-400 hover:text-white hover:bg-slate-800 border border-emerald-600/40';
+            } else {
+              elBtn.className = 'px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer bg-slate-850 text-slate-300 hover:text-white hover:bg-slate-800';
+            }
           }
         }
       });
@@ -19986,6 +20172,7 @@
       else if (tab === 'students') renderDirectorStudentsList();
       else if (tab === 'teachers') renderDirectorTeachersTable();
       else if (tab === 'settings') populateScheduleSettings();
+      else if (tab === 'massar') initMassarBridge();
     }
 
     function onDirectorDateChanged(val) {
@@ -24850,6 +25037,335 @@
       }
     }
     window.fetchDirectorAttendanceData = fetchDirectorAttendanceData;
+
+    // =========================================================================
+    // منظومة الربط المباشر وحقن الغياب في مسار (MASSAR ABSENCE BRIDGE SYSTEM)
+    // =========================================================================
+    let currentMassarAbsenceData = null;
+
+    function initMassarBridge() {
+      populateMassarClassDropdown();
+      // Set default date for daily picker
+      const dInput = document.getElementById('massar-bridge-date-input');
+      if (dInput && !dInput.value) {
+        dInput.value = currentDirectorDate || new Date().toISOString().split('T')[0];
+      }
+      // Set default month
+      const mSel = document.getElementById('massar-bridge-month-select');
+      if (mSel && !mSel.value) {
+        const curM = new Date().getMonth() + 1;
+        mSel.value = String(curM);
+      }
+      // Set default year
+      const yInput = document.getElementById('massar-bridge-year-input');
+      if (yInput && !yInput.value) {
+        yInput.value = String(new Date().getFullYear());
+      }
+      fetchAndRenderMassarAbsenceData();
+    }
+    window.initMassarBridge = initMassarBridge;
+
+    function populateMassarClassDropdown() {
+      const sel = document.getElementById('massar-bridge-class-select');
+      if (!sel) return;
+      const classes = directorDb.classes || [];
+      if (classes.length === 0) {
+        sel.innerHTML = '<option value="1BACSEF-1">1BACSEF-1</option>';
+        return;
+      }
+      const curVal = sel.value || currentDirectorClass || classes[0].classCode;
+      sel.innerHTML = classes.map(c => `
+        <option value="${c.classCode}" ${c.classCode === curVal ? 'selected' : ''}>
+          ${c.displayName || c.classCode}
+        </option>
+      `).join('');
+    }
+
+    function onMassarPeriodTypeChanged() {
+      const pType = document.getElementById('massar-bridge-period-type')?.value || 'MONTHLY';
+      const cMonth = document.getElementById('massar-control-month');
+      const cDate = document.getElementById('massar-control-date');
+      const cCustom = document.getElementById('massar-control-custom');
+
+      if (cMonth) cMonth.classList.toggle('hidden', pType !== 'MONTHLY');
+      if (cDate) cDate.classList.toggle('hidden', pType !== 'DAILY');
+      if (cCustom) cCustom.classList.toggle('hidden', pType !== 'CUSTOM');
+
+      fetchAndRenderMassarAbsenceData();
+    }
+    window.onMassarPeriodTypeChanged = onMassarPeriodTypeChanged;
+
+    async function fetchAndRenderMassarAbsenceData() {
+      const classCode = document.getElementById('massar-bridge-class-select')?.value || currentDirectorClass || '1BACSEF-1';
+      const periodType = document.getElementById('massar-bridge-period-type')?.value || 'MONTHLY';
+      const month = document.getElementById('massar-bridge-month-select')?.value || 11;
+      const year = document.getElementById('massar-bridge-year-input')?.value || 2026;
+      const dateVal = document.getElementById('massar-bridge-date-input')?.value || currentDirectorDate || new Date().toISOString().split('T')[0];
+      const startDate = document.getElementById('massar-bridge-start-date')?.value || '';
+      const endDate = document.getElementById('massar-bridge-end-date')?.value || '';
+
+      const tbody = document.getElementById('massar-bridge-table-tbody');
+      if (tbody) {
+        tbody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-teal-400 font-bold">⏳ جاري حساب غيابات القسم وتجهيز بيانات مسار وكود الحقن...</td></tr>`;
+      }
+
+      try {
+        const res = await fetch('/api/attendance/massar_absence_data', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            classCode,
+            periodType,
+            month: parseInt(month),
+            year: parseInt(year),
+            date: dateVal,
+            startDate,
+            endDate
+          })
+        });
+
+        const data = await res.json();
+        if (!data.success) {
+          showToast('تعذر حساب غيابات مسار: ' + (data.error || 'خطأ غير معروف'), 'error');
+          if (tbody) tbody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-rose-400 font-bold">تعذر تحميل البيانات</td></tr>`;
+          return;
+        }
+
+        currentMassarAbsenceData = data;
+        renderMassarKpis(data.kpi);
+        renderMassarTable(data);
+
+        // Update Bookmarklet link
+        const bmLink = document.getElementById('massar-bookmarklet-link');
+        if (bmLink && data.bookmarklet) {
+          bmLink.href = data.bookmarklet;
+          bmLink.setAttribute('data-script', data.injection_script || '');
+        }
+
+        // Update Table Titles
+        const tTitle = document.getElementById('massar-table-title');
+        if (tTitle) {
+          tTitle.innerHTML = `<span>جدول مسك غياب مسار لقسم</span> <strong class="text-teal-300 font-mono">${data.classCode}</strong> <span class="text-slate-400 font-normal">(${data.periodLabel || ''})</span>`;
+        }
+        const tSub = document.getElementById('massar-table-subtitle');
+        if (tSub) {
+          tSub.innerHTML = `إجمالي التلاميذ: <strong class="text-white">${data.kpi.totalStudents}</strong> • الحاضرون (0): <strong class="text-emerald-400">${data.kpi.cleanStudents}</strong> • الغائبون: <strong class="text-rose-400">${data.kpi.absentStudents}</strong>`;
+        }
+
+      } catch (err) {
+        showToast('خطأ أثناء جلب بيانات مسار: ' + err.message, 'error');
+        if (tbody) tbody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-rose-400 font-bold">خطأ في الاتصال</td></tr>`;
+      }
+    }
+    window.fetchAndRenderMassarAbsenceData = fetchAndRenderMassarAbsenceData;
+
+    function renderMassarKpis(kpi) {
+      const grid = document.getElementById('massar-kpi-grid');
+      if (!grid || !kpi) return;
+
+      grid.innerHTML = `
+        <div class="bg-slate-950/90 border border-slate-800 p-2.5 rounded-xl text-center shadow-sm">
+          <div class="text-[10px] text-slate-400 font-bold">مجموع التلاميذ</div>
+          <div class="text-base font-black text-white mt-1">${kpi.totalStudents} <span class="text-[9px] font-normal text-slate-500">تلميذ</span></div>
+        </div>
+        <div class="bg-slate-950/90 border border-emerald-900/60 p-2.5 rounded-xl text-center shadow-sm">
+          <div class="text-[10px] text-emerald-400 font-bold">حاضرون (تصفير 0)</div>
+          <div class="text-base font-black text-emerald-400 mt-1">✓ ${kpi.cleanStudents} <span class="text-[9px] font-normal text-emerald-500/70">تلميذ</span></div>
+        </div>
+        <div class="bg-slate-950/90 border border-rose-900/60 p-2.5 rounded-xl text-center shadow-sm">
+          <div class="text-[10px] text-rose-400 font-bold">تلاميذ متغيبون</div>
+          <div class="text-base font-black text-rose-400 mt-1">🔴 ${kpi.absentStudents} <span class="text-[9px] font-normal text-rose-500/70">تلميذ</span></div>
+        </div>
+        <div class="bg-slate-950/90 border border-rose-900/40 p-2.5 rounded-xl text-center shadow-sm">
+          <div class="text-[10px] text-rose-300 font-bold">ساعات غير مبررة</div>
+          <div class="text-base font-black text-rose-300 mt-1">${kpi.totalUnjustHours} <span class="text-[9px] font-normal text-rose-500/70">ساعة</span></div>
+        </div>
+        <div class="bg-slate-950/90 border border-teal-900/50 p-2.5 rounded-xl text-center shadow-sm">
+          <div class="text-[10px] text-teal-300 font-bold">ساعات مبررة</div>
+          <div class="text-base font-black text-teal-300 mt-1">${kpi.totalJustHours} <span class="text-[9px] font-normal text-teal-500/70">ساعة</span></div>
+        </div>
+        <div class="bg-slate-950/90 border border-amber-900/40 p-2.5 rounded-xl text-center shadow-sm">
+          <div class="text-[10px] text-amber-300 font-bold">إجمالي أيام الغياب</div>
+          <div class="text-base font-black text-amber-300 mt-1">${kpi.totalUnjustDays + kpi.totalJustDays} <span class="text-[9px] font-normal text-amber-500/70">يوم</span></div>
+        </div>
+      `;
+    }
+
+    function renderMassarTable(data) {
+      const tbody = document.getElementById('massar-bridge-table-tbody');
+      if (!tbody) return;
+
+      const students = data.students || [];
+      if (students.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-slate-500 font-bold">لا يوجد تلاميذ مسجلين في هذا القسم.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = students.map((st, idx) => {
+        const isClean = st.isClean;
+        const rowBg = isClean ? 'hover:bg-slate-900/40' : 'bg-rose-950/15 hover:bg-rose-950/25';
+        const safeMassar = (st.massarCode || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        const safeName = (st.fullName || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+        return `
+          <tr class="${rowBg} transition border-b border-slate-800/50">
+            <td class="py-2.5 px-3 text-center text-slate-400 font-mono text-xs font-bold">${st.rollNumber || idx + 1}</td>
+            <td class="py-2.5 px-4 text-center">
+              <div class="inline-flex items-center gap-1.5">
+                <span class="font-mono text-xs font-bold ${isClean ? 'text-teal-300' : 'text-amber-300'} select-all tracking-wider">${safeMassar}</span>
+                <button type="button" onclick="copyText('${safeMassar}')" class="text-slate-500 hover:text-white text-xs cursor-pointer" title="نسخ رمز مسار">📋</button>
+              </div>
+            </td>
+            <td class="py-2.5 px-4">
+              <span class="font-bold text-white text-xs">${safeName}</span>
+              <span class="text-[10px] text-slate-500 mr-2">(${st.gender || '-'})</span>
+            </td>
+            <!-- الغياب مبرر: أيام | ساعات -->
+            <td class="py-2 px-3 text-center bg-teal-950/20 border-x border-slate-800/80">
+              <div class="grid grid-cols-2 gap-1.5 items-center">
+                <input type="number" min="0" value="${st.justDays}" onchange="updateMassarRowValue('${safeMassar}', 'justDays', this.value)" class="w-12 bg-slate-950 border ${st.justDays > 0 ? 'border-teal-500 text-teal-300' : 'border-slate-800 text-slate-400'} rounded-lg py-1 px-1 text-center font-mono text-xs font-bold focus:outline-none focus:border-teal-400 mx-auto">
+                <input type="number" min="0" value="${st.justHours}" onchange="updateMassarRowValue('${safeMassar}', 'justHours', this.value)" class="w-12 bg-slate-950 border ${st.justHours > 0 ? 'border-teal-500 text-teal-300' : 'border-slate-800 text-slate-400'} rounded-lg py-1 px-1 text-center font-mono text-xs font-bold focus:outline-none focus:border-teal-400 mx-auto">
+              </div>
+            </td>
+            <!-- الغياب غير مبرر: أيام | ساعات -->
+            <td class="py-2 px-3 text-center bg-rose-950/10 border-x border-slate-800/80">
+              <div class="grid grid-cols-2 gap-1.5 items-center">
+                <input type="number" min="0" value="${st.unjustDays}" onchange="updateMassarRowValue('${safeMassar}', 'unjustDays', this.value)" class="w-12 bg-slate-950 border ${st.unjustDays > 0 ? 'border-rose-500 text-rose-300' : 'border-slate-800 text-slate-400'} rounded-lg py-1 px-1 text-center font-mono text-xs font-bold focus:outline-none focus:border-rose-400 mx-auto">
+                <input type="number" min="0" value="${st.unjustHours}" onchange="updateMassarRowValue('${safeMassar}', 'unjustHours', this.value)" class="w-12 bg-slate-950 border ${st.unjustHours > 0 ? 'border-rose-500 text-rose-300' : 'border-slate-800 text-slate-400'} rounded-lg py-1 px-1 text-center font-mono text-xs font-bold focus:outline-none focus:border-rose-400 mx-auto">
+              </div>
+            </td>
+            <!-- الحالة -->
+            <td class="py-2.5 px-3 text-center">
+              ${isClean ? `
+                <span class="inline-block px-2.5 py-0.5 rounded-full text-[10.5px] font-bold bg-emerald-950 text-emerald-300 border border-emerald-800">
+                  ✓ حاضر (0 غياب)
+                </span>
+              ` : `
+                <span class="inline-block px-2.5 py-0.5 rounded-full text-[10.5px] font-black bg-rose-950 text-rose-300 border border-rose-800 animate-pulse">
+                  🔴 غائب (${st.totalHours} س)
+                </span>
+              `}
+            </td>
+            <!-- فحص بطاقة التلميذ -->
+            <td class="py-2.5 px-3 text-center">
+              <button type="button" onclick="inspectStudent('${safeMassar}')" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg text-[11px] font-bold transition flex items-center justify-center gap-1 mx-auto cursor-pointer" title="عرض بطاقة التلميذ وسجل غيابه المفصل">
+                <span>👤</span>
+                <span>فحص</span>
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function updateMassarRowValue(massarCode, field, val) {
+      if (!currentMassarAbsenceData || !currentMassarAbsenceData.students) return;
+      const num = parseInt(val) || 0;
+      const st = currentMassarAbsenceData.students.find(s => s.massarCode === massarCode);
+      if (st) {
+        st[field] = num;
+        st.totalHours = (st.justHours || 0) + (st.unjustHours || 0);
+        st.isClean = (st.totalHours === 0);
+
+        // Re-generate injection script with updated values
+        const map = {};
+        let cl = 0, ab = 0;
+        currentMassarAbsenceData.students.forEach(s => {
+          map[s.massarCode] = { jD: s.justDays || 0, jH: s.justHours || 0, uD: s.unjustDays || 0, uH: s.unjustHours || 0 };
+          if (s.isClean) cl++; else ab++;
+        });
+
+        currentMassarAbsenceData.kpi.cleanStudents = cl;
+        currentMassarAbsenceData.kpi.absentStudents = ab;
+
+        const jsMapStr = JSON.stringify(map);
+        currentMassarAbsenceData.injection_script = `(function(){
+  const dataMap = ${jsMapStr};
+  let filled = 0, absCount = 0;
+  const rows = document.querySelectorAll('table tbody tr');
+  rows.forEach(function(row) {
+    const text = row.innerText || row.textContent || '';
+    const m = text.match(/[A-Za-z]\\d{8,9}/);
+    if (!m) return;
+    const code = m[0].toUpperCase();
+    const info = dataMap[code] || { jD: 0, jH: 0, uD: 0, uH: 0 };
+    const inputs = row.querySelectorAll('input[type="text"], input.Note-control');
+    if (inputs.length >= 4) {
+      inputs[0].value = info.jD;
+      inputs[1].value = info.jH;
+      inputs[2].value = info.uD;
+      inputs[3].value = info.uH;
+      for (let i = 0; i < 4; i++) {
+        inputs[i].dispatchEvent(new Event('input', { bubbles: true }));
+        inputs[i].dispatchEvent(new Event('change', { bubbles: true }));
+      }
+      if (info.uH > 0 || info.jH > 0) {
+        row.style.backgroundColor = '#fef3c7';
+        absCount++;
+      } else {
+        row.style.backgroundColor = '#ecfdf5';
+      }
+      filled++;
+    }
+  });
+  alert('✅ تم بنجاح حقن غيابات مسار لقسم ${currentMassarAbsenceData.classCode} بواسطة RzzakFet!\\n\\n• عدد التلاميذ: ' + filled + '\\n• الغائبون: ' + absCount + '\\n• الحاضرون (تم تصفيرهم 0): ' + (filled - absCount) + '\\n\\nيرجى مراجعة الجدول والضغط على زر حفظ.');
+})();`;
+
+        currentMassarAbsenceData.bookmarklet = "javascript:" + encodeURIComponent(currentMassarAbsenceData.injection_script);
+        const bmLink = document.getElementById('massar-bookmarklet-link');
+        if (bmLink) bmLink.href = currentMassarAbsenceData.bookmarklet;
+
+        renderMassarKpis(currentMassarAbsenceData.kpi);
+      }
+    }
+    window.updateMassarRowValue = updateMassarRowValue;
+
+    function copyMassarInjectionScript() {
+      if (!currentMassarAbsenceData || !currentMassarAbsenceData.injection_script) {
+        showToast('يرجى أولاً حساب غيابات القسم والفترة المحددة.', 'warning');
+        return;
+      }
+      copyText(currentMassarAbsenceData.injection_script);
+      showToast('⚡ تم بنجاح نسخ كود الحقن التلقائي لمسار! انتقل إلى صفحة مسار، اضغط F12 ثم Console، والصق الكود واضغط Enter!', 'success');
+    }
+    window.copyMassarInjectionScript = copyMassarInjectionScript;
+
+    function showBookmarkletInstructions(e) {
+      if (e) e.preventDefault();
+      if (!currentMassarAbsenceData || !currentMassarAbsenceData.bookmarklet) {
+        showToast('يرجى أولاً حساب غيابات القسم والفترة المحددة.', 'warning');
+        return;
+      }
+
+      // Copy bookmarklet link to clipboard and show guide
+      copyText(currentMassarAbsenceData.bookmarklet);
+      alert(
+        `⭐ زر المفضلة السحري لمسار (Massar One-Click Bookmarklet) ⭐\n\n` +
+        `طريقة الاستخدام السريعة:\n` +
+        `1. يمكنك سحب الزر الأخضر إلى "شريط المفضلة" (Bookmarks Bar) في متصفحك (Chrome/Edge).\n` +
+        `   أو تم نسخ كود الرابط الآن إلى الحافظة!\n\n` +
+        `2. افتح صفحة مسار الرسمية، اختر القسم واضغط "بحث".\n` +
+        `3. اضغط على الزر من شريط المفضلة في متصفحك، وسيتم فوراً تعبئة كل خانات التلاميذ ووضع الأصفار للحاضرين وتلوين المتغيبين في أقل من ثانية واحدة!\n\n` +
+        `4. بعد التعبئة اضغط على زر "حفظ" الأزرق في أعلى مسار.`
+      );
+    }
+    window.showBookmarkletInstructions = showBookmarkletInstructions;
+
+    function downloadMassarOfficialExcel() {
+      const classCode = document.getElementById('massar-bridge-class-select')?.value || '1BACSEF-1';
+      const periodType = document.getElementById('massar-bridge-period-type')?.value || 'MONTHLY';
+      const month = document.getElementById('massar-bridge-month-select')?.value || 11;
+      const year = document.getElementById('massar-bridge-year-input')?.value || 2026;
+      const dateVal = document.getElementById('massar-bridge-date-input')?.value || '';
+      const startDate = document.getElementById('massar-bridge-start-date')?.value || '';
+      const endDate = document.getElementById('massar-bridge-end-date')?.value || '';
+
+      const url = `/api/attendance/export_massar_excel?class_code=${encodeURIComponent(classCode)}&period_type=${encodeURIComponent(periodType)}&month=${encodeURIComponent(month)}&year=${encodeURIComponent(year)}&date=${encodeURIComponent(dateVal)}&start_date=${encodeURIComponent(startDate)}&end_date=${encodeURIComponent(endDate)}`;
+      showToast('جاري تصدير ملف إكسيل استيراد مسار الرسمي... ⏳', 'info');
+      window.open(url, '_blank');
+    }
+    window.downloadMassarOfficialExcel = downloadMassarOfficialExcel;
+
     window.loadMasterTimetableFromDesktop = loadMasterTimetableFromDesktop;
     window.handleUploadTimetableFile = handleUploadTimetableFile;
 

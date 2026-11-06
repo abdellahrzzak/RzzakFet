@@ -4985,6 +4985,47 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
             self.wfile.write(excel_bytes)
             return
 
+        if parsed.path == "/api/attendance/export_massar_excel":
+            try:
+                try:
+                    from massar_bridge_engine import calculate_massar_absence_data, generate_massar_absence_excel
+                except Exception:
+                    from src.massar_bridge_engine import calculate_massar_absence_data, generate_massar_absence_excel
+
+                class_code = query_params.get("class_code", ["1BACSEF-1"])[0]
+                period_type = query_params.get("period_type", ["MONTHLY"])[0]
+                month = query_params.get("month", [str(datetime.now().month)])[0]
+                year = query_params.get("year", [str(datetime.now().year)])[0]
+                date_val = query_params.get("date", [""])[0]
+                start_date = query_params.get("start_date", [""])[0]
+                end_date = query_params.get("end_date", [""])[0]
+
+                res_data = calculate_massar_absence_data(
+                    load_attendance_mobile_db,
+                    class_code=class_code,
+                    period_type=period_type,
+                    month=month,
+                    year=year,
+                    date=date_val,
+                    start_date=start_date,
+                    end_date=end_date
+                )
+                inst_name = getattr(APP_STATE.institution, "institution_name", None) or getattr(APP_STATE.institution, "name", None) or "الثانوية التأهيلية أنفك"
+                excel_bytes = generate_massar_absence_excel(res_data, inst_name=inst_name)
+                
+                safe_cls = str(class_code).replace(" ", "_")
+                filename = f"Massar_Absence_{safe_cls}.xlsx"
+                self.send_response(200)
+                self.send_header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                self.send_header("Content-Disposition", f'attachment; filename="{filename}"')
+                self.send_header("Content-Length", str(len(excel_bytes)))
+                self.end_headers()
+                self.wfile.write(excel_bytes)
+                return
+            except Exception as e_exp:
+                self.send_json_data({"success": False, "error": str(e_exp)}, status=500)
+                return
+
         if parsed.path == "/api/attendance/export_absentees":
             sim_date = query_params.get("date", [datetime.now().strftime("%Y-%m-%d")])[0]
             db = load_attendance_mobile_db()
@@ -7182,6 +7223,37 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
             except Exception as e:
                 self.send_json_data({"success": False, "error": f"فشل استرجاع النسخة الاحتياطية: {str(e)}"}, status=500)
                 return
+        elif parsed.path == "/api/attendance/massar_absence_data":
+            try:
+                try:
+                    from massar_bridge_engine import calculate_massar_absence_data
+                except Exception:
+                    from src.massar_bridge_engine import calculate_massar_absence_data
+
+                class_code = data.get("classCode") or data.get("class_code") or "1BACSEF-1"
+                period_type = data.get("periodType") or data.get("period_type") or "MONTHLY"
+                month = data.get("month")
+                year = data.get("year")
+                date_val = data.get("date")
+                start_date = data.get("startDate") or data.get("start_date")
+                end_date = data.get("endDate") or data.get("end_date")
+                hours_per_day = data.get("hoursPerDay") or data.get("hours_per_day") or 6.0
+
+                res = calculate_massar_absence_data(
+                    load_attendance_mobile_db,
+                    class_code=class_code,
+                    period_type=period_type,
+                    month=month,
+                    year=year,
+                    date=date_val,
+                    start_date=start_date,
+                    end_date=end_date,
+                    hours_per_day=hours_per_day
+                )
+                self.send_json_data(res)
+            except Exception as e_massar:
+                self.send_json_data({"success": False, "error": str(e_massar)}, status=500)
+
         elif parsed.path == "/api/attendance/cloud_sync":
             try:
                 res = sync_attendance_with_cloud()
