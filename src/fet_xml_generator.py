@@ -194,7 +194,14 @@ class FetXmlGenerator:
 
     def get_primary_constraints(self) -> List[Dict]:
         """Returns the primary constraints ordered as set by the principal."""
-        return [c for c in self.all_available_constraints if c.get("is_primary", False)]
+        seen = set()
+        res = []
+        for c in self.all_available_constraints:
+            if c.get("is_primary", False) or c.get("is_active", False):
+                if c.get("id") not in seen:
+                    seen.add(c.get("id"))
+                    res.append(c)
+        return res
 
     def get_library_constraints(self) -> List[Dict]:
         """Returns available secondary / unselected constraints in the bank."""
@@ -987,6 +994,107 @@ class FetXmlGenerator:
             lines.append('	<Active>true</Active>')
             lines.append(f'	<Comments>{c_cons.get("comment", "")}</Comments>')
             lines.append('</ConstraintTwoActivitiesConsecutive>')
+
+        # Teacher Not Available Times (تفريغ مدرس - أوقات غير متاحة مخصصة حسب الأستاذ)
+        if "ConstraintTeacherNotAvailableTimes" in c_map or "tc_t_1" in c_map:
+            c = c_map.get("ConstraintTeacherNotAvailableTimes") or c_map.get("tc_t_1")
+            w = int(c.get("def_weight", 100))
+            t_unavail = c.get("teacher_unavailabilities") or {}
+            
+            valid_fet_days = {
+                "الاثنين ص", "الاثنين م",
+                "الثلاثاء ص", "الثلاثاء م",
+                "الاربعاء ص", "الاربعاء م",
+                "الخميس ص", "الخميس م",
+                "الجمعة ص", "الجمعة م",
+                "السبت ص", "السبت م"
+            }
+            valid_fet_hours = {"ح 1", "ح 2", "ح 3", "ح 4"}
+
+            def _clean_day_fet(d_str):
+                if not d_str:
+                    return ""
+                return str(d_str).strip().replace("الأربعاء", "الاربعاء")
+
+            for t_raw, unavail_data in t_unavail.items():
+                resolved_t = resolve_teacher(t_raw)
+                if not resolved_t:
+                    raw_clean = str(t_raw).replace("ذ. ", "").replace("ذة. ", "").strip()
+                    for act_t in all_teachers_set:
+                        act_clean = act_t.replace("ذ. ", "").replace("ذة. ", "").strip()
+                        if act_clean == raw_clean or act_clean in raw_clean or raw_clean in act_clean:
+                            resolved_t = act_t
+                            break
+                if not resolved_t:
+                    if t_raw in all_teachers_set:
+                        resolved_t = t_raw
+                    else:
+                        continue
+
+                slots_to_block = []
+                seen_slots = set()
+
+                if isinstance(unavail_data, dict):
+                    for fd in unavail_data.get("full_days", []):
+                        fd_clean = _clean_day_fet(fd)
+                        for half in ["ص", "م"]:
+                            day_key = f"{fd_clean} {half}"
+                            for h in ["ح 1", "ح 2", "ح 3", "ح 4"]:
+                                pair = (day_key, h)
+                                if pair not in seen_slots:
+                                    seen_slots.add(pair)
+                                    slots_to_block.append(pair)
+                    for hd in unavail_data.get("half_days", []):
+                        hd_clean = _clean_day_fet(hd)
+                        for h in ["ح 1", "ح 2", "ح 3", "ح 4"]:
+                            pair = (hd_clean, h)
+                            if pair not in seen_slots:
+                                seen_slots.add(pair)
+                                slots_to_block.append(pair)
+                    for s in unavail_data.get("slots", []):
+                        if isinstance(s, dict):
+                            s_day = _clean_day_fet(s.get("day", ""))
+                            s_hour = str(s.get("hour", "")).strip()
+                        elif isinstance(s, (list, tuple)) and len(s) >= 2:
+                            s_day = _clean_day_fet(s[0])
+                            s_hour = str(s[1]).strip()
+                        else:
+                            continue
+                        if s_day in valid_fet_days and s_hour in valid_fet_hours:
+                            pair = (s_day, s_hour)
+                            if pair not in seen_slots:
+                                seen_slots.add(pair)
+                                slots_to_block.append(pair)
+                elif isinstance(unavail_data, list):
+                    for s in unavail_data:
+                        if isinstance(s, dict):
+                            s_day = _clean_day_fet(s.get("day", ""))
+                            s_hour = str(s.get("hour", "")).strip()
+                        elif isinstance(s, (list, tuple)) and len(s) >= 2:
+                            s_day = _clean_day_fet(s[0])
+                            s_hour = str(s[1]).strip()
+                        else:
+                            continue
+                        if s_day in valid_fet_days and s_hour in valid_fet_hours:
+                            pair = (s_day, s_hour)
+                            if pair not in seen_slots:
+                                seen_slots.add(pair)
+                                slots_to_block.append(pair)
+
+                if slots_to_block:
+                    summary_desc = unavail_data.get("summary", "") if isinstance(unavail_data, dict) else ""
+                    lines.append('<ConstraintTeacherNotAvailableTimes>')
+                    lines.append(f'	<Weight_Percentage>{w}</Weight_Percentage>')
+                    lines.append(f'	<Teacher>{resolved_t}</Teacher>')
+                    lines.append(f'	<Number_of_Not_Available_Times>{len(slots_to_block)}</Number_of_Not_Available_Times>')
+                    for d_name, h_name in slots_to_block:
+                        lines.append('	<Not_Available_Time>')
+                        lines.append(f'		<Day>{d_name}</Day>')
+                        lines.append(f'		<Hour>{h_name}</Hour>')
+                        lines.append('	</Not_Available_Time>')
+                    lines.append('	<Active>true</Active>')
+                    lines.append(f'	<Comments>{resolved_t} - {summary_desc or "أوقات مفرغة غير متاحة"}</Comments>')
+                    lines.append('</ConstraintTeacherNotAvailableTimes>')
 
         # Teacher Max Daily Hours (In 12 half-day FET structure, each half-day has max 4 slots)
         if "ConstraintTeachersMaxHoursDaily" in c_map or "tc_t_8" in c_map:

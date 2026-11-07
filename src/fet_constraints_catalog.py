@@ -40,7 +40,9 @@ def get_68_constraints() -> List[Dict]:
             "code_individual": "ConstraintTeacherNotAvailableTimes",
             "def_weight": 100.0, "is_active": False, "is_primary": False,
             "target_type": "teachers", "applies_to": "selected", "selected_targets": [],
-            "desc": "حظر إسناد حصص لمدرس معين في فترات أو أيام محددة."
+            "target_overrides": {},
+            "teacher_unavailabilities": {},
+            "desc": "حظر إسناد حصص لمدرس معين في فترات أو أيام محددة (مثل تفريغ يوم السبت أو الاثنين كاملاً)."
         },
         {
             "id": "tc_t_2", "scope": "teachers", "main_cat": "time", "sub_cat": "teachers",

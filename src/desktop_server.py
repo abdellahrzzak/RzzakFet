@@ -1901,6 +1901,10 @@ class RzzakFetAppState:
                     base["applies_to"] = sc.get("applies_to", base.get("applies_to", "all"))
                     base["selected_targets"] = sc.get("selected_targets", base.get("selected_targets", []))
                     base["target_overrides"] = sc.get("target_overrides", base.get("target_overrides", {}))
+                    if "teacher_unavailabilities" in sc:
+                        base["teacher_unavailabilities"] = sc["teacher_unavailabilities"]
+                    if sc.get("is_active"):
+                        base["is_primary"] = True
                     rebuilt_list.append(base)
                     seen_ids.add(c_id)
 
@@ -8282,11 +8286,14 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
             param_val = data.get("param_val")
             applies_to = data.get("applies_to")
             selected_targets = data.get("selected_targets")
+            teacher_unavailabilities = data.get("teacher_unavailabilities")
 
             for c in APP_STATE.fet_generator.all_available_constraints:
                 if c["id"] == c_id:
                     if is_active is not None:
                         c["is_active"] = bool(is_active)
+                        if bool(is_active):
+                            c["is_primary"] = True
                     if is_primary is not None:
                         c["is_primary"] = bool(is_primary)
                     if weight is not None:
@@ -8303,7 +8310,57 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
                     target_overrides = data.get("target_overrides")
                     if target_overrides is not None and isinstance(target_overrides, dict):
                         c["target_overrides"] = {str(k): v for k, v in target_overrides.items()}
+                    if teacher_unavailabilities is not None and isinstance(teacher_unavailabilities, dict):
+                        c["teacher_unavailabilities"] = teacher_unavailabilities
+                        c["selected_targets"] = list(teacher_unavailabilities.keys())
+                        c["target_overrides"] = {k: v.get("summary", "") if isinstance(v, dict) else str(v) for k, v in teacher_unavailabilities.items()}
                     break
+            APP_STATE.save_to_disk()
+
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.end_headers()
+            res = json.dumps(APP_STATE.get_full_state(), ensure_ascii=False)
+            self.wfile.write(res.encode("utf-8"))
+
+        elif parsed.path == "/api/update_teacher_unavailability":
+            c_id = data.get("id", "tc_t_1")
+            t_name = data.get("teacher_name")
+            action = data.get("action", "save")
+            unavail_map = data.get("teacher_unavailabilities")
+            
+            for c in APP_STATE.fet_generator.all_available_constraints:
+                if c["id"] == c_id or c.get("code") == "ConstraintTeacherNotAvailableTimes":
+                    if "teacher_unavailabilities" not in c or not isinstance(c["teacher_unavailabilities"], dict):
+                        c["teacher_unavailabilities"] = {}
+                    
+                    if unavail_map is not None and isinstance(unavail_map, dict):
+                        c["teacher_unavailabilities"] = unavail_map
+                    elif t_name:
+                        if action == "delete":
+                            c["teacher_unavailabilities"].pop(t_name, None)
+                        else:
+                            slots = data.get("slots", [])
+                            full_days = data.get("full_days", [])
+                            half_days = data.get("half_days", [])
+                            summary = data.get("summary", "")
+                            c["teacher_unavailabilities"][t_name] = {
+                                "slots": slots,
+                                "full_days": full_days,
+                                "half_days": half_days,
+                                "summary": summary
+                            }
+                    
+                    # Auto activate and set primary
+                    has_any = bool(c["teacher_unavailabilities"])
+                    c["is_active"] = bool(data.get("is_active", True if has_any else c.get("is_active", False)))
+                    if c["is_active"]:
+                        c["is_primary"] = True
+                    c["applies_to"] = "selected"
+                    c["selected_targets"] = list(c["teacher_unavailabilities"].keys())
+                    c["target_overrides"] = {k: (v.get("summary", "") if isinstance(v, dict) else str(v)) for k, v in c["teacher_unavailabilities"].items()}
+                    break
+
             APP_STATE.save_to_disk()
 
             self.send_response(200)

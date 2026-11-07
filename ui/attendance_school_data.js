@@ -1,6 +1,66 @@
 window.INITIAL_SCHOOL_DATA = {
-  "updatedAt": 1793919466689,
-  "attendanceSessions": {},
+  "updatedAt": 1794068744469,
+  "attendanceSessions": {
+    "2026-11-07_1_TCLSHF-2": {
+      "dayOfWeek": 6,
+      "lateStudentIds": [
+        "TCLSHF-2_J178006002",
+        "TCLSHF-2_J162007456"
+      ],
+      "absentCount": 0,
+      "className": "TCLSHF-2",
+      "teacherName": "رقية أجديك",
+      "absentStudentIds": [],
+      "updatedAt": 1794062583831,
+      "status": "LATE",
+      "totalStudents": 34,
+      "classCode": "TCLSHF-2",
+      "sessionId": "2026-11-07_1_TCLSHF-2",
+      "teacherId": "T04",
+      "presentCount": 34,
+      "slotIndex": 1,
+      "scheduledEnd": "09:00",
+      "subject": "اللغة الفرنسية",
+      "attendanceMap": {
+        "TCLSHF-2_J162007465": "P",
+        "TCLSHF-2_J174010919": "P",
+        "TCLSHF-2_J175004549": "P",
+        "TCLSHF-2_J171004551": "P",
+        "TCLSHF-2_D159038798": "P",
+        "TCLSHF-2_J175010874": "P",
+        "TCLSHF-2_J172005211": "P",
+        "TCLSHF-2_E154032516": "P",
+        "TCLSHF-2_J176005201": "P",
+        "TCLSHF-2_J167006954": "P",
+        "TCLSHF-2_J162008091": "P",
+        "TCLSHF-2_J168005720": "P",
+        "TCLSHF-2_D151065051": "P",
+        "TCLSHF-2_J178004319": "P",
+        "TCLSHF-2_D150057955": "P",
+        "TCLSHF-2_D158064008": "P",
+        "TCLSHF-2_J173006170": "P",
+        "TCLSHF-2_J178005007": "P",
+        "TCLSHF-2_J160007195": "P",
+        "TCLSHF-2_D156011833": "P",
+        "TCLSHF-2_J165005210": "P",
+        "TCLSHF-2_J176005196": "P",
+        "TCLSHF-2_J178005792": "P",
+        "TCLSHF-2_J170006105": "P",
+        "TCLSHF-2_J166006824": "P",
+        "TCLSHF-2_J176003876": "P",
+        "TCLSHF-2_J178006002": "L",
+        "TCLSHF-2_D150064983": "P",
+        "TCLSHF-2_D148130196": "P",
+        "TCLSHF-2_J171006172": "P",
+        "TCLSHF-2_A161050685": "P",
+        "TCLSHF-2_J177004744": "P",
+        "TCLSHF-2_J162007456": "L",
+        "TCLSHF-2_J178004321": "P"
+      },
+      "date": "2026-11-07",
+      "scheduledStart": "08:00"
+    }
+  },
   "justifiedAbsences": {},
   "entryPasses": {
     "BE-20261104-D34D": {
@@ -6604,6 +6664,6 @@ window.INITIAL_SCHOOL_DATA = {
       "timestamp": 1793649701613
     }
   },
-  "resetToken": 1793919466520
+  "resetToken": 1793991810322
 };
 window.ANFG_SCHOOL_DATA = window.INITIAL_SCHOOL_DATA;

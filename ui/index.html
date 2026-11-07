@@ -6006,6 +6006,180 @@
     </div>
   </div>
 
+  
+  <!-- POPUP MODAL: TEACHER NOT AVAILABLE TIMES (تفريغ مدرس) -->
+  <div id="modal-teacher-not-available" class="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-[100000] hidden backdrop-blur-sm">
+    <div class="bg-slate-900 border border-amber-600/60 rounded-2xl p-5 w-full max-w-5xl shadow-2xl space-y-4 max-h-[92vh] flex flex-col text-right">
+
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div>
+          <div class="flex items-center gap-2">
+            <h3 class="font-black text-base text-white">👨‍🏫 تفريغ مدرس (أوقات غير متاحة)</h3>
+            <span class="bg-amber-950 text-amber-300 border border-amber-700 text-[10px] font-bold px-2 py-0.5 rounded font-mono">ConstraintTeacherNotAvailableTimes</span>
+          </div>
+          <p class="text-xs text-slate-400 mt-1">تخصيص أيام أو حصص محددة لا يعمل فيها الأستاذ نهائياً (مثلاً تفريغ يوم السبت كاملاً لأستاذ، وتفريغ يوم الاثنين كاملاً لأستاذ آخر، إلخ).</p>
+        </div>
+        <button onclick="closeTeacherNotAvailableModal()" class="text-slate-400 hover:text-white text-lg font-bold bg-slate-800 hover:bg-slate-700 w-8 h-8 rounded-full flex items-center justify-center transition cursor-pointer">✕</button>
+      </div>
+
+      <!-- Modal Body (Scrollable) -->
+      <div class="overflow-y-auto space-y-4 pr-1 flex-1 custom-scrollbar">
+
+        <!-- 1. Teacher Selector & Quick Stats -->
+        <div class="bg-slate-950 border border-slate-800 rounded-xl p-3.5 space-y-3">
+          <div class="flex items-center justify-between gap-3 flex-wrap">
+            <div class="flex-1 min-w-[260px] space-y-1">
+              <label class="block text-xs font-bold text-slate-300">
+                <span>1. اختر الأستاذ المراد تفريغ أوقاته:</span>
+              </label>
+              <div class="flex items-center gap-2">
+                <select id="unavail-teacher-select" onchange="onTeacherUnavailSelected(this.value)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-amber-200 outline-none focus:border-amber-500 transition">
+                  <!-- Populated dynamically with all teachers -->
+                </select>
+              </div>
+            </div>
+
+            <!-- Current Teacher Summary Badge -->
+            <div id="unavail-current-teacher-card" class="bg-slate-900 border border-amber-800/80 rounded-xl px-4 py-2 flex items-center gap-3">
+              <div class="text-right">
+                <div class="text-[10px] text-slate-400 font-bold">الحالة الحالية للأستاذ المحدد:</div>
+                <div id="unavail-current-teacher-status" class="text-xs font-black text-amber-300">متاح كامل الأسبوع (0 حصص مفرغة)</div>
+              </div>
+              <div id="unavail-current-teacher-count" class="w-9 h-9 rounded-lg bg-amber-950 border border-amber-700 flex items-center justify-center font-mono font-black text-xs text-amber-400">
+                0س
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. Quick Preset Buttons -->
+          <div class="pt-2 border-t border-slate-800/80 space-y-2">
+            <div class="flex items-center justify-between flex-wrap gap-2">
+              <span class="text-[11px] font-bold text-amber-400 flex items-center gap-1">
+                <span>⚡ تفريغ يوم كامل (8 حصص - صباحاً ومساءً):</span>
+              </span>
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <button type="button" onclick="toggleTeacherDayFull('السبت')" class="bg-amber-950/80 hover:bg-amber-900 text-amber-300 border border-amber-700/80 px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer shadow-sm">السبت كاملاً</button>
+                <button type="button" onclick="toggleTeacherDayFull('الاثنين')" class="bg-amber-950/80 hover:bg-amber-900 text-amber-300 border border-amber-700/80 px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer shadow-sm">الاثنين كاملاً</button>
+                <button type="button" onclick="toggleTeacherDayFull('الثلاثاء')" class="bg-amber-950/80 hover:bg-amber-900 text-amber-300 border border-amber-700/80 px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer shadow-sm">الثلاثاء كاملاً</button>
+                <button type="button" onclick="toggleTeacherDayFull('الاربعاء')" class="bg-amber-950/80 hover:bg-amber-900 text-amber-300 border border-amber-700/80 px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer shadow-sm">الأربعاء كاملاً</button>
+                <button type="button" onclick="toggleTeacherDayFull('الخميس')" class="bg-amber-950/80 hover:bg-amber-900 text-amber-300 border border-amber-700/80 px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer shadow-sm">الخميس كاملاً</button>
+                <button type="button" onclick="toggleTeacherDayFull('الجمعة')" class="bg-amber-950/80 hover:bg-amber-900 text-amber-300 border border-amber-700/80 px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer shadow-sm">الجمعة كاملاً</button>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between flex-wrap gap-2 pt-1 border-t border-slate-900">
+              <span class="text-[11px] font-bold text-sky-400">🌅 تفريغ نصف يوم صباحاً (4 حصص):</span>
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <button type="button" onclick="toggleTeacherHalfDay('السبت ص')" class="bg-sky-950/60 hover:bg-sky-900 text-sky-300 border border-sky-800/80 px-2 py-0.5 rounded text-[11px] font-bold transition">السبت ص</button>
+                <button type="button" onclick="toggleTeacherHalfDay('الاثنين ص')" class="bg-sky-950/60 hover:bg-sky-900 text-sky-300 border border-sky-800/80 px-2 py-0.5 rounded text-[11px] font-bold transition">الاثنين ص</button>
+                <button type="button" onclick="toggleTeacherHalfDay('الثلاثاء ص')" class="bg-sky-950/60 hover:bg-sky-900 text-sky-300 border border-sky-800/80 px-2 py-0.5 rounded text-[11px] font-bold transition">الثلاثاء ص</button>
+                <button type="button" onclick="toggleTeacherHalfDay('الاربعاء ص')" class="bg-sky-950/60 hover:bg-sky-900 text-sky-300 border border-sky-800/80 px-2 py-0.5 rounded text-[11px] font-bold transition">الأربعاء ص</button>
+                <button type="button" onclick="toggleTeacherHalfDay('الخميس ص')" class="bg-sky-950/60 hover:bg-sky-900 text-sky-300 border border-sky-800/80 px-2 py-0.5 rounded text-[11px] font-bold transition">الخميس ص</button>
+                <button type="button" onclick="toggleTeacherHalfDay('الجمعة ص')" class="bg-sky-950/60 hover:bg-sky-900 text-sky-300 border border-sky-800/80 px-2 py-0.5 rounded text-[11px] font-bold transition">الجمعة ص</button>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between flex-wrap gap-2 pt-1 border-t border-slate-900">
+              <span class="text-[11px] font-bold text-orange-400">🌇 تفريغ نصف يوم مساءً (4 حصص):</span>
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <button type="button" onclick="toggleTeacherHalfDay('السبت م')" class="bg-orange-950/60 hover:bg-orange-900 text-orange-300 border border-orange-800/80 px-2 py-0.5 rounded text-[11px] font-bold transition">السبت م</button>
+                <button type="button" onclick="toggleTeacherHalfDay('الاثنين م')" class="bg-orange-950/60 hover:bg-orange-900 text-orange-300 border border-orange-800/80 px-2 py-0.5 rounded text-[11px] font-bold transition">الاثنين م</button>
+                <button type="button" onclick="toggleTeacherHalfDay('الثلاثاء م')" class="bg-orange-950/60 hover:bg-orange-900 text-orange-300 border border-orange-800/80 px-2 py-0.5 rounded text-[11px] font-bold transition">الثلاثاء م</button>
+                <button type="button" onclick="toggleTeacherHalfDay('الاربعاء م')" class="bg-orange-950/60 hover:bg-orange-900 text-orange-300 border border-orange-800/80 px-2 py-0.5 rounded text-[11px] font-bold transition">الأربعاء م</button>
+                <button type="button" onclick="toggleTeacherHalfDay('الخميس م')" class="bg-orange-950/60 hover:bg-orange-900 text-orange-300 border border-orange-800/80 px-2 py-0.5 rounded text-[11px] font-bold transition">الخميس م</button>
+                <button type="button" onclick="toggleTeacherHalfDay('الجمعة م')" class="bg-orange-950/60 hover:bg-orange-900 text-orange-300 border border-orange-800/80 px-2 py-0.5 rounded text-[11px] font-bold transition">الجمعة م</button>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-end gap-2 pt-1 border-t border-slate-900">
+              <button type="button" onclick="clearCurrentTeacherSlots()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1 rounded-lg text-xs font-bold transition cursor-pointer">🧹 مسح التحديد للأستاذ الحالي</button>
+              <button type="button" onclick="blockAllCurrentTeacherSlots()" class="bg-rose-950 hover:bg-rose-900 text-rose-300 border border-rose-800 px-3 py-1 rounded-lg text-xs font-bold transition cursor-pointer">🚫 حظر الأسبوع كاملاً</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Interactive Weekly Schedule Grid -->
+        <div class="bg-slate-950 border border-slate-800 rounded-xl p-3.5 space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-white flex items-center gap-1.5">
+              <span>📅 جدول الحصص الأسبوعي للأستاذ (انقر على أي حصة للتبديل):</span>
+            </span>
+            <div class="flex items-center gap-3 text-[11px]">
+              <span class="flex items-center gap-1 text-rose-400 font-bold"><span class="w-3 h-3 rounded bg-rose-800 border border-rose-600 inline-block"></span> ⛔ مفرغ (غير متاح)</span>
+              <span class="flex items-center gap-1 text-emerald-400 font-bold"><span class="w-3 h-3 rounded bg-emerald-900 border border-emerald-700 inline-block"></span> ✓ متاح للتدريس</span>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-center border-collapse text-xs border border-slate-800 select-none">
+              <thead>
+                <tr class="bg-slate-900 text-slate-300 font-bold border-b border-slate-800">
+                  <th class="p-2 border border-slate-800 w-24">اليوم</th>
+                  <th colspan="4" class="p-1.5 bg-blue-950/40 border border-slate-800 text-blue-300 text-[11px]">
+                    🌅 الفترة الصباحية (08:30 – 12:30)
+                  </th>
+                  <th colspan="4" class="p-1.5 bg-amber-950/40 border border-slate-800 text-amber-300 text-[11px]">
+                    🌇 الفترة المسائية (14:30 – 18:30)
+                  </th>
+                  <th class="p-2 border border-slate-800 w-24 text-[11px]">تفريغ سريع</th>
+                </tr>
+                <tr class="bg-slate-950 text-slate-400 text-[10.5px] border-b border-slate-800 font-mono">
+                  <th class="p-1 border border-slate-800">الأيام</th>
+                  <th class="p-1 border border-slate-800 w-16">ح 1</th>
+                  <th class="p-1 border border-slate-800 w-16">ح 2</th>
+                  <th class="p-1 border border-slate-800 w-16">ح 3</th>
+                  <th class="p-1 border border-slate-800 w-16">ح 4</th>
+                  <th class="p-1 border border-slate-800 w-16">ح 1 (5)</th>
+                  <th class="p-1 border border-slate-800 w-16">ح 2 (6)</th>
+                  <th class="p-1 border border-slate-800 w-16">ح 3 (7)</th>
+                  <th class="p-1 border border-slate-800 w-16">ح 4 (8)</th>
+                  <th class="p-1 border border-slate-800">اليوم كاملاً</th>
+                </tr>
+              </thead>
+              <tbody id="unavail-weekly-grid-body">
+                <!-- Dynamically rendered rows -->
+              </tbody>
+            </table>
+          </div>
+
+          <div class="flex justify-end pt-2">
+            <button type="button" onclick="saveCurrentTeacherUnavail()" class="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white font-black text-xs px-5 py-2 rounded-xl shadow-lg transition flex items-center gap-2 cursor-pointer active:scale-95">
+              <span>💾 تثبيت تفريغ هذا الأستاذ في القائمة</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 4. List of Configured Teachers -->
+        <div class="bg-slate-950 border border-slate-800 rounded-xl p-3.5 space-y-3">
+          <div class="flex items-center justify-between">
+            <h4 class="text-xs font-bold text-amber-300 flex items-center gap-1.5">
+              <span>📋 قائمة الأساتذة المفرغين حتى الآن:</span>
+              <span id="unavail-configured-badge" class="bg-amber-400 text-slate-950 font-black px-2 py-0.5 rounded-full text-[10px] font-mono">0 أساتذة</span>
+            </h4>
+            <span class="text-[10px] text-slate-400">يمكنك تعديل أي أستاذ أو حذفه قبل الحفظ النهائي</span>
+          </div>
+
+          <div id="unavail-configured-list-container" class="space-y-2">
+            <!-- Dynamically populated configured teachers cards -->
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="flex items-center justify-between border-t border-slate-800 pt-3">
+        <button onclick="closeTeacherNotAvailableModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs px-4 py-2 rounded-xl transition cursor-pointer">
+          إلغاء
+        </button>
+        <button onclick="saveAllTeacherUnavailabilities()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs px-6 py-2 rounded-xl shadow-lg transition flex items-center gap-2 cursor-pointer active:scale-95">
+          <span>✓ حفظ كافة التعديلات وتفعيل القيد في المنظومة</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
   <!-- POPUP MODAL: PROGRESSIVE CONSTRAINT TIMETABLE GENERATION (قيداً بقيد) -->
   <div id="modal-progressive-generation" class="fixed inset-0 bg-black/85 flex items-center justify-center p-4 z-50 hidden backdrop-blur-md">
     <div class="bg-slate-900 border border-slate-700 rounded-2xl p-6 w-full max-w-3xl shadow-2xl space-y-4 max-h-[90vh] flex flex-col">
@@ -7210,6 +7384,59 @@
     function renderSingleConstraintCard(c, subCat) {
       const hasParam = c.param_name && c.param_val !== null && c.param_val !== undefined;
       const isActive = !!c.is_active;
+
+      if (c.id === 'tc_t_1' || c.code === 'ConstraintTeacherNotAvailableTimes') {
+        const unavailMap = c.teacher_unavailabilities || {};
+        const unavailKeys = Object.keys(unavailMap);
+        const unavailCount = unavailKeys.length;
+        const previewList = unavailKeys.slice(0, 3).map(k => {
+          const item = unavailMap[k];
+          const sm = typeof item === 'object' ? (item.summary || (item.full_days && item.full_days.length ? item.full_days.join(', ') : 'مفرغ')) : String(item);
+          return `<span class="bg-amber-950/80 border border-amber-800 text-amber-300 px-1.5 py-0.5 rounded text-[10px] font-bold">${k}: ${sm}</span>`;
+        }).join(' ');
+
+        return `
+          <div class="bg-slate-950 border ${isActive ? 'border-amber-600/70 shadow-md shadow-amber-950/30' : 'border-slate-800 opacity-80'} rounded-xl p-3 flex flex-col justify-between transition-all">
+            <div>
+              <div class="flex items-start justify-between gap-2 pb-2 border-b border-slate-800">
+                <span class="font-bold text-white text-xs leading-snug">${c.name}</span>
+                <button onclick="toggleConstraintInModal('${c.id}', ${isActive}, '${subCat}')" class="${isActive ? 'bg-emerald-950 hover:bg-emerald-900 text-emerald-400 border-emerald-800' : 'bg-slate-800 hover:bg-slate-700 text-slate-400 border-slate-700 hover:text-white'} text-[11px] px-3 py-1 rounded-lg font-bold shrink-0 cursor-pointer border transition transform active:scale-95 shadow">
+                  ${isActive ? 'مفعل ✓' : 'معطل ✗'}
+                </button>
+              </div>
+              <div class="text-[10px] font-mono text-slate-500 mt-1">${c.code}</div>
+              <p class="text-[10.5px] text-slate-400 mt-1 leading-tight">تفريغ أستاذ أو أكثر في أيام أو حصص محددة (مثل تفريغ السبت كاملاً أو الاثنين كاملاً).</p>
+            </div>
+
+            <div class="space-y-2 mt-2 pt-2 border-t border-slate-800/80">
+              <button onclick="openTeacherNotAvailableModal()" class="w-full bg-gradient-to-r from-amber-900/60 to-amber-950/90 hover:from-amber-800/80 hover:to-amber-900 text-amber-200 border border-amber-600/60 hover:border-amber-400 px-3 py-1.5 rounded-lg text-xs font-black transition flex items-center justify-center gap-1.5 cursor-pointer shadow-md active:scale-95">
+                <span class="text-sm">⏳</span>
+                <span>تخصيص تفريغ الأساتذة (${unavailCount} أساتذة مفرغين) ⚙️</span>
+              </button>
+
+              ${unavailCount > 0 ? `
+                <div class="flex items-center gap-1 flex-wrap pt-0.5">
+                  ${previewList}
+                  ${unavailCount > 3 ? `<span class="text-[10px] text-slate-400 font-bold">+${unavailCount - 3} آخرين</span>` : ''}
+                </div>
+              ` : `
+                <div class="text-[10px] text-amber-400/80 bg-amber-950/30 px-2 py-1 rounded border border-amber-900/40 text-center">
+                  ⚠️ لم يتم تخصيص تفريغ بعد. انقر على الزر لتحديد الأساتذة والأيام.
+                </div>
+              `}
+
+              <div class="flex items-center justify-between text-xs pt-1">
+                <span class="text-[11px] text-slate-400 font-medium">الوزن:</span>
+                <div class="flex items-center gap-2">
+                  <input type="range" min="0" max="100" value="${c.def_weight}" onchange="updateWeightInModal('${c.id}', this.value, '${subCat}')" class="w-20 accent-amber-500 cursor-pointer">
+                  <span class="font-mono font-bold text-amber-400 text-[11px] w-9 text-center bg-slate-900 py-0.5 rounded border border-slate-800">${c.def_weight}%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
       return `
         <div class="bg-slate-950 border ${isActive ? 'border-blue-600/70 shadow-md shadow-blue-950/30' : 'border-slate-800 opacity-80'} rounded-xl p-3 flex flex-col justify-between transition-all">
           <div>
@@ -7933,6 +8160,434 @@
       closeBreakTimesModal();
     }
 
+    
+    // ================= TEACHER NOT AVAILABLE TIMES (CONSTRAINTTEACHERNOTAVAILABLETIMES) =================
+    let currentEditingUnavailTeacher = '';
+    let currentTeacherSlots = [];
+    let tempTeacherUnavailMap = {};
+
+    const WEEK_DAYS_6 = [
+      {id: 'الاثنين', name: 'الاثنين', morning: 'الاثنين ص', afternoon: 'الاثنين م'},
+      {id: 'الثلاثاء', name: 'الثلاثاء', morning: 'الثلاثاء ص', afternoon: 'الثلاثاء م'},
+      {id: 'الاربعاء', name: 'الأربعاء', morning: 'الاربعاء ص', afternoon: 'الاربعاء م'},
+      {id: 'الخميس', name: 'الخميس', morning: 'الخميس ص', afternoon: 'الخميس م'},
+      {id: 'الجمعة', name: 'الجمعة', morning: 'الجمعة ص', afternoon: 'الجمعة م'},
+      {id: 'السبت', name: 'السبت', morning: 'السبت ص', afternoon: 'السبت م'}
+    ];
+
+    function getAllAvailableTeachersList() {
+      const teachersMap = new Map();
+      if (appData && Array.isArray(appData.teachers_details)) {
+        appData.teachers_details.forEach(t => {
+          if (t && t.name) {
+            teachersMap.set(t.name, {
+              name: t.name,
+              real_name: t.real_name || t.name,
+              subject: t.subject || 'أستاذ'
+            });
+          }
+        });
+      }
+      if (window.attendanceTeachers && Array.isArray(window.attendanceTeachers)) {
+        window.attendanceTeachers.forEach(t => {
+          const name = t.fullName || t.name || t.excelAlias;
+          if (name && !teachersMap.has(name)) {
+            teachersMap.set(name, {
+              name: name,
+              real_name: name,
+              subject: t.subject || 'أستاذ'
+            });
+          }
+        });
+      }
+      if (appData && Array.isArray(appData.teachers_list)) {
+        appData.teachers_list.forEach(name => {
+          if (name && !teachersMap.has(name)) {
+            teachersMap.set(name, {
+              name: name,
+              real_name: name,
+              subject: 'أستاذ'
+            });
+          }
+        });
+      }
+      if (appData && appData.institution && Array.isArray(appData.institution.all_default_teachers)) {
+        appData.institution.all_default_teachers.forEach(t => {
+          const name = typeof t === 'string' ? t : (t.name || t.real_name);
+          if (name && !teachersMap.has(name)) {
+            teachersMap.set(name, {
+              name: name,
+              real_name: name,
+              subject: (typeof t === 'object' && t.subject) ? t.subject : 'أستاذ'
+            });
+          }
+        });
+      }
+      if (window.fullTimetableData && window.fullTimetableData.teachers) {
+        Object.keys(window.fullTimetableData.teachers).forEach(name => {
+          if (name && !teachersMap.has(name)) {
+            teachersMap.set(name, {
+              name: name,
+              real_name: name,
+              subject: 'أستاذ'
+            });
+          }
+        });
+      }
+      return Array.from(teachersMap.values());
+    }
+
+    function openTeacherNotAvailableModal(selectedTeacher = null) {
+      if (!appData) return;
+      const tc1 = (appData.all_constraints || []).find(c => c.id === 'tc_t_1' || c.code === 'ConstraintTeacherNotAvailableTimes') || {};
+      tempTeacherUnavailMap = JSON.parse(JSON.stringify(tc1.teacher_unavailabilities || {}));
+      populateTeacherUnavailDropdown(selectedTeacher);
+      const modal = document.getElementById('modal-teacher-not-available');
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.style.display = 'flex';
+      }
+    }
+
+    function closeTeacherNotAvailableModal() {
+      const modal = document.getElementById('modal-teacher-not-available');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.style.display = 'none';
+      }
+    }
+
+    function populateTeacherUnavailDropdown(preferredTeacher = null) {
+      const select = document.getElementById('unavail-teacher-select');
+      if (!select) return;
+
+      const teachers = getAllAvailableTeachersList();
+      if (teachers.length === 0) {
+        select.innerHTML = '<option value="">لا يوجد أساتذة مسجلين</option>';
+        return;
+      }
+
+      teachers.sort((a, b) => a.name.localeCompare(b.name, 'ar'));
+
+      select.innerHTML = teachers.map(t => {
+        const isConfigured = !!tempTeacherUnavailMap[t.name];
+        const mark = isConfigured ? '⭐ [مخصص له تفريغ] ' : '';
+        return `<option value="${t.name}">${mark}${t.name} (${t.subject || 'أستاذ'})</option>`;
+      }).join('');
+
+      let targetT = preferredTeacher;
+      if (!targetT || !teachers.some(t => t.name === targetT)) {
+        targetT = Object.keys(tempTeacherUnavailMap)[0] || teachers[0].name;
+      }
+      select.value = targetT;
+      onTeacherUnavailSelected(targetT);
+      renderConfiguredTeachersList();
+    }
+
+    function onTeacherUnavailSelected(tName) {
+      currentEditingUnavailTeacher = tName;
+      if (tempTeacherUnavailMap[tName]) {
+        const data = tempTeacherUnavailMap[tName];
+        currentTeacherSlots = (data.slots || []).map(s => ({day: s.day.replace('الأربعاء', 'الاربعاء'), hour: s.hour}));
+      } else {
+        currentTeacherSlots = [];
+      }
+      renderTeacherUnavailGrid();
+      updateCurrentTeacherStats();
+    }
+
+    function isTeacherSlotBlocked(dayHalf, hour) {
+      const cleanDay = dayHalf.replace('الأربعاء', 'الاربعاء');
+      return currentTeacherSlots.some(s => s.day === cleanDay && s.hour === hour);
+    }
+
+    function toggleTeacherSlot(dayHalf, hour) {
+      const cleanDay = dayHalf.replace('الأربعاء', 'الاربعاء');
+      const idx = currentTeacherSlots.findIndex(s => s.day === cleanDay && s.hour === hour);
+      if (idx >= 0) {
+        currentTeacherSlots.splice(idx, 1);
+      } else {
+        currentTeacherSlots.push({day: cleanDay, hour: hour});
+      }
+      renderTeacherUnavailGrid();
+      updateCurrentTeacherStats();
+    }
+
+    function toggleTeacherHalfDay(dayHalf) {
+      const cleanDay = dayHalf.replace('الأربعاء', 'الاربعاء');
+      const allFour = HOURS_4.every(h => isTeacherSlotBlocked(cleanDay, h));
+      if (allFour) {
+        currentTeacherSlots = currentTeacherSlots.filter(s => s.day !== cleanDay);
+      } else {
+        HOURS_4.forEach(h => {
+          if (!isTeacherSlotBlocked(cleanDay, h)) {
+            currentTeacherSlots.push({day: cleanDay, hour: h});
+          }
+        });
+      }
+      renderTeacherUnavailGrid();
+      updateCurrentTeacherStats();
+    }
+
+    function toggleTeacherDayFull(dayName) {
+      const cleanDay = dayName.replace('الأربعاء', 'الاربعاء');
+      const morning = cleanDay + ' ص';
+      const afternoon = cleanDay + ' م';
+
+      const mAll = HOURS_4.every(h => isTeacherSlotBlocked(morning, h));
+      const aAll = HOURS_4.every(h => isTeacherSlotBlocked(afternoon, h));
+
+      if (mAll && aAll) {
+        currentTeacherSlots = currentTeacherSlots.filter(s => s.day !== morning && s.day !== afternoon);
+      } else {
+        HOURS_4.forEach(h => {
+          if (!isTeacherSlotBlocked(morning, h)) currentTeacherSlots.push({day: morning, hour: h});
+          if (!isTeacherSlotBlocked(afternoon, h)) currentTeacherSlots.push({day: afternoon, hour: h});
+        });
+      }
+      renderTeacherUnavailGrid();
+      updateCurrentTeacherStats();
+    }
+
+    function clearCurrentTeacherSlots() {
+      currentTeacherSlots = [];
+      renderTeacherUnavailGrid();
+      updateCurrentTeacherStats();
+    }
+
+    function blockAllCurrentTeacherSlots() {
+      currentTeacherSlots = [];
+      DAYS_12.forEach(d => {
+        HOURS_4.forEach(h => {
+          currentTeacherSlots.push({day: d, hour: h});
+        });
+      });
+      renderTeacherUnavailGrid();
+      updateCurrentTeacherStats();
+    }
+
+    function renderTeacherUnavailGrid() {
+      const tbody = document.getElementById('unavail-weekly-grid-body');
+      if (!tbody) return;
+
+      tbody.innerHTML = WEEK_DAYS_6.map(d => {
+        const isFullDay = HOURS_4.every(h => isTeacherSlotBlocked(d.morning, h)) && HOURS_4.every(h => isTeacherSlotBlocked(d.afternoon, h));
+
+        const morningCells = HOURS_4.map(h => {
+          const isBlk = isTeacherSlotBlocked(d.morning, h);
+          return `
+            <td onclick="toggleTeacherSlot('${d.morning}', '${h}')" class="p-2 border border-slate-800 cursor-pointer transition select-none ${isBlk ? 'bg-rose-950 hover:bg-rose-900 border-rose-700/80 text-rose-300 font-bold' : 'bg-slate-900/60 hover:bg-slate-800 text-slate-400 font-normal'}">
+              ${isBlk ? '<span class="text-[10px] text-rose-300 font-black">⛔ مفرغ</span>' : '<span class="text-[10px] text-emerald-400 font-semibold">✓ متاح</span>'}
+            </td>
+          `;
+        }).join('');
+
+        const afternoonCells = HOURS_4.map(h => {
+          const isBlk = isTeacherSlotBlocked(d.afternoon, h);
+          return `
+            <td onclick="toggleTeacherSlot('${d.afternoon}', '${h}')" class="p-2 border border-slate-800 cursor-pointer transition select-none ${isBlk ? 'bg-rose-950 hover:bg-rose-900 border-rose-700/80 text-rose-300 font-bold' : 'bg-slate-900/60 hover:bg-slate-800 text-slate-400 font-normal'}">
+              ${isBlk ? '<span class="text-[10px] text-rose-300 font-black">⛔ مفرغ</span>' : '<span class="text-[10px] text-emerald-400 font-semibold">✓ متاح</span>'}
+            </td>
+          `;
+        }).join('');
+
+        return `
+          <tr class="border-b border-slate-800 hover:bg-slate-900/40">
+            <td class="p-2 font-bold text-white bg-slate-900/90 border border-slate-800 text-xs">
+              ${d.name}
+            </td>
+            ${morningCells}
+            ${afternoonCells}
+            <td class="p-1 border border-slate-800 bg-slate-950">
+              <button type="button" onclick="toggleTeacherDayFull('${d.id}')" class="w-full text-[10px] font-bold py-1 px-1.5 rounded transition ${isFullDay ? 'bg-rose-900/80 hover:bg-rose-800 text-rose-200 border border-rose-700' : 'bg-slate-800 hover:bg-amber-950 text-slate-300 hover:text-amber-300 border border-slate-700'}">
+                ${isFullDay ? 'إلغاء التفريغ' : 'تفريغ كامل اليوم'}
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function updateCurrentTeacherStats() {
+      const countBadge = document.getElementById('unavail-current-teacher-count');
+      const statusEl = document.getElementById('unavail-current-teacher-status');
+      if (!countBadge || !statusEl) return;
+
+      const count = currentTeacherSlots.length;
+      countBadge.textContent = `${count}س`;
+
+      if (count === 0) {
+        statusEl.textContent = 'متاح كامل الأسبوع (0 حصص مفرغة)';
+        statusEl.className = 'text-xs font-bold text-emerald-400';
+      } else {
+        const summary = generateTeacherUnavailSummary(currentTeacherSlots);
+        statusEl.textContent = `${summary} (${count} حصص مفرغة)`;
+        statusEl.className = 'text-xs font-black text-amber-300';
+      }
+    }
+
+    function generateTeacherUnavailSummary(slots) {
+      if (!slots || slots.length === 0) return 'لا يوجد تفريغ';
+
+      const fullDays = [];
+      const halfDays = [];
+
+      WEEK_DAYS_6.forEach(d => {
+        const mAll = HOURS_4.every(h => slots.some(s => s.day === d.morning && s.hour === h));
+        const aAll = HOURS_4.every(h => slots.some(s => s.day === d.afternoon && s.hour === h));
+        if (mAll && aAll) {
+          fullDays.push(d.name);
+        } else {
+          if (mAll) halfDays.push(`${d.name} صباحاً`);
+          if (aAll) halfDays.push(`${d.name} مساءً`);
+        }
+      });
+
+      const parts = [];
+      if (fullDays.length > 0) parts.push(`تفريغ ${fullDays.join(' و ')} كاملاً`);
+      if (halfDays.length > 0) parts.push(halfDays.join(' و '));
+
+      if (parts.length === 0) {
+        return `${slots.length} حصص متفرقة`;
+      }
+      return parts.join('، ');
+    }
+
+    function saveCurrentTeacherUnavail() {
+      if (!currentEditingUnavailTeacher) {
+        alert('يرجى اختيار أستاذ أولاً');
+        return;
+      }
+
+      if (currentTeacherSlots.length === 0) {
+        delete tempTeacherUnavailMap[currentEditingUnavailTeacher];
+        showToast(`تم مسح تفريغ الأستاذ ${currentEditingUnavailTeacher}`, 'info');
+      } else {
+        const summary = generateTeacherUnavailSummary(currentTeacherSlots);
+        const fullDays = [];
+        const halfDays = [];
+        WEEK_DAYS_6.forEach(d => {
+          const mAll = HOURS_4.every(h => currentTeacherSlots.some(s => s.day === d.morning && s.hour === h));
+          const aAll = HOURS_4.every(h => currentTeacherSlots.some(s => s.day === d.afternoon && s.hour === h));
+          if (mAll && aAll) {
+            fullDays.push(d.id);
+          } else {
+            if (mAll) halfDays.push(d.morning);
+            if (aAll) halfDays.push(d.afternoon);
+          }
+        });
+
+        tempTeacherUnavailMap[currentEditingUnavailTeacher] = {
+          slots: [...currentTeacherSlots],
+          full_days: fullDays,
+          half_days: halfDays,
+          summary: summary
+        };
+        showToast(`✓ تم تثبيت تفريغ الأستاذ: ${currentEditingUnavailTeacher} (${summary})`, 'success');
+      }
+
+      renderConfiguredTeachersList();
+      populateTeacherUnavailDropdown(currentEditingUnavailTeacher);
+    }
+
+    function editTeacherUnavail(tName) {
+      populateTeacherUnavailDropdown(tName);
+    }
+
+    function deleteTeacherUnavail(tName) {
+      if (!confirm(`هل أنت متأكد من حذف تفريغ الأستاذ "${tName}" وإعادته متاحاً للتدريس طيلة الأسبوع؟`)) return;
+      delete tempTeacherUnavailMap[tName];
+      if (currentEditingUnavailTeacher === tName) {
+        currentTeacherSlots = [];
+        renderTeacherUnavailGrid();
+        updateCurrentTeacherStats();
+      }
+      renderConfiguredTeachersList();
+      populateTeacherUnavailDropdown(currentEditingUnavailTeacher);
+      showToast(`تم حذف تفريغ الأستاذ ${tName}`, 'info');
+    }
+
+    function renderConfiguredTeachersList() {
+      const container = document.getElementById('unavail-configured-list-container');
+      const badge = document.getElementById('unavail-configured-badge');
+      if (!container) return;
+
+      const entries = Object.entries(tempTeacherUnavailMap);
+      if (badge) badge.textContent = `${entries.length} أساتذة`;
+
+      if (entries.length === 0) {
+        container.innerHTML = `
+          <div class="p-6 text-center text-slate-500 bg-slate-900/40 rounded-xl border border-dashed border-slate-800">
+            <span class="text-2xl block mb-1">📭</span>
+            <span class="font-bold text-xs text-slate-400">لم يتم تحديد تفريغ لأي أستاذ بعد.</span>
+            <p class="text-[11px] text-slate-500 mt-0.5">اختر أستاذاً من القائمة أعلاه وحدد فترات تفريغه (مثلاً السبت كاملاً أو الاثنين كاملاً) ثم انقر على "تثبيت تفريغ هذا الأستاذ".</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = entries.map(([tName, data]) => {
+        const slotsCount = (data.slots || []).length;
+        const summary = data.summary || `${slotsCount} حصص مفرغة`;
+        return `
+          <div class="bg-slate-900/90 border border-amber-800/60 rounded-xl p-2.5 flex items-center justify-between gap-3 shadow transition hover:border-amber-600">
+            <div class="flex items-center gap-2.5 flex-1 min-w-0">
+              <span class="text-lg">👨‍🏫</span>
+              <div class="min-w-0">
+                <div class="flex items-center gap-2">
+                  <span class="font-black text-xs text-white truncate">${tName}</span>
+                  <span class="bg-amber-950 text-amber-300 border border-amber-800 px-2 py-0.5 rounded text-[10px] font-bold shrink-0 font-mono">${slotsCount} حصص</span>
+                </div>
+                <div class="text-[11px] text-amber-400/90 font-semibold truncate mt-0.5">
+                  ${summary}
+                </div>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-1.5 shrink-0">
+              <button type="button" onclick="editTeacherUnavail('${tName}')" class="bg-blue-950 hover:bg-blue-900 text-blue-300 border border-blue-800 px-2.5 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1 cursor-pointer">
+                <span>✏️ تعديل</span>
+              </button>
+              <button type="button" onclick="deleteTeacherUnavail('${tName}')" class="bg-rose-950 hover:bg-rose-900 text-rose-300 border border-rose-800 px-2.5 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1 cursor-pointer">
+                <span>🗑️ حذف</span>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function saveAllTeacherUnavailabilities() {
+      try {
+        const hasAny = Object.keys(tempTeacherUnavailMap).length > 0;
+        const res = await fetch('/api/update_teacher_unavailability', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            id: 'tc_t_1',
+            teacher_unavailabilities: tempTeacherUnavailMap,
+            is_active: hasAny
+          })
+        });
+
+        if (res.ok) {
+          appData = await res.json();
+          renderApp();
+          closeTeacherNotAvailableModal();
+          if (!document.getElementById('modal-category-constraints').classList.contains('hidden')) {
+            openCategoryModal(currentCategorySubCat || 'teachers');
+          }
+          showToast('✓ تم حفظ تفريغ أوقات الأساتذة وتفعيل القيد بنجاح!', 'success');
+        } else {
+          showToast('❌ حدث خطأ أثناء حفظ التعديلات في الخادم', 'error');
+        }
+      } catch (err) {
+        console.error('Error saving teacher unavailabilities:', err);
+        showToast('❌ تعذر الاتصال بالخادم لحفظ التعديلات', 'error');
+      }
+    }
+
+
     // ================= TEACHER NAMES MODAL =================
     function base64ToBlob(base64, mimeType) {
       const byteChars = atob(base64);
@@ -8501,7 +9156,17 @@
         const overridesCount = Object.keys(c.target_overrides || {}).length;
         const ovBadge = overridesCount > 0 ? `<span class="bg-amber-400 text-slate-950 font-black px-1.5 py-0.5 rounded-md text-[10px] ml-1 shadow-sm font-mono" title="${overridesCount} استثناءات مخصصة">${overridesCount} ⚙️</span>` : '';
 
-        if (isTeachers) {
+        if (c.id === 'tc_t_1' || c.code === 'ConstraintTeacherNotAvailableTimes') {
+          const unavailMap = c.teacher_unavailabilities || {};
+          const unavailCount = Object.keys(unavailMap).length;
+          targetHtml = `
+            <button onclick="openTeacherNotAvailableModal()" class="bg-amber-950/80 hover:bg-amber-900 text-amber-300 border border-amber-700/80 px-2.5 py-1 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 mx-auto cursor-pointer shadow-sm group" title="تخصيص تفريغ الأساتذة (أوقات غير متاحة) - انقر للتعديل">
+              <span class="text-xs">⏳</span>
+              <span>${unavailCount > 0 ? `مفرغ (${unavailCount} أساتذة)` : 'تخصيص التفريغ'}</span>
+              <span class="bg-amber-400 text-slate-950 font-black px-1.5 py-0.5 rounded-md text-[10px] ml-1 shadow-sm font-mono">⚙️</span>
+            </button>
+          `;
+        } else if (isTeachers) {
           if (isCustomTarget && targetCount > 0) {
             targetHtml = `
               <button onclick="openConstraintTargetModal('${c.id}')" class="bg-amber-950/80 hover:bg-amber-900 text-amber-300 border border-amber-700/80 px-2.5 py-1 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 mx-auto cursor-pointer shadow-sm group" title="تطبيق مخصص على أساتذة محددين - انقر للتعديل">
@@ -9357,10 +10022,12 @@
     }
 
     async function toggleConstraint(cId, currentState) {
+      const willBeActive = !currentState;
       if (appData && appData.all_constraints) {
         const item = appData.all_constraints.find(c => c.id === cId);
         if (item) {
-          item.is_active = !currentState;
+          item.is_active = willBeActive;
+          if (willBeActive) item.is_primary = true;
           renderApp();
         }
       }
@@ -9368,7 +10035,7 @@
         const res = await fetch('/api/update_constraint', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({id: cId, is_active: !currentState})
+          body: JSON.stringify({id: cId, is_active: willBeActive, is_primary: willBeActive ? true : undefined})
         });
         if (res.ok) {
           appData = await res.json();
