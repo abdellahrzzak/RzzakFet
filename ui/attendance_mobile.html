@@ -2,26 +2,86 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <meta name="theme-color" content="#0f766e" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="مسك الغياب" />
+  <meta name="apple-mobile-web-app-title" content="مسك الغياب والفروض" />
   <link rel="manifest" href="/manifest.json" />
   <link rel="icon" type="image/svg+xml" href="/icon.svg" />
   <link rel="apple-touch-icon" href="/icon.svg" />
-  <title>تطبيق مسك الغياب — الرزق فت</title>
+  <title>منظومة مسك الغياب وبرمجة الفروض — الرزق فت</title>
   <link rel="stylesheet" href="/attendance_mobile.css" />
-  <!-- مكتبة قراءة وتصدير ملفات Excel -->
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <!-- تحميل مكتبة Excel بشكل مؤجل غير معطل للواجهة -->
+  <script defer src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body>
-  <div id="app-root"></div>
+  <div id="app-root">
+    <div style="min-height: 80vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; color: #0f766e; font-family: system-ui, -apple-system, sans-serif; text-align: center; padding: 20px;">
+      <div style="width: 48px; height: 48px; border: 4px solid #ccfbf1; border-top-color: #0f766e; border-radius: 50%; animation: rzzakSpin 0.8s linear infinite;"></div>
+      <div style="font-weight: 800; font-size: 1.1rem; color: #0f766e;">جاري فتح منظومة الرزق فت...</div>
+      <div style="font-size: 0.82rem; color: #64748b;">مسك وتتبع الغياب وبرمجة الفروض المحروسة</div>
+    </div>
+    <style>
+      @keyframes rzzakSpin { to { transform: rotate(360deg); } }
+    </style>
+  </div>
   <div id="toast" class="toast"></div>
+
+  <script>
+    // حارس أخطاء ذكي للواجهة لتفادي الشاشة البيضاء نهائياً
+    window.addEventListener('error', function(err) {
+      console.error('Unhandled app error:', err);
+      const root = document.getElementById('app-root');
+      if (root && root.querySelector('.rzzakSpin, [animation]')) {
+        root.innerHTML = `
+          <div style="min-height:70vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px; text-align:center; font-family:sans-serif; color:#1e293b;">
+            <div style="font-size:3rem; margin-bottom:12px;">⚠️</div>
+            <h2 style="font-size:1.15rem; font-weight:800; color:#dc2626; margin-bottom:8px;">تعذر تحميل بعض عناصر المنظومة</h2>
+            <p style="font-size:0.84rem; color:#64748b; max-width:320px; margin-bottom:18px; line-height:1.5;">
+              قد يكون ذلك بسبب ذاكرة مؤقتة قديمة أو اتصال متقطع. انقر على الزر أدناه لإعادة التحميل النظيف.
+            </p>
+            <button onclick="localStorage.removeItem('attendance_mobile_state'); if('caches' in window){ caches.keys().then(ks=>Promise.all(ks.map(k=>caches.delete(k)))).then(()=>location.reload(true)); } else { location.reload(true); }"
+                    style="background:#0f766e; color:#fff; font-weight:800; padding:10px 22px; border-radius:10px; border:none; cursor:pointer; font-size:0.9rem; box-shadow:0 4px 12px rgba(15,118,110,0.3);">
+              🔄 إعادة تحميل المنظومة وتحديث الذاكرة
+            </button>
+          </div>
+        `;
+      }
+    });
+  </script>
 
   <script src="/attendance_school_data.js"></script>
   <script src="/attendance_mobile.js"></script>
-  <script>
+    <script>
+    function _safeStartMobileApp() {
+      try {
+        if (typeof startApp === 'function') {
+          startApp();
+        } else if (typeof renderApp === 'function') {
+          renderApp();
+        }
+      } catch (err) {
+        console.error('Fatal renderApp error:', err);
+        const root = document.getElementById('app-root');
+        if (root) {
+          root.innerHTML = `
+            <div style="min-height:75vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px; text-align:center; font-family:sans-serif; color:#1e293b;">
+              <div style="font-size:3rem; margin-bottom:12px;">⚠️</div>
+              <h2 style="font-size:1.15rem; font-weight:800; color:#dc2626; margin-bottom:8px;">تعذر تحميل واجهة التطبيق</h2>
+              <p style="font-size:0.84rem; color:#64748b; max-width:320px; margin-bottom:18px; line-height:1.5;">
+                يرجى النقر على الزر أسفله لإعادة تحميل المنظومة وتحديث البيانات المخزنة.
+              </p>
+              <button onclick="localStorage.removeItem('attendance_mobile_state'); if('caches' in window){ caches.keys().then(ks=>Promise.all(ks.map(k=>caches.delete(k)))).then(()=>location.reload(true)); } else { location.reload(true); }"
+                      style="background:#0f766e; color:#fff; font-weight:800; padding:12px 24px; border-radius:12px; border:none; cursor:pointer; font-size:0.92rem; box-shadow:0 4px 14px rgba(15,118,110,0.35);">
+                🔄 إعادة تحميل المنظومة وتحديث الذاكرة
+              </button>
+            </div>
+          `;
+        }
+      }
+    }
+    _safeStartMobileApp();
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('/sw.js').catch(() => {});

@@ -244,13 +244,84 @@ class FetXmlGenerator:
         is_qualifying = self._is_qualifying_cycle(is_qualifying)
 
         is_science_lab = any(k in subj_clean for k in ["علوم الحياة", "SVT", "svt", "الفيزياء", "الكيمياء", "PC", "pc"])
-        is_pe = any(k in subj_clean for k in ["التربية البدنية", "EPS", "eps"])
+        is_pe = any(k in subj_clean for k in ["التربية البدنية", "بدن", "EPS", "eps"])
         is_math = any(k in subj_clean for k in ["الرياضيات", "Math", "math"])
         is_arabic = any(k in subj_clean for k in ["اللغة العربية", "عربية", "العربية"])
         is_french = any(k in subj_clean for k in ["الفرنسية", "Français", "Francais", "français"])
 
+        # 1. First check user-configured custom split modes from subject_split_modes
+        # This allows explicit customization (e.g. PE: 1+1 vs 2, Note 128) in BOTH High School and Middle School
+        splits_cfg = getattr(self.institution, "subject_split_modes", {}) or {}
+        
+        matched_key = None
+        for k in splits_cfg.keys():
+            if k == subj_clean or (k in subj_clean) or (subj_clean in k):
+                matched_key = k
+                break
+        
+        # Robust alias matching if not directly found
+        if not matched_key:
+            if is_pe:
+                for k in splits_cfg.keys():
+                    if any(x in k for x in ["التربية البدنية", "بدن", "EPS", "eps"]):
+                        matched_key = k
+                        break
+            elif is_science_lab:
+                for k in splits_cfg.keys():
+                    if any(x in k for x in ["علوم الحياة", "SVT", "الفيزياء", "الكيمياء", "PC"]):
+                        matched_key = k
+                        break
+            elif is_math:
+                for k in splits_cfg.keys():
+                    if any(x in k for x in ["الرياضيات", "Math"]):
+                        matched_key = k
+                        break
+            elif is_arabic:
+                for k in splits_cfg.keys():
+                    if any(x in k for x in ["عربية", "العربية"]):
+                        matched_key = k
+                        break
+            elif is_french:
+                for k in splits_cfg.keys():
+                    if any(x in k for x in ["فرنسية", "الفرنسية", "Français"]):
+                        matched_key = k
+                        break
+
+        cfg = splits_cfg.get(matched_key) if matched_key else None
+        if cfg:
+            mode = None
+            if level == 3 and "mode_l3" in cfg:
+                mode = cfg.get("mode_l3")
+            elif level == 2 and "mode_l2" in cfg:
+                mode = cfg.get("mode_l2")
+            elif level == 1 and "mode_l1" in cfg:
+                mode = cfg.get("mode_l1")
+            
+            if not mode:
+                mode = cfg.get("mode")
+            
+            if mode:
+                mode_str = str(mode).strip()
+                if "+" in mode_str:
+                    parts = [int(p.strip()) for p in mode_str.split("+") if p.strip().isdigit()]
+                    if parts:
+                        if not is_qualifying:
+                            return parts
+                        # High School (qualifying):
+                        if sum(parts) == weekly_hours:
+                            return parts
+                        if is_pe and sum(parts) == 2:
+                            return parts
+                elif mode_str.isdigit():
+                    val = int(mode_str)
+                    if val > 0:
+                        if not is_qualifying:
+                            return [val]
+                        if val == weekly_hours or is_pe:
+                            return [val]
+
+        # 2. Moroccan High School (الثانوي التأهيلي) Pedagogical Distribution Norms (Default fallback)
         if is_qualifying:
-            # Moroccan High School (الثانوي التأهيلي) Pedagogical Distribution Norms
             if is_science_lab:
                 if weekly_hours == 1:
                     return [1]
@@ -268,7 +339,7 @@ class FetXmlGenerator:
                     return [2, 2, 2, 1]
                 return [1] * weekly_hours
             elif is_pe:
-                # Official Moroccan standard for Physical Education: 2 continuous hours in sports fields
+                # Official Moroccan standard for Physical Education: 2 continuous hours in sports fields (fallback)
                 return [2] if weekly_hours == 2 else ([2, 1] if weekly_hours == 3 else [1] * weekly_hours)
             elif is_math:
                 if weekly_hours <= 5:
@@ -298,39 +369,6 @@ class FetXmlGenerator:
                 return [weekly_hours] if weekly_hours <= 2 else [2, 1]
             else:
                 return [1] * weekly_hours
-
-        # Middle School (الإعدادي) split modes
-        splits_cfg = getattr(self.institution, "subject_split_modes", {}) or {}
-        
-        matched_key = None
-        for k in splits_cfg.keys():
-            if k == subj_clean or (k in subj_clean) or (subj_clean in k):
-                matched_key = k
-                break
-        
-        cfg = splits_cfg.get(matched_key) if matched_key else None
-        if cfg:
-            mode = None
-            if level == 3 and "mode_l3" in cfg:
-                mode = cfg.get("mode_l3")
-            elif level == 2 and "mode_l2" in cfg:
-                mode = cfg.get("mode_l2")
-            elif level == 1 and "mode_l1" in cfg:
-                mode = cfg.get("mode_l1")
-            
-            if not mode:
-                mode = cfg.get("mode")
-            
-            if mode:
-                mode_str = str(mode).strip()
-                if "+" in mode_str:
-                    parts = [int(p.strip()) for p in mode_str.split("+") if p.strip().isdigit()]
-                    if parts:
-                        return parts
-                elif mode_str.isdigit():
-                    val = int(mode_str)
-                    if val > 0:
-                        return [val]
 
         # Fallback defaults based on official Moroccan Middle School Pedagogical Norms
         if is_science_lab:
@@ -716,32 +754,39 @@ class FetXmlGenerator:
                 elif a.total_classes > 0:
                     weekly_h = max(1, round(a.total_hours / a.total_classes))
 
-                # Check if subject_split_modes overrides the weekly hours for this subject & level (Middle School only)
-                if not is_qualifying:
-                    splits_cfg = getattr(self.institution, 'subject_split_modes', {}) or {}
-                    s_cfg = None
+                # Check if subject_split_modes overrides the weekly hours for this subject & level
+                is_pe_subj = any(k in subj_clean for k in ["بدن", "EPS", "eps"])
+                splits_cfg = getattr(self.institution, 'subject_split_modes', {}) or {}
+                s_cfg = None
+                for sk, sv in splits_cfg.items():
+                    if sk == subj_clean or (sk in subj_clean) or (subj_clean in sk):
+                        s_cfg = sv
+                        break
+                if not s_cfg and is_pe_subj:
                     for sk, sv in splits_cfg.items():
-                        if sk == subj_clean or (sk in subj_clean) or (subj_clean in sk):
+                        if any(x in sk for x in ["التربية البدنية", "بدن", "EPS", "eps"]):
                             s_cfg = sv
                             break
-                    if s_cfg:
-                        mode_for_lvl = None
-                        if lvl == 3 and "mode_l3" in s_cfg:
-                            mode_for_lvl = s_cfg.get("mode_l3")
-                        elif lvl == 2 and "mode_l2" in s_cfg:
-                            mode_for_lvl = s_cfg.get("mode_l2")
-                        elif lvl == 1 and "mode_l1" in s_cfg:
-                            mode_for_lvl = s_cfg.get("mode_l1")
-                        elif "mode" in s_cfg:
-                            mode_for_lvl = s_cfg.get("mode")
-                        
-                        if mode_for_lvl:
-                            m_str = str(mode_for_lvl).strip()
-                            if "+" in m_str:
-                                p_parts = [int(p.strip()) for p in m_str.split("+") if p.strip().isdigit()]
-                                if p_parts:
+                if s_cfg:
+                    mode_for_lvl = None
+                    if lvl == 3 and "mode_l3" in s_cfg:
+                        mode_for_lvl = s_cfg.get("mode_l3")
+                    elif lvl == 2 and "mode_l2" in s_cfg:
+                        mode_for_lvl = s_cfg.get("mode_l2")
+                    elif lvl == 1 and "mode_l1" in s_cfg:
+                        mode_for_lvl = s_cfg.get("mode_l1")
+                    elif "mode" in s_cfg:
+                        mode_for_lvl = s_cfg.get("mode")
+                    
+                    if mode_for_lvl:
+                        m_str = str(mode_for_lvl).strip()
+                        if "+" in m_str:
+                            p_parts = [int(p.strip()) for p in m_str.split("+") if p.strip().isdigit()]
+                            if p_parts:
+                                if not is_qualifying or is_pe_subj:
                                     weekly_h = sum(p_parts)
-                            elif m_str.isdigit():
+                        elif m_str.isdigit():
+                            if not is_qualifying or is_pe_subj:
                                 weekly_h = int(m_str)
 
                 if weekly_h <= 0:
@@ -1179,6 +1224,8 @@ class FetXmlGenerator:
                             lines.append('</ConstraintActivitiesOccupyMaxTimeSlotsFromSelection>')
 
         # Teacher Min Daily Hours
+        teacher_subj_map = {resolve_teacher(a.teacher_name): (a.subject or "") for a in assignments if a.teacher_name}
+        added_min_daily_teachers = set()
         if "ConstraintTeachersMinHoursDaily" in c_map or "tc_t_10" in c_map:
             c = c_map.get("ConstraintTeachersMinHoursDaily") or c_map.get("tc_t_10")
             min_h = int(c.get("param_val", 2) or 2)
@@ -1196,19 +1243,44 @@ class FetXmlGenerator:
                 t_groups = teacher_activity_groups.get(t_name, [])
                 t_min_h = int(overrides.get(t_name, min_h))
                 t_total = sum(sum(g) for g in t_groups)
-                min_weekly_threshold = 12 if t_min_h >= 2 else t_min_h
+                min_weekly_threshold = t_min_h
                 if t_total < min_weekly_threshold:
                     continue
                 if not self.can_teacher_satisfy_min_daily_hours(t_groups, t_min_h):
                     continue
+
+                # In secondary education, teachers whose activities are all 1-hour sessions (Arabic/English/Math)
+                # cause combinatorial overconstraints when all teachers are forced to pair up simultaneously.
+                # Only apply to teachers who have block sessions (>=2h) or PE teachers, unless explicitly selected.
+                is_pe = any(k in teacher_subj_map.get(t_name, "") for k in ["بدنية", "رياضة", "EPS"])
+                has_blocks = any(dur >= 2 for g in t_groups for dur in g)
+                if applies_to == "all" and not (is_pe or has_blocks):
+                    continue
+
                 lines.append('<ConstraintTeacherMinHoursDaily>')
-                lines.append(f'	<Weight_Percentage>{w}</Weight_Percentage>')
-                lines.append(f'	<Teacher_Name>{t_name}</Teacher_Name>')
-                lines.append(f'	<Minimum_Hours_Daily>{t_min_h}</Minimum_Hours_Daily>')
-                lines.append('	<Allow_Empty_Days>true</Allow_Empty_Days>')
-                lines.append('	<Active>true</Active>')
-                lines.append(f'	<Comments>{t_name} - نصاب كافٍ وموزع للحصة اليومية الدنيا ({t_min_h} س)</Comments>')
+                lines.append(f'\t<Weight_Percentage>{w}</Weight_Percentage>')
+                lines.append(f'\t<Teacher>{t_name}</Teacher>')
+                lines.append(f'\t<Minimum_Hours_Daily>{t_min_h}</Minimum_Hours_Daily>')
+                lines.append('\t<Allow_Empty_Days>true</Allow_Empty_Days>')
+                lines.append('\t<Active>true</Active>')
+                lines.append(f'\t<Comments>{t_name} - نصاب كاف وموزع للحصة اليومية الدنيا ({t_min_h} س)</Comments>')
                 lines.append('</ConstraintTeacherMinHoursDaily>')
+                added_min_daily_teachers.add(t_name)
+
+        # In addition, ALWAYS enforce ConstraintTeacherMinHoursDaily for Physical Education teachers
+        # Pedagogical rule: PE teachers must NEVER attend for only 1 isolated hour (minimum 2 hours per working period)
+        pe_teachers = [resolve_teacher(a.teacher_name) for a in assignments if a.teacher_name and any(k in (a.subject or "") for k in ["بدنية", "رياضة", "EPS"])]
+        for pt in set(pe_teachers):
+            if pt and pt in all_teachers_set and pt not in added_min_daily_teachers:
+                lines.append('<ConstraintTeacherMinHoursDaily>')
+                lines.append('\t<Weight_Percentage>100</Weight_Percentage>')
+                lines.append(f'\t<Teacher>{pt}</Teacher>')
+                lines.append('\t<Minimum_Hours_Daily>2</Minimum_Hours_Daily>')
+                lines.append('\t<Allow_Empty_Days>true</Allow_Empty_Days>')
+                lines.append('\t<Active>true</Active>')
+                lines.append(f'\t<Comments>{pt} - فرض حد أدنى ساعتان للتربية البدنية لمنع الحصص المنفردة</Comments>')
+                lines.append('</ConstraintTeacherMinHoursDaily>')
+                added_min_daily_teachers.add(pt)
 
         # Teacher Max Gaps Daily
         if "ConstraintTeachersMaxGapsPerDay" in c_map or "tc_t_6" in c_map or "tc_t_5" in c_map:
@@ -1758,12 +1830,12 @@ class FetXmlGenerator:
                 lines.append('	<Comments></Comments>')
                 lines.append('</ConstraintStudentsEarlyMaxBeginningsAtSecondHour>')
 
-        # Activities Min/Max Days (Subject-specific custom spacing and Note 43 compliance)
-        if "ConstraintMinDaysBetweenActivities" in c_map:
+        # Activities Min/Max Days (Subject-specific custom spacing and Note 43 / Note 128 compliance)
+        if "ConstraintMinDaysBetweenActivities" in c_map or "tc_a_8" in c_map:
             subj_cfg_list = self.get_subject_activity_constraints()
             subj_cfg_map = {item["subject"]: item for item in subj_cfg_list}
             
-            c_min_days = c_map["ConstraintMinDaysBetweenActivities"]
+            c_min_days = c_map.get("ConstraintMinDaysBetweenActivities") or c_map.get("tc_a_8") or {}
             global_min_d = int(c_min_days.get("param_val", 1))
             global_w = int(c_min_days.get("def_weight", 100))
 
@@ -1777,10 +1849,21 @@ class FetXmlGenerator:
                         cfg = v
                         break
 
+                # Robust alias matching for Physical Education
+                is_pe_item = any(x in s_name for x in ["بدن", "EPS", "eps"])
+                if not cfg and is_pe_item:
+                    for k, v in subj_cfg_map.items():
+                        if any(x in k for x in ["بدن", "EPS", "eps"]):
+                            cfg = v
+                            break
+
                 min_d = int(cfg.get("min_days", global_min_d)) if (cfg and cfg.get("min_days")) else global_min_d
+                # Note 128 requires at least 48h spacing (separate days) for Physical Education
+                if is_pe_item and min_d < 1:
+                    min_d = 1
                 w = int(cfg.get("weight", global_w)) if (cfg and "weight" in cfg) else global_w
                 # Consecutive_If_Same_Day is strictly false to prevent repeating sessions on the same day!
-                consec = "true" if (cfg and cfg.get("consecutive_if_same_day", False)) else "false"
+                consec = "true" if (cfg and cfg.get("consecutive_if_same_day", False) and not is_pe_item) else "false"
 
                 is_c_active = "true" if (cfg is None or cfg.get("is_active", True)) else "false"
 
@@ -1826,7 +1909,7 @@ class FetXmlGenerator:
                     max_dur = max(d for _, d in act_info_list)
                     for rd in all_real_days:
                         lines.append('<ConstraintActivitiesOccupyMaxTimeSlotsFromSelection>')
-                        lines.append(f'	<Weight_Percentage>{w_s}</Weight_Percentage>')
+                        lines.append('	<Weight_Percentage>100</Weight_Percentage>')
                         lines.append(f'	<Number_of_Activities>{len(act_info_list)}</Number_of_Activities>')
                         for aid, _ in act_info_list:
                             lines.append(f'	<Activity_Id>{aid}</Activity_Id>')
@@ -1851,7 +1934,7 @@ class FetXmlGenerator:
                     if len(single_hour_acts) > 1 and max_dur > 1:
                         for rd in all_real_days:
                             lines.append('<ConstraintActivitiesOccupyMaxTimeSlotsFromSelection>')
-                            lines.append(f'	<Weight_Percentage>{w_s}</Weight_Percentage>')
+                            lines.append('	<Weight_Percentage>100</Weight_Percentage>')
                             lines.append(f'	<Number_of_Activities>{len(single_hour_acts)}</Number_of_Activities>')
                             for aid in single_hour_acts:
                                 lines.append(f'	<Activity_Id>{aid}</Activity_Id>')

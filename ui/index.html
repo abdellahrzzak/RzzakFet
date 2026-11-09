@@ -1543,18 +1543,15 @@
 
     <!-- Header Actions, Controls & Theme Switcher -->
     <div class="flex items-center gap-3 text-xs">
-      <!-- Educational Cycle Selector Widget (Middle vs Qualifying High School) -->
-      <div class="flex items-center bg-slate-800/90 border border-indigo-500/40 p-0.5 rounded-xl gap-0.5 shadow-inner" id="cycle-selector-widget" title="تحديد السلك التعليمي للمؤسسة">
-        <button onclick="setInstitutionCycle('middle')" id="cycle-btn-middle" class="px-2.5 py-1 rounded-lg text-[11px] font-bold transition flex items-center gap-1.5 bg-indigo-600 text-white shadow-sm cursor-pointer" title="السلك الثانوي الإعدادي (1AC, 2AC, 3AC)">
-          <span>🏫</span>
-          <span class="text-[11px]">الثانوي الإعدادي</span>
-        </button>
-        <button onclick="setInstitutionCycle('qualifying')" id="cycle-btn-qualifying" class="px-2.5 py-1 rounded-lg text-[11px] font-bold transition flex items-center gap-1.5 text-slate-300 hover:text-white hover:bg-slate-700/60 cursor-pointer" title="السلك الثانوي التأهيلي (الجذوع المشتركة، الأولى باك، الثانية باك)">
-          <span>🎓</span>
-          <span class="text-[11px]">الثانوي التأهيلي</span>
-        </button>
-        <button onclick="openChooseCycleModal()" class="px-1.5 py-1 text-slate-400 hover:text-white transition rounded-lg hover:bg-slate-700/50 cursor-pointer" title="فتح نافذة اختيار السلك">
-          <span>⚙️</span>
+      <!-- Master Timetable Source of Truth Button (زر جدول العام الدراسي المعتمد) -->
+      <div class="flex items-center" id="master-timetable-header-container">
+        <button onclick="openMasterTimetableModal()" id="btn-master-timetable-header" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-2.5 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-500 text-white shadow-md hover:shadow-emerald-900/40 border border-emerald-400/40 cursor-pointer" title="جدول العام الدراسي المعتمد - القاعدة البيانية الأساسية للبرنامج">
+          <span class="text-base">📥</span>
+          <div class="flex flex-col text-right leading-tight">
+            <span class="font-black text-[11.5px] tracking-tight">جدول العام الدراسي المعتمد</span>
+            <span class="text-[9.5px] text-emerald-100/90 font-medium" id="header-master-tt-status">المصدر المعتمد الوحيد لكافة العمليات</span>
+          </div>
+          <span id="header-master-tt-badge" class="px-2 py-0.5 text-[10px] rounded-full bg-emerald-900/90 text-emerald-300 border border-emerald-400 font-mono font-bold">معتمد ✓ (23 أستاذ • 333 حصة)</span>
         </button>
       </div>
 
@@ -1821,6 +1818,11 @@
             <span class="nav-icon text-sm">📝</span>
             <span class="nav-label truncate">مسك وتتبع غياب التلاميذ</span>
           </button>
+          <button id="nav-tab-exam-planning" onclick="switchTab('tab-exam-planning')" class="w-full text-right px-3 py-2 rounded-xl text-xs font-bold text-teal-300 hover:bg-slate-800/70 hover:text-white transition flex items-center gap-2" title="برمجة الفروض المحروسة والتقويم - الواجهة 17">
+            <span class="w-5 h-5 rounded-md bg-teal-950/80 text-teal-300 border border-teal-800/60 flex items-center justify-center text-[10px] font-mono font-bold shrink-0 nav-num-badge">17</span>
+            <span class="nav-icon text-sm">📅</span>
+            <span class="nav-label truncate">برمجة الفروض المحروسة</span>
+          </button>
         </div>
       </div>
 
@@ -1905,7 +1907,7 @@
 
               <div class="mt-2.5 flex items-baseline justify-between">
                 <div>
-                  <span class="text-3xl font-black text-white font-mono" id="dash-total-classes">47</span>
+                  <span class="text-3xl font-black text-white font-mono" id="dash-total-classes">11</span>
                   <span class="text-xs text-slate-400 mr-1 font-sans">قسماً</span>
                 </div>
                 <div class="text-left font-mono">
@@ -1916,7 +1918,7 @@
             </div>
 
             <div class="mt-2.5 pt-2 border-t border-slate-800/70">
-              <span id="dash-classes-breakdown" class="text-[10.5px] text-sky-600 block font-bold truncate">16 أولى + 16 ثانية + 15 ثالثة</span>
+              <span id="dash-classes-breakdown" class="text-[10.5px] text-sky-600 block font-bold truncate">3 جذع مشترك + 4 أولى باك + 4 ثانية باك</span>
             </div>
           </div>
 
@@ -1936,7 +1938,7 @@
 
               <div class="mt-2.5 flex items-baseline justify-between">
                 <div>
-                  <span class="text-3xl font-black text-emerald-600 font-mono" id="dash-total-teachers">52</span>
+                  <span class="text-3xl font-black text-emerald-600 font-mono" id="dash-total-teachers">23</span>
                   <span class="text-xs text-emerald-700 mr-1 font-sans">أستاذاً متوفراً</span>
                 </div>
                 <div class="text-left font-mono">
@@ -1971,7 +1973,7 @@
 
               <div class="mt-2.5 flex items-baseline justify-between">
                 <div>
-                  <span class="text-3xl font-black text-purple-700 font-mono" id="dash-total-rooms">16</span>
+                  <span class="text-3xl font-black text-purple-700 font-mono" id="dash-total-rooms">10</span>
                   <span class="text-xs text-purple-600 mr-1 font-sans">فضاءً متوفراً</span>
                 </div>
                 <div class="text-left font-mono">
@@ -1982,7 +1984,7 @@
             </div>
 
             <div class="mt-2.5 pt-2 border-t border-slate-800/70">
-              <span id="dash-rooms-breakdown" class="text-[10.5px] text-purple-700 block font-bold truncate">10 عامة + 4 مختبرات + 2 مخصصة</span>
+              <span id="dash-rooms-breakdown" class="text-[10.5px] text-purple-700 block font-bold truncate">7 عامة + 2 مختبرات + 1 ملعب</span>
             </div>
           </div>
 
@@ -2002,7 +2004,7 @@
 
               <div class="mt-2.5 flex items-baseline justify-between">
                 <div>
-                  <span class="text-3xl font-black text-amber-700 font-mono" id="dash-total-hours">1173</span>
+                  <span class="text-3xl font-black text-amber-700 font-mono" id="dash-total-hours">333</span>
                   <span class="text-xs text-amber-800 mr-1 font-sans">ساعة/أسبوع</span>
                 </div>
                 <div class="text-left font-mono">
@@ -2032,9 +2034,9 @@
               <span id="dash-struct-cycle-title" class="text-[10.5px] text-slate-400 font-normal">(حسب المستويات والشعب المعتمدة)</span>
             </div>
             <span id="dash-struct-summary-sub" class="text-[11px] text-slate-300 font-mono bg-slate-950 px-2.5 py-1 rounded-lg border border-slate-800">
-              <strong id="dash-struct-total-classes" class="text-cyan-400 font-black">47</strong> فصلاً •
-              <strong id="dash-struct-total-students" class="text-white font-black">1645</strong> تلميذاً •
-              <strong id="dash-struct-total-hours" class="text-amber-400 font-black">1173</strong> ساعة أسبوعية
+              <strong id="dash-struct-total-classes" class="text-cyan-400 font-black">11</strong> فصلاً •
+              <strong id="dash-struct-total-students" class="text-white font-black">302</strong> تلميذاً •
+              <strong id="dash-struct-total-hours" class="text-amber-400 font-black">333</strong> ساعة أسبوعية
             </span>
           </div>
 
@@ -2557,6 +2559,40 @@
               <button onclick="saveInstitution()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow-lg shadow-blue-600/30 transition flex items-center gap-1.5 cursor-pointer">
                 <span>💾 حفظ بيانات المؤسسة</span>
               </button>
+            </div>
+          </div>
+
+          <!-- Educational Cycle Selection Card (Qualifying High School vs Middle School - Persistent) -->
+          <div class="bg-slate-950/70 border border-indigo-500/30 rounded-2xl p-4 mb-4">
+            <div class="flex items-center justify-between mb-3">
+              <label class="block text-white font-extrabold text-xs flex items-center gap-2">
+                <span class="text-indigo-400 text-sm">🎓</span>
+                <span>نوع وسلك المؤسسة التعليمية (حفظ دائم):</span>
+              </label>
+              <span class="text-[10.5px] text-indigo-300/80 bg-indigo-950/60 px-2 py-0.5 rounded-full border border-indigo-800/40 font-medium">يُحفظ هذا الاختيار تلقائياً مع معلومات المؤسسة</span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+              <label id="cycle-card-qualifying" onclick="selectInstitutionCycleInForm('qualifying')" class="flex items-center gap-3 p-3.5 rounded-xl border-2 cursor-pointer transition border-indigo-500 bg-indigo-950/50 text-white shadow-md">
+                <input type="radio" name="form_institution_cycle" value="qualifying" id="cycle-radio-qualifying" checked class="w-4 h-4 text-indigo-600 focus:ring-indigo-500">
+                <div class="flex flex-col">
+                  <span class="font-extrabold text-sm flex items-center gap-1.5 text-white">
+                    <span>🎓</span>
+                    <span>الثانوي التأهيلي</span>
+                  </span>
+                  <span class="text-[10.5px] text-indigo-200/80 mt-0.5">الجذوع المشتركة، الأولى باكالوريا، الثانية باكالوريا</span>
+                </div>
+              </label>
+
+              <label id="cycle-card-middle" onclick="selectInstitutionCycleInForm('middle')" class="flex items-center gap-3 p-3.5 rounded-xl border-2 cursor-pointer transition border-slate-700 bg-slate-900/60 text-slate-300 hover:border-slate-500">
+                <input type="radio" name="form_institution_cycle" value="middle" id="cycle-radio-middle" class="w-4 h-4 text-indigo-600 focus:ring-indigo-500">
+                <div class="flex flex-col">
+                  <span class="font-extrabold text-sm flex items-center gap-1.5 text-white">
+                    <span>🏫</span>
+                    <span>الثانوي الإعدادي</span>
+                  </span>
+                  <span class="text-[10.5px] text-slate-400 mt-0.5">السنة الأولى إعدادي، السنة الثانية إعدادي، السنة الثالثة إعدادي</span>
+                </div>
+              </label>
             </div>
           </div>
 
@@ -4847,54 +4883,11 @@
                 <span>📊</span>
                 <span>بطاقات Excel للطباعة</span>
               </button>
-              <!-- 1. الزر الرئيسي المعتمد: تحميل واعتماد الجدول العام من الحاسوب (المكتب) -->
-              <button type="button" onclick="loadMasterTimetableFromDesktop()" class="px-4 py-2 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white rounded-xl text-xs font-black transition flex items-center gap-2 cursor-pointer shadow-lg shadow-teal-950/50 transform hover:scale-105 active:scale-95 border border-teal-300/40" title="تحميل واعتماد الجدول العام مباشرة من سطح المكتب (Desktop/RzzakFet/الجدول_العام_لاستعمالات_الزمن_للمدرسين.xlsx) لـ 23 أستاذاً حقيقياً وإرساله للسيرفر">
-                <span class="text-base">🖥️</span>
-                <span>تحميل الجدول العام (من سطح المكتب)</span>
-              </button>
-              <input type="file" id="input-upload-timetable-file" accept=".xml,.fet,.json,.xlsx,.xls" class="hidden" onchange="handleUploadTimetableFile(event)">
-              <button type="button" onclick="document.getElementById('input-upload-timetable-file').click()" class="px-4 py-2 bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 text-white rounded-xl text-xs font-black transition flex items-center gap-2 cursor-pointer shadow-lg shadow-emerald-950/50 transform hover:scale-105 active:scale-95 border border-emerald-400/40" title="اختيار وتحميل ملف الجدول العام (XML أو FET أو ملفات الجداول) من أي مكان بالحاسوب أو سطح المكتب واعتماده فوراً في حصص الغياب وإرساله للسيرفر">
-                <span class="text-base">📥</span>
-                <span>تحميل واعتماد الجدول العام (من الحاسوب)</span>
-              </button>
-
               <!-- 2. زر تحيين واعتماد الجدول الحالي وإرساله للسيرفر -->
               <button type="button" onclick="syncAttendanceWithLatestTimetable()" class="px-3.5 py-1.5 bg-gradient-to-r from-teal-800 to-cyan-800 hover:from-teal-700 hover:to-cyan-700 text-cyan-200 border border-cyan-700/50 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-md" title="مزامنة واعتماد حصص الأساتذة في هواتفهم والمنظومة مع الجدول العام الحالي وإرسالها للسيرفر">
                 <span>🔄</span>
                 <span>تحيين الجدول الحالي وإرساله للسيرفر</span>
               </button>
-
-              <!-- 3. زر فتح مجلد الجدول العام على سطح المكتب -->
-              <button type="button" onclick="openMasterTimetableFolder()" class="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-indigo-300 border border-indigo-700/50 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-md" title="فتح مجلد الجدول العام (Desktop/RzzakFet/الجدول_العام) في مستكشف ويندوز">
-                <span>📂</span>
-                <span>فتح مجلد الجدول العام</span>
-              </button>
-
-              <!-- 4. قائمة تصدير وحفظ الجدول العام للمدرسين -->
-              <div class="relative inline-block" id="dropdown-master-tt-container">
-                <button type="button" onclick="toggleMasterExportMenu(event)" class="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-md" title="تصدير وحفظ ومعاينة الجدول العام للمدرسين">
-                  <span>📤</span>
-                  <span>تصدير وحفظ الجدول للمدرسين ▼</span>
-                </button>
-                <div id="master-export-dropdown-menu" class="hidden absolute right-0 top-full mt-2 w-72 bg-slate-900/98 border border-slate-700 rounded-xl shadow-2xl py-2 z-[9999] text-xs backdrop-blur-md">
-                  <button type="button" onclick="openMasterTimetableFolder(); toggleMasterExportMenu(event);" class="w-full text-right flex items-center gap-2 px-3.5 py-2 hover:bg-slate-800 text-indigo-300 font-bold transition border-b border-slate-800">
-                    <span>📂</span> <span>فتح مجلد الجدول العام على سطح المكتب</span>
-                  </button>
-                  <button type="button" onclick="exportMasterExcelAndOpen(); toggleMasterExportMenu(event);" class="w-full text-right flex items-center gap-2 px-3.5 py-2 hover:bg-slate-800 text-emerald-300 font-bold transition">
-                    <span>📊</span> <span>تصدير Excel وحفظه في مجلد الجدول العام</span>
-                  </button>
-                  <button type="button" onclick="exportMasterPdfAndOpen(); toggleMasterExportMenu(event);" class="w-full text-right flex items-center gap-2 px-3.5 py-2 hover:bg-slate-800 text-rose-300 font-bold transition">
-                    <span>📄</span> <span>تصدير PDF للطباعة وحفظه في المجلد</span>
-                  </button>
-                  <button type="button" onclick="window.open('/export/master_html', '_blank'); toggleMasterExportMenu(event);" class="w-full text-right flex items-center gap-2 px-3.5 py-2 hover:bg-slate-800 text-sky-300 font-bold transition">
-                    <span>🌐</span> <span>تحميل نسخة الويب (HTML)</span>
-                  </button>
-                  <div class="border-t border-slate-800 my-1"></div>
-                  <button type="button" onclick="window.open('/export/master', '_blank'); toggleMasterExportMenu(event);" class="w-full text-right flex items-center gap-2 px-3.5 py-2 hover:bg-slate-800 text-cyan-200 font-bold cursor-pointer transition">
-                    <span>🖨️</span> <span>فتح ومعاينة الجدول العام الكامل</span>
-                  </button>
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -5382,6 +5375,514 @@
         </div>
 
       </div>
+
+      <!-- ================= 17. TAB: EXAMS PLANNING (برمجة الفروض المحروسة والتقويم) ================= -->
+      <div id="tab-exam-planning" class="tab-content space-y-4" style="display: none;">
+
+        <!-- Main Header Card -->
+        <div class="bg-gradient-to-l from-slate-900 via-teal-950/40 to-slate-900 border border-teal-700/50 rounded-2xl p-5 shadow-xl">
+          <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div class="flex items-center gap-3.5">
+              <div class="w-12 h-12 rounded-2xl bg-teal-950 border border-teal-500/60 flex items-center justify-center text-2xl text-teal-400 shadow-inner">
+                📅
+              </div>
+              <div>
+                <div class="flex items-center gap-2">
+                  <h2 class="text-xl font-black text-white">منظومة برمجة وتتبع الفروض المحروسة (المراقبة المستمرة)</h2>
+                  <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-teal-950 text-teal-300 border border-teal-600/70 font-mono">
+                    الواجهة 17 الرسمية
+                  </span>
+                </div>
+                <p class="text-xs text-slate-300 mt-1 max-w-3xl leading-relaxed">
+                  برمجة الفروض بناءً على استعمالات الزمن الرسمية، تدبير فترات التصحيح وتسليم النقط للإدارة مع التقيد الصارم بالأجل القانوني (15 يوماً)، وتقديم توصيات ذكية لمنع تراكم الفروض على نفس القسم في نفس اليوم.
+                </p>
+              </div>
+            </div>
+
+            <!-- Top Action Controls -->
+            <div class="flex flex-wrap items-center gap-2">
+              <!-- Semester Switcher -->
+              <div class="bg-slate-950/80 p-1 rounded-xl border border-slate-800 flex items-center gap-1">
+                <button id="btn-sem-1" onclick="setExamsSemester(1)" class="px-3 py-1.5 rounded-lg text-xs font-black bg-teal-500 text-slate-950 shadow transition cursor-pointer">
+                  الدورة الأولى
+                </button>
+                <button id="btn-sem-2" onclick="setExamsSemester(2)" class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition cursor-pointer">
+                  الدورة الثانية
+                </button>
+              </div>
+
+              <!-- Quick Action Buttons -->
+              <button onclick="openScheduleExamModal()" class="px-3.5 py-2 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white rounded-xl text-xs font-bold shadow-lg shadow-teal-900/40 flex items-center gap-1.5 transition cursor-pointer">
+                <span>➕</span>
+                <span>برمجة فرض جديد</span>
+              </button>
+
+              <button onclick="triggerBulkAutoPlan()" class="px-3.5 py-2 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-slate-950 rounded-xl text-xs font-black shadow-lg shadow-amber-900/40 flex items-center gap-1.5 transition cursor-pointer" title="توزيع ذكي وموزون لجميع فروض الأستاذ لتفادي الازدحام مع بقية المواد">
+                <span>✨</span>
+                <span>اقتراح برمجة ذكية</span>
+              </button>
+
+              <button onclick="printSchoolCalendar()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-bold border border-slate-700 flex items-center gap-1.5 transition cursor-pointer" title="طباعة البرنامج الشامل للمؤسسة A4 أفقي">
+                <span>🖨️</span>
+                <span>البرنامج العام</span>
+              </button>
+
+              <button onclick="openBulkDeleteExamsModal()" class="px-3.5 py-2 bg-gradient-to-r from-rose-950 to-rose-900 hover:from-rose-900 hover:to-rose-800 text-rose-200 border border-rose-700/80 rounded-xl text-xs font-bold shadow-lg shadow-rose-950/40 flex items-center gap-1.5 transition cursor-pointer" title="إلغاء وحذف الفروض (اختيار متعدد / أستاذ معين / إلغاء شامل)">
+                <span>🗑️</span>
+                <span>إلغاء ومسح الفروض</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4 KPI Stat Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+          <!-- KPI 1: Total Exams -->
+          <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 flex items-center gap-3.5 shadow-sm">
+            <div class="w-11 h-11 rounded-xl bg-teal-950/70 border border-teal-800/60 flex items-center justify-center text-xl text-teal-400 shrink-0">
+              📝
+            </div>
+            <div>
+              <div class="text-[11px] text-slate-400 font-medium">إجمالي الفروض المبرمجة</div>
+              <div id="kpi-total-exams" class="text-lg font-black text-white font-mono mt-0.5">0 فرض مبرمج</div>
+              <div class="text-[10px] text-teal-400/80 mt-0.5">خلال الدورة الحالية</div>
+            </div>
+          </div>
+
+          <!-- KPI 2: Compliance Rate -->
+          <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 flex items-center gap-3.5 shadow-sm">
+            <div class="w-11 h-11 rounded-xl bg-emerald-950/70 border border-emerald-800/60 flex items-center justify-center text-xl text-emerald-400 shrink-0">
+              ⏳
+            </div>
+            <div>
+              <div class="text-[11px] text-slate-400 font-medium">التقيد بالأجل القانوني (15 يوماً)</div>
+              <div id="kpi-compliance-rate" class="text-lg font-black text-emerald-400 font-mono mt-0.5">100% متقيد</div>
+              <div id="kpi-compliance-sub" class="text-[10px] text-slate-400 mt-0.5">المسافة بين التمرير والتسليم &le; 15 يوماً</div>
+            </div>
+          </div>
+
+          <!-- KPI 3: Crowded Days -->
+          <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 flex items-center gap-3.5 shadow-sm">
+            <div class="w-11 h-11 rounded-xl bg-amber-950/70 border border-amber-800/60 flex items-center justify-center text-xl text-amber-400 shrink-0">
+              ⚖️
+            </div>
+            <div>
+              <div class="text-[11px] text-slate-400 font-medium">مؤشر تراكم الفروض (الازدحام)</div>
+              <div id="kpi-crowded-days" class="text-lg font-black text-emerald-400 font-mono mt-0.5">لا يوجد أي تراكم ✓</div>
+              <div class="text-[10px] text-slate-400 mt-0.5">تفادي جمع فرضين فأكثر لنفس القسم في يوم واحد</div>
+            </div>
+          </div>
+
+          <!-- KPI 4: Covered Classes -->
+          <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 flex items-center gap-3.5 shadow-sm">
+            <div class="w-11 h-11 rounded-xl bg-indigo-950/70 border border-indigo-800/60 flex items-center justify-center text-xl text-indigo-400 shrink-0">
+              🏫
+            </div>
+            <div>
+              <div class="text-[11px] text-slate-400 font-medium">تغطية الأقسام المبرمجة</div>
+              <div id="kpi-classes-covered" class="text-lg font-black text-indigo-300 font-mono mt-0.5">0 قسماً مغطى</div>
+              <div class="text-[10px] text-slate-400 mt-0.5">تتبع دوري لجميع فصول المؤسسة</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sub-Navigation Bar -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-2 flex items-center justify-between gap-2 shadow-sm">
+          <div class="flex items-center gap-2">
+            <button id="btn-subtab-calendar" onclick="switchExamsSubTab('calendar')" class="px-4 py-2 rounded-xl text-xs font-black bg-gradient-to-r from-amber-600 to-amber-500 text-slate-950 shadow-md transition flex items-center gap-1.5 cursor-pointer">
+              <span>📆</span>
+              <span>لوحة القيادة واليومية العامة</span>
+            </button>
+            <button id="btn-subtab-teachers" onclick="switchExamsSubTab('teachers')" class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-800/80 hover:bg-slate-700/80 text-slate-300 transition flex items-center gap-1.5 cursor-pointer">
+              <span>👨‍🏫</span>
+              <span>تتبع الأساتذة والفروض الممسوكة</span>
+            </button>
+            <button id="btn-subtab-table" onclick="switchExamsSubTab('table')" class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-800/80 hover:bg-slate-700/80 text-slate-300 transition flex items-center gap-1.5 cursor-pointer">
+              <span>📋</span>
+              <span>جدول الإدارة الشامل للفروض</span>
+            </button>
+            <button id="btn-subtab-print" onclick="switchExamsSubTab('print')" class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-800/80 hover:bg-slate-700/80 text-slate-300 transition flex items-center gap-1.5 cursor-pointer">
+              <span>🖨️</span>
+              <span>مركز الطباعة والوثائق الرسمية</span>
+            </button>
+          </div>
+
+          <div class="text-xs text-slate-400 font-medium flex items-center gap-2 pl-2">
+            <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span>استعمالات الزمن مرتبطة آلياً بالخادم</span>
+          </div>
+        </div>
+
+        <!-- VIEW 1: CALENDAR VIEW (اليومية ولوحة القيادة) -->
+        <div id="exams-view-calendar" class="space-y-3">
+          <!-- Calendar Toolbar -->
+          <div class="bg-slate-900/70 border border-slate-800/80 rounded-xl p-3 flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+              <span class="text-xs font-bold text-slate-300 flex items-center gap-1.5">
+                <span>🔍</span>
+                <span>تصفية اليومية حسب القسم:</span>
+              </span>
+              <select id="filter-cal-class" onchange="renderCalendarDashboard()" class="bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-teal-500">
+                <option value="">جميع الأقسام</option>
+              </select>
+            </div>
+            <div class="flex items-center gap-3 text-xs">
+              <span class="flex items-center gap-1 text-emerald-400">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span>
+                <span>وضع مثالي (فرض 1)</span>
+              </span>
+              <span class="flex items-center gap-1 text-amber-400">
+                <span class="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span>
+                <span>مقبول</span>
+              </span>
+              <span class="flex items-center gap-1 text-rose-400">
+                <span class="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block"></span>
+                <span>ازدحام (تراكم &ge; 2 فروض في يوم)</span>
+              </span>
+            </div>
+          </div>
+
+          <!-- Calendar Grid Container -->
+          <div id="exams-calendar-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5">
+            <!-- Populated dynamically by exams_planning.js -->
+          </div>
+        </div>
+
+        <!-- VIEW: TEACHERS PROGRESS OVERVIEW (تتبع الأساتذة والفروض الممسوكة) -->
+        <div id="exams-view-teachers" class="space-y-3" style="display: none;">
+          <!-- Top Toolbar & Search -->
+          <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3 flex flex-wrap items-center justify-between gap-3 shadow-sm">
+            <div class="flex items-center gap-3 flex-wrap">
+              <span class="text-xs font-bold text-slate-300 flex items-center gap-1.5">
+                <span>🔍</span>
+                <span>بحث سريع:</span>
+              </span>
+              <input type="text" id="filter-teacher-progress-search" oninput="renderTeachersProgressView()" placeholder="ابحث باسم الأستاذ(ة) أو المادة..." class="bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-teal-500 w-64">
+              <select id="filter-teacher-progress-status" onchange="renderTeachersProgressView()" class="bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-teal-500">
+                <option value="ALL">جميع الأساتذة</option>
+                <option value="SUBMITTED">الأساتذة الذين مسكوا فروضهم فقط</option>
+                <option value="PENDING">أساتذة لم يمسكوا بعد</option>
+              </select>
+            </div>
+            <div id="teachers-progress-stats-pill" class="text-xs font-mono font-bold text-teal-400 bg-teal-950/80 px-3 py-1.5 rounded-lg border border-teal-800/60">
+              <!-- Stats rendered dynamically -->
+            </div>
+          </div>
+
+          <!-- Teachers Progress Table Card -->
+          <div class="bg-slate-900/90 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+            <div class="overflow-x-auto">
+              <table class="w-full text-right text-xs">
+                <thead class="bg-slate-950 text-slate-400 border-b border-slate-800 font-bold">
+                  <tr>
+                    <th class="py-3 px-3 text-center w-12">#</th>
+                    <th class="py-3 px-4">الأستاذ(ة)</th>
+                    <th class="py-3 px-3">المادة</th>
+                    <th class="py-3 px-3 text-center">إجمالي الفروض</th>
+                    <th class="py-3 px-4 text-center">توزيع الفروض (1 إلى 4)</th>
+                    <th class="py-3 px-4">الأقسام المشمولة بالبرمجة</th>
+                    <th class="py-3 px-3 text-center">الانضباط بالأجل</th>
+                    <th class="py-3 px-4 text-center">إجراءات الإدارة</th>
+                  </tr>
+                </thead>
+                <tbody id="exams-teachers-progress-tbody" class="divide-y divide-slate-800/60 text-slate-200">
+                  <!-- Populated dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- VIEW 2: MASTER TABLE VIEW (جدول الإدارة الشامل) -->
+        <div id="exams-view-table" class="space-y-3" style="display: none;">
+          <!-- Filter Toolbar -->
+          <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+            <div>
+              <label class="block text-[11px] font-bold text-slate-400 mb-1">بحث سريع:</label>
+              <input type="text" id="filter-exam-search" oninput="onExamsFilterChanged()" placeholder="اسم الأستاذ، القسم، المادة..." class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-teal-500">
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold text-slate-400 mb-1">تصفية حسب الأستاذ(ة):</label>
+              <select id="filter-exam-teacher" onchange="onExamsFilterChanged()" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-teal-500">
+                <option value="">جميع الأساتذة</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold text-slate-400 mb-1">تصفية حسب القسم:</label>
+              <select id="filter-exam-class" onchange="onExamsFilterChanged()" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-teal-500">
+                <option value="">جميع الأقسام</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold text-slate-400 mb-1">التقيد بالأجل (15 يوماً):</label>
+              <select id="filter-exam-compliance" onchange="onExamsFilterChanged()" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-teal-500">
+                <option value="all">جميع الحالات</option>
+                <option value="compliant">متقيد بالأجل (&le; 15 يوم) ✓</option>
+                <option value="non_compliant">تجاوز الأجل القانوني (&gt; 15 يوم) ⚠️</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Master Table -->
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-lg">
+            <div class="overflow-x-auto">
+              <table class="w-full text-right text-xs">
+                <thead>
+                  <tr class="bg-slate-950/80 text-slate-400 border-b border-slate-800 select-none">
+                    <th class="px-3 py-3 font-bold text-center w-12">#</th>
+                    <th class="px-3 py-3 font-bold">القسم</th>
+                    <th class="px-3 py-3 font-bold">المادة</th>
+                    <th class="px-3 py-3 font-bold">الأستاذ(ة)</th>
+                    <th class="px-3 py-3 font-bold text-center">الفرض</th>
+                    <th class="px-3 py-3 font-bold">تاريخ وتوقيت التمرير</th>
+                    <th class="px-3 py-3 font-bold text-center">تاريخ التصحيح</th>
+                    <th class="px-3 py-3 font-bold text-center">تسليم النقط للإدارة</th>
+                    <th class="px-3 py-3 font-bold text-center">الالتزام (15 يوماً)</th>
+                    <th class="px-3 py-3 font-bold text-center">إجراءات</th>
+                  </tr>
+                </thead>
+                <tbody id="exams-table-body" class="divide-y divide-slate-800/60 text-slate-200">
+                  <!-- Populated dynamically by exams_planning.js -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- VIEW 3: PRINT CENTER (مركز الطباعة والمعاينة) -->
+        <div id="exams-view-print" class="space-y-4" style="display: none;">
+          <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-teal-950 border border-teal-800 flex items-center justify-center text-xl text-teal-400">
+                🖨️
+              </div>
+              <div>
+                <h3 class="text-sm font-bold text-white">مركز طباعة وثائق برمجة الفروض الرسمية</h3>
+                <p class="text-xs text-slate-400">استخراج بطاقات البرمجة الفردية للأساتذة (A4 عمودي) والبرنامج العام الشامل (A4 أفقي)</p>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-2.5">
+              <select id="print-teacher-select" onchange="renderPrintCenter()" class="bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-teal-500">
+                <option value="">-- اختر الأستاذ(ة) --</option>
+              </select>
+
+              <button onclick="printSingleTeacherSheet()" class="px-4 py-2 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white rounded-xl text-xs font-bold shadow flex items-center gap-1.5 transition cursor-pointer">
+                <span>🖨️</span>
+                <span>طباعة بطاقة الأستاذ</span>
+              </button>
+
+              <button onclick="printSchoolCalendar()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-bold border border-slate-700 flex items-center gap-1.5 transition cursor-pointer">
+                <span>📄</span>
+                <span>طباعة البرنامج العام</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Print Preview Box -->
+          <div id="exams-print-preview-container" class="bg-slate-900/60 border border-slate-800 rounded-2xl p-4">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ================= MODAL: SCHEDULE / EDIT EXAM ================= -->
+      <div id="modal-schedule-exam" class="fixed inset-0 z-[99999] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto hidden" style="display: none;">
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-4 my-8">
+          
+          <!-- Modal Header -->
+          <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+            <div class="flex items-center gap-2.5">
+              <span class="w-9 h-9 rounded-xl bg-teal-950 border border-teal-700/60 flex items-center justify-center text-lg text-teal-400">
+                📅
+              </span>
+              <div>
+                <h3 id="modal-exam-title" class="text-base font-black text-white">برمجة وتعيين موعد فرض محروس جديد</h3>
+                <p class="text-[11px] text-slate-400">الربط الآلي باستعمال زمن القسم وضبط موعدي التصحيح وتسليم النقط</p>
+              </div>
+            </div>
+            <button type="button" onclick="closeScheduleExamModal()" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center text-sm transition cursor-pointer">
+              ✕
+            </button>
+          </div>
+
+          <!-- Modal Form -->
+          <form id="form-schedule-exam" onsubmit="submitExamScheduleForm(event)" class="space-y-4">
+            
+            <!-- Hidden Fields -->
+            <input type="hidden" id="modal-exam-semester" value="1">
+            <input type="hidden" id="modal-exam-subject" value="">
+            <input type="hidden" id="modal-exam-hour" value="ح 1">
+            <input type="hidden" id="modal-exam-period" value="ص">
+            <input type="hidden" id="modal-exam-timestr" value="08:00 - 09:00">
+            <input type="hidden" id="modal-exam-room" value="ق 1">
+            <input type="hidden" id="modal-exam-dayname" value="الاثنين">
+
+            <!-- Row 1: Teacher & Class -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-bold text-slate-300 mb-1">
+                  الأستاذ(ة) المعني(ة) <span class="text-rose-400">*</span>:
+                </label>
+                <select id="modal-exam-teacher" onchange="onExamTeacherChanged()" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-teal-500">
+                  <option value="">-- اختر الأستاذ(ة) --</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-300 mb-1">
+                  القسم المسند <span class="text-rose-400">*</span>:
+                </label>
+                <select id="modal-exam-class" onchange="onExamClassOrDateChanged()" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-teal-500">
+                  <option value="">-- اختر الأستاذ أولاً --</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Row 2: Exam Number & Exam Date -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-bold text-slate-300 mb-1">
+                  رقم الفرض المحروس <span class="text-rose-400">*</span>:
+                </label>
+                <select id="modal-exam-number" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-teal-500">
+                  <option value="1">الفرض الأول (N° 1)</option>
+                  <option value="2">الفرض الثاني (N° 2)</option>
+                  <option value="3">الفرض الثالث (N° 3)</option>
+                  <option value="4">الفرض الرابع (N° 4)</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-300 mb-1">
+                  تاريخ تمرير الفرض <span class="text-rose-400">*</span>:
+                </label>
+                <input type="date" id="modal-exam-date" onchange="onExamDateChanged()" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-teal-500">
+              </div>
+            </div>
+
+            <!-- Row 3: Timetable Session Alignment & Smart Recommendations -->
+            <div>
+              <label class="block text-xs font-bold text-slate-300 mb-1 flex items-center justify-between">
+                <span>حصص الأستاذ مع هذا القسم في هذا اليوم (من استعمال الزمن الرسمي):</span>
+                <span class="text-[10px] text-teal-400 font-normal">اختيار الحصة يضمن عدم التعارض والتواجد الفعلي</span>
+              </label>
+              <div id="exam-session-options-container" class="bg-slate-950/80 border border-slate-800 rounded-xl p-3 min-h-[90px] flex items-center justify-center text-xs text-slate-400">
+                يرجى اختيار الأستاذ والقسم وتاريخ الفرض لاستعراض الحصص المتاحة والتوصية الذكية
+              </div>
+            </div>
+
+            <!-- Row 4: Correction Date & Grade Submission Date -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-bold text-slate-300 mb-1">
+                  تاريخ تصحيح الفرض مع التلاميذ:
+                </label>
+                <input type="date" id="modal-exam-corr-date" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-teal-500">
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-300 mb-1">
+                  تاريخ تسليم النقط للإدارة <span class="text-rose-400">*</span>:
+                </label>
+                <input type="date" id="modal-exam-sub-date" onchange="calculateCompliance()" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-teal-500">
+              </div>
+            </div>
+
+            <!-- Row 5: 15-Day Legal Compliance Live Feedback Badge -->
+            <div id="compliance-preview-badge"></div>
+
+            <!-- Row 6: Notes -->
+            <div>
+              <label class="block text-xs font-bold text-slate-300 mb-1">
+                ملاحظات بيداغوجية / تنظيمية (اختياري):
+              </label>
+              <textarea id="modal-exam-notes" rows="2" placeholder="ملاحظات حول قاعة التمرير، الدروس المعنية، أو الحراسة المشتركة..." class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-teal-500"></textarea>
+            </div>
+
+            <!-- Modal Actions -->
+            <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-800">
+              <button type="button" onclick="closeScheduleExamModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl text-xs font-bold transition cursor-pointer">
+                إلغاء
+              </button>
+              <button type="submit" class="px-5 py-2 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white rounded-xl text-xs font-bold shadow-lg transition cursor-pointer flex items-center gap-1.5">
+                <span>💾</span>
+                <span>حفظ واعتماد الفرض</span>
+              </button>
+            </div>
+
+          </form>
+
+        </div>
+      </div>
+
+    <!-- ================= MODAL: BULK DELETE / CANCEL EXAMS ================= -->
+    <div id="modal-bulk-delete-exams" class="fixed inset-0 z-[99999] bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4">
+      <div class="bg-slate-900 border border-rose-800/80 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden">
+        <div class="bg-gradient-to-l from-rose-950 to-slate-900 border-b border-rose-800/60 p-4 flex items-center justify-between">
+          <div class="flex items-center gap-2 text-rose-300 font-black text-sm">
+            <span>🗑️</span>
+            <span>إدارة إلغاء ومسح فروض المراقبة المستمرة</span>
+          </div>
+          <button onclick="closeModal('modal-bulk-delete-exams')" class="text-slate-400 hover:text-white text-lg">✕</button>
+        </div>
+
+        <div class="p-5 space-y-4 text-xs">
+          <div class="p-3 rounded-xl bg-rose-950/40 border border-rose-800/50 text-rose-200 leading-relaxed">
+            ⚠️ <strong>تنبيه إداري:</strong> يتيح هذا الخيار مسح وإلغاء الفروض لإعادة برمجتها. سيتم حذف الفروض المحددة وتحديث الجداول فوراً.
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-300 mb-2">اختر نطاق الإلغاء المطلوب:</label>
+            <div class="space-y-2.5">
+              <label class="flex items-center gap-2.5 p-3 rounded-xl bg-slate-950 border border-slate-800 hover:border-slate-700 cursor-pointer">
+                <input type="radio" name="bulk_del_scope" value="all" checked onchange="onBulkDelScopeChanged(this.value)" class="text-rose-600 focus:ring-rose-500">
+                <div>
+                  <div class="font-bold text-white">إلغاء جميع فروض المؤسسة بالكامل (الدورة الحالية)</div>
+                  <div class="text-[11px] text-slate-400">تفريغ شامل لجميع الفروض الممسوكة من طرف كافة الأساتذة في الدورة الحالية.</div>
+                </div>
+              </label>
+
+              <label class="flex items-center gap-2.5 p-3 rounded-xl bg-slate-950 border border-slate-800 hover:border-slate-700 cursor-pointer">
+                <input type="radio" name="bulk_del_scope" value="teacher" onchange="onBulkDelScopeChanged(this.value)" class="text-rose-600 focus:ring-rose-500">
+                <div class="flex-1">
+                  <div class="font-bold text-white">إلغاء جميع فروض أستاذ(ة) معين فقط</div>
+                  <div class="text-[11px] text-slate-400 mb-2">حذف كافة الفروض المبرمجة لأستاذ محدد دون التأثير على بقية الأساتذة.</div>
+                  <select id="bulk-del-teacher-select" disabled class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white font-bold text-xs focus:outline-none focus:border-rose-500 disabled:opacity-40">
+                    <!-- Populated dynamically -->
+                  </select>
+                </div>
+              </label>
+
+              <label class="flex items-center gap-2.5 p-3 rounded-xl bg-slate-950 border border-slate-800 hover:border-slate-700 cursor-pointer">
+                <input type="radio" name="bulk_del_scope" value="exam_numbers" onchange="onBulkDelScopeChanged(this.value)" class="text-rose-600 focus:ring-rose-500">
+                <div class="flex-1">
+                  <div class="font-bold text-white">إلغاء انتقائي برقم الفرض (مثلاً الفرض 4 فقط، أو 1 و 3)</div>
+                  <div class="text-[11px] text-slate-400 mb-2">حذف فروض معينة بالرقم لجميع الأساتذة أو لأستاذ محدد.</div>
+                  <div id="bulk-del-numbers-boxes" class="flex items-center gap-3 pt-1 opacity-40 pointer-events-none">
+                    <label class="flex items-center gap-1.5 cursor-pointer font-bold text-white"><input type="checkbox" name="bulk_del_num" value="1"> الفرض 1</label>
+                    <label class="flex items-center gap-1.5 cursor-pointer font-bold text-white"><input type="checkbox" name="bulk_del_num" value="2"> الفرض 2</label>
+                    <label class="flex items-center gap-1.5 cursor-pointer font-bold text-white"><input type="checkbox" name="bulk_del_num" value="3"> الفرض 3</label>
+                    <label class="flex items-center gap-1.5 cursor-pointer font-bold text-white"><input type="checkbox" name="bulk_del_num" value="4"> الفرض 4</label>
+                  </div>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <div class="flex justify-end items-center gap-2 pt-3 border-t border-slate-800">
+            <button type="button" onclick="closeModal('modal-bulk-delete-exams')" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl font-bold transition cursor-pointer">
+              إلغاء
+            </button>
+            <button type="button" onclick="executeBulkDeleteExams()" class="px-5 py-2 bg-gradient-to-r from-rose-700 to-rose-600 hover:from-rose-600 hover:to-rose-500 text-white rounded-xl font-black shadow-lg shadow-rose-950/50 flex items-center gap-2 transition cursor-pointer">
+              <span>🗑️</span>
+              <span>تأكيد الحذف والإلغاء</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
 
     </main>
   </div>
@@ -7293,6 +7794,10 @@
         initSurveillanceTab();
       } else if (tabId === 'tab-mobility') {
         initMobilityTab();
+      } else if (tabId === 'tab-exam-planning') {
+        if (typeof window.initExamsPlanning === 'function') {
+          window.initExamsPlanning();
+        }
       } else if (tabId === 'tab-attendance') {
         if (!window._inStandaloneTrackingMode) {
           const fullHeader = document.getElementById('att-director-full-header');
@@ -9083,6 +9588,7 @@
     <div>تأشيرة ومصادقة السيد مدير المؤسسة:<br><br>.......................................................</div>
   </div>
 
+  
 </body>
 </html>`;
 
@@ -10119,30 +10625,9 @@
         const res = await fetch('/api/state');
         appData = await res.json();
 
-        // Ensure cycle persistence across sessions via localStorage
-        const cachedCycle = localStorage.getItem('rzzakfet_cycle');
-        const currentServerCycle = (appData.institution && (appData.institution.cycle || appData.institution.institution_cycle)) || (appData.structure && appData.structure.cycle) || 'middle';
-
-        if (cachedCycle && (cachedCycle === 'qualifying' || cachedCycle === 'middle') && cachedCycle !== currentServerCycle) {
-          try {
-            const syncRes = await fetch('/api/institution/set_cycle', {
-              method: 'POST',
-              headers: {'Content-Type': 'application/json'},
-              body: JSON.stringify({ cycle: cachedCycle })
-            });
-            if (syncRes.ok) {
-              const syncData = await syncRes.json();
-              const nextState = syncData.state || syncData;
-              if (nextState && nextState.institution) {
-                appData = nextState;
-              }
-            }
-          } catch(e) {
-            console.warn("Could not sync cached cycle with server:", e);
-          }
-        } else if (!cachedCycle && currentServerCycle) {
-          try { localStorage.setItem('rzzakfet_cycle', currentServerCycle); } catch(e) {}
-        }
+        // Sync active cycle from server as single source of truth
+        const currentServerCycle = (appData.institution && (appData.institution.cycle || appData.institution.institution_cycle)) || (appData.structure && appData.structure.cycle) || 'qualifying';
+        try { localStorage.setItem('rzzakfet_cycle', currentServerCycle); } catch(e) {}
 
         if (appData.auth) {
           currentUserAuth = appData.auth;
@@ -11302,6 +11787,15 @@
       window.currentInstitutionLogo = (appData.institution && appData.institution.logo_base64) ? appData.institution.logo_base64 : '/official_header_logo.png';
       updateLogoPreviewUI(window.currentInstitutionLogo);
 
+      // Sync persistent institution cycle in Tab 2
+      const activeCycle = (appData.institution && appData.institution.cycle) || localStorage.getItem('rzzakfet_cycle') || 'qualifying';
+      if (typeof selectInstitutionCycleInForm === 'function') {
+        selectInstitutionCycleInForm(activeCycle);
+      }
+      if (typeof refreshMasterTimetableStatus === 'function') {
+        refreshMasterTimetableStatus();
+      }
+
       // Working Hours & Period Times
       if (document.getElementById('inst-m-start')) {
         document.getElementById('inst-m-start').value = appData.institution.morning_start_hour || '08:30';
@@ -11792,7 +12286,9 @@
         multimedia_rooms: document.getElementById('inst-it-rooms').value,
         sports_fields: document.getElementById('inst-sports-fields').value,
         logo_base64: window.currentInstitutionLogo || '',
+        cycle: (document.querySelector('input[name="form_institution_cycle"]:checked')?.value) || (appData.institution && appData.institution.cycle) || 'qualifying',
       };
+      try { localStorage.setItem('rzzakfet_cycle', payload.cycle); } catch (_) {}
 
       const res = await fetch('/api/update_institution', {
         method: 'POST',
@@ -15666,6 +16162,7 @@
     <div>المشرف البيداغوجي (الناظر / الحارس العام):<br><br>....................................................</div>
   </div>
 
+  
 </body>
 </html>`;
         printHtmlContent(fullHtml, `جدول_الحراسة_العام_${currentExamResult.exam_name}`, 'landscape');
@@ -15753,6 +16250,7 @@
 <body>
   ${convosHtml}
 
+  
 </body>
 </html>`;
         printHtmlContent(fullHtml, `استدعاءات_الحراسة_${currentExamResult.exam_name}`, 'portrait');
@@ -15830,6 +16328,7 @@
 <body>
   ${sheetsHtml}
 
+  
 </body>
 </html>`;
         printHtmlContent(fullHtml, `لوائح_المناداة_${currentExamResult.exam_name}`, 'portrait');
@@ -16012,6 +16511,7 @@
     <div>رئيس المؤسسة (المدير):<br><br>....................................................</div>
   </div>
 
+  
 </body>
 </html>`;
       printHtmlContent(fullHtml, "مذكرة_المجالس_التعليمية");
@@ -17239,6 +17739,7 @@
     <div>ملاحظات وتأشيرة رئيس المؤسسة (المدير):<br><br>....................................................</div>
   </div>
 
+  
 </body>
 </html>`;
       printHtmlContent(fullHtml, `تقرير_الحراسة_${h.day_name}`);
@@ -18732,6 +19233,7 @@
     <!-- Bottom Copy: نسخة إدارة المؤسسة -->
     ${copy2Html}
   </div>
+  
 </body>
 </html>`;
     }
@@ -19613,6 +20115,7 @@
 </head>
 <body>
   ${sheetEl.outerHTML}
+  
 </body>
 </html>`;
 
@@ -20481,6 +20984,7 @@
     <div>تأشيرة ومصادقة رئيس المؤسسة (المدير):<br><br>....................................................</div>
   </div>
 
+  
 </body>
 </html>`;
       printHtmlContent(fullHtml, "جدول_الإحصاء_الإجمالي_لحركية_التلاميذ");
@@ -20585,6 +21089,7 @@
     <div>تأشيرة رئيس المؤسسة (المدير):<br><br>....................................................</div>
   </div>
 
+  
 </body>
 </html>`;
       printHtmlContent(fullHtml, listTitle.replace(/\s+/g, '_'));
@@ -22301,7 +22806,31 @@
         const elDvSt = document.getElementById('dash-kpi-doctor-visits-students');
         if (elDvSt) elDvSt.textContent = uniqueVisitStudents.size;
 
-        // 3. Cumulative Absences KPIs
+    // Canonical Student ID helper to prevent double-counting when session stores both studentId (e.g. 2BACLF-1_D153038546) and massarCode (e.g. D153038546)
+    function getCanonicalDisciplineStudentId(rawId, studentsList, classHint) {
+      if (!rawId) return '';
+      const clean = String(rawId).trim();
+      if (Array.isArray(studentsList) && studentsList.length > 0) {
+        const direct = studentsList.find(s => s.studentId === clean || s.massarCode === clean);
+        if (direct) return direct.massarCode || direct.studentId;
+        if (clean.includes('_')) {
+          const suffix = clean.split('_').slice(1).join('_');
+          const sMatch = studentsList.find(s => s.studentId === suffix || s.massarCode === suffix);
+          if (sMatch) return sMatch.massarCode || sMatch.studentId;
+        }
+        if (classHint) {
+          const cMatch = studentsList.find(s => s.classCode === classHint && (s.fullName === clean || s.studentId === clean || s.massarCode === clean));
+          if (cMatch) return cMatch.massarCode || cMatch.studentId;
+        }
+      }
+      if (clean.includes('_')) {
+        return clean.split('_').slice(1).join('_');
+      }
+      return clean;
+    }
+    window.getCanonicalDisciplineStudentId = getCanonicalDisciplineStudentId;
+
+        // 3. Cumulative Absences KPIs (Canonical ID normalization to prevent doubling)
         let totalAbsHours = 0;
         let justifiedHours = 0;
         let unjustifiedHours = 0;
@@ -22315,17 +22844,25 @@
           const absIds = sess.absentStudentIds || [];
           const attMap = sess.attendanceMap || {};
 
-          const allAbsInSess = new Set(absIds);
+          const allAbsInSess = new Set();
+          absIds.forEach(id => {
+            const cid = getCanonicalDisciplineStudentId(id, students, sCls);
+            if (cid) allAbsInSess.add(cid);
+          });
           for (const [sid, stVal] of Object.entries(attMap)) {
-            if (stVal === 'A') allAbsInSess.add(sid);
+            if (stVal === 'A') {
+              const cid = getCanonicalDisciplineStudentId(sid, students, sCls);
+              if (cid) allAbsInSess.add(cid);
+            }
           }
 
-          for (const sid of allAbsInSess) {
+          for (const cid of allAbsInSess) {
             totalAbsHours++;
-            uniqueAbsentStudents.add(sid);
-            const justKey1 = `${sessKey}_${sid}`;
-            const justKey2 = `${sCls}_${sDate}_${sSlot}_${sid}`;
-            const isJust = !!(justified[justKey1] || justified[justKey2]);
+            uniqueAbsentStudents.add(cid);
+            const justKey1 = `${sessKey}_${cid}`;
+            const justKey2 = `${sCls}_${sDate}_${sSlot}_${cid}`;
+            const justKey3 = `${sCls}_${cid}`;
+            const isJust = !!(justified[justKey1] || justified[justKey2] || justified[justKey3] || justified[cid]);
             if (isJust) justifiedHours++;
             else unjustifiedHours++;
           }
@@ -22538,7 +23075,8 @@
             <div>توقيع وتأشيرة الحراسة العامة</div>
             <div>خاتم وتوقيع رئيس المؤسسة</div>
           </div>
-        </body>
+          
+</body>
         </html>
       `);
       win.document.close();
@@ -22591,6 +23129,15 @@
         };
       });
 
+      function findStudentRecInMap(rawId, sCls) {
+        if (!rawId) return null;
+        if (studentMap[rawId]) return studentMap[rawId];
+        const cid = typeof getCanonicalDisciplineStudentId === 'function' ? getCanonicalDisciplineStudentId(rawId, students, sCls) : rawId;
+        const found = students.find(s => s.studentId === cid || s.massarCode === cid || s.studentId === rawId || s.massarCode === rawId || (sCls && s.classCode === sCls && (s.fullName === rawId || s.fullName === cid)));
+        if (found && studentMap[found.studentId]) return studentMap[found.studentId];
+        return null;
+      }
+
       for (const [sessKey, sess] of Object.entries(sessions)) {
         if (!sess) continue;
         const sCls = sess.classCode;
@@ -22600,21 +23147,24 @@
         const lateIds = sess.lateStudentIds || [];
         const attMap = sess.attendanceMap || {};
 
-        const allAbsInSess = new Set(absIds);
+        const allAbsInSess = new Set();
+        absIds.forEach(id => {
+          const cid = typeof getCanonicalDisciplineStudentId === 'function' ? getCanonicalDisciplineStudentId(id, students, sCls) : id;
+          if (cid) allAbsInSess.add(cid);
+        });
         for (const [sid, stVal] of Object.entries(attMap)) {
-          if (stVal === 'A') allAbsInSess.add(sid);
+          if (stVal === 'A') {
+            const cid = typeof getCanonicalDisciplineStudentId === 'function' ? getCanonicalDisciplineStudentId(sid, students, sCls) : sid;
+            if (cid) allAbsInSess.add(cid);
+          }
         }
 
-        for (const sid of allAbsInSess) {
-          let rec = studentMap[sid];
-          if (!rec) {
-            const found = students.find(s => s.studentId === sid || s.massarCode === sid || (sCls && s.classCode === sCls && (s.fullName === sid || s.studentId === sid)));
-            if (found) rec = studentMap[found.studentId];
-          }
+        for (const cid of allAbsInSess) {
+          let rec = findStudentRecInMap(cid, sCls);
           if (!rec) {
             rec = {
-              studentId: sid,
-              fullName: sid,
+              studentId: cid,
+              fullName: cid,
               massarCode: '-',
               classCode: sCls || '-',
               totalHours: 0,
@@ -22622,26 +23172,29 @@
               unjustHours: 0,
               lateCount: 0
             };
-            studentMap[sid] = rec;
+            studentMap[cid] = rec;
           }
           rec.totalHours++;
-          const justKey1 = `${sessKey}_${sid}`;
-          const justKey2 = `${sCls}_${sDate}_${sSlot}_${sid}`;
-          const isJust = !!(justified[justKey1] || justified[justKey2] || (rec.massarCode && justified[`${sessKey}_${rec.massarCode}`]));
+          const justKey1 = `${sessKey}_${cid}`;
+          const justKey2 = `${sCls}_${sDate}_${sSlot}_${cid}`;
+          const isJust = !!(justified[justKey1] || justified[justKey2] || (rec.massarCode && (justified[`${sessKey}_${rec.massarCode}`] || justified[`${sCls}_${rec.massarCode}`])));
           if (isJust) rec.justHours++;
           else rec.unjustHours++;
         }
 
-        const allLateInSess = new Set(lateIds);
+        const allLateInSess = new Set();
+        lateIds.forEach(id => {
+          const cid = typeof getCanonicalDisciplineStudentId === 'function' ? getCanonicalDisciplineStudentId(id, students, sCls) : id;
+          if (cid) allLateInSess.add(cid);
+        });
         for (const [sid, stVal] of Object.entries(attMap)) {
-          if (stVal === 'L') allLateInSess.add(sid);
-        }
-        for (const sid of allLateInSess) {
-          let rec = studentMap[sid];
-          if (!rec) {
-            const found = students.find(s => s.studentId === sid || s.massarCode === sid);
-            if (found) rec = studentMap[found.studentId];
+          if (stVal === 'L') {
+            const cid = typeof getCanonicalDisciplineStudentId === 'function' ? getCanonicalDisciplineStudentId(sid, students, sCls) : sid;
+            if (cid) allLateInSess.add(cid);
           }
+        }
+        for (const cid of allLateInSess) {
+          let rec = findStudentRecInMap(cid, sCls);
           if (rec) rec.lateCount++;
         }
       }
@@ -22754,6 +23307,16 @@
       students.forEach(st => {
         studentMap[st.studentId] = { fullName: st.fullName, massarCode: st.massarCode || '-', classCode: st.classCode || '-', totalHours: 0, justHours: 0, unjustHours: 0, lateCount: 0 };
       });
+
+      function findPrintStudentRec(rawId, sCls) {
+        if (!rawId) return null;
+        if (studentMap[rawId]) return studentMap[rawId];
+        const cid = typeof getCanonicalDisciplineStudentId === 'function' ? getCanonicalDisciplineStudentId(rawId, students, sCls) : rawId;
+        const found = students.find(s => s.studentId === cid || s.massarCode === cid || s.studentId === rawId || s.massarCode === rawId || (sCls && s.classCode === sCls && (s.fullName === rawId || s.fullName === cid)));
+        if (found && studentMap[found.studentId]) return studentMap[found.studentId];
+        return null;
+      }
+
       for (const [sessKey, sess] of Object.entries(sessions)) {
         if (!sess) continue;
         const sCls = sess.classCode;
@@ -22762,26 +23325,43 @@
         const absIds = sess.absentStudentIds || [];
         const lateIds = sess.lateStudentIds || [];
         const attMap = sess.attendanceMap || {};
-        const allAbsInSess = new Set(absIds);
-        for (const [sid, stVal] of Object.entries(attMap)) { if (stVal === 'A') allAbsInSess.add(sid); }
-        for (const sid of allAbsInSess) {
-          let rec = studentMap[sid];
-          if (!rec) {
-            const found = students.find(s => s.studentId === sid || s.massarCode === sid);
-            if (found) rec = studentMap[found.studentId];
+
+        const allAbsInSess = new Set();
+        absIds.forEach(id => {
+          const cid = typeof getCanonicalDisciplineStudentId === 'function' ? getCanonicalDisciplineStudentId(id, students, sCls) : id;
+          if (cid) allAbsInSess.add(cid);
+        });
+        for (const [sid, stVal] of Object.entries(attMap)) {
+          if (stVal === 'A') {
+            const cid = typeof getCanonicalDisciplineStudentId === 'function' ? getCanonicalDisciplineStudentId(sid, students, sCls) : sid;
+            if (cid) allAbsInSess.add(cid);
           }
+        }
+
+        for (const cid of allAbsInSess) {
+          let rec = findPrintStudentRec(cid, sCls);
           if (rec) {
             rec.totalHours++;
-            const justKey1 = `${sessKey}_${sid}`;
-            const justKey2 = `${sCls}_${sDate}_${sSlot}_${sid}`;
-            if (justified[justKey1] || justified[justKey2]) rec.justHours++;
+            const justKey1 = `${sessKey}_${cid}`;
+            const justKey2 = `${sCls}_${sDate}_${sSlot}_${cid}`;
+            if (justified[justKey1] || justified[justKey2] || (rec.massarCode && justified[`${sessKey}_${rec.massarCode}`])) rec.justHours++;
             else rec.unjustHours++;
           }
         }
-        const allLateInSess = new Set(lateIds);
-        for (const [sid, stVal] of Object.entries(attMap)) { if (stVal === 'L') allLateInSess.add(sid); }
-        for (const sid of allLateInSess) {
-          let rec = studentMap[sid];
+
+        const allLateInSess = new Set();
+        lateIds.forEach(id => {
+          const cid = typeof getCanonicalDisciplineStudentId === 'function' ? getCanonicalDisciplineStudentId(id, students, sCls) : id;
+          if (cid) allLateInSess.add(cid);
+        });
+        for (const [sid, stVal] of Object.entries(attMap)) {
+          if (stVal === 'L') {
+            const cid = typeof getCanonicalDisciplineStudentId === 'function' ? getCanonicalDisciplineStudentId(sid, students, sCls) : sid;
+            if (cid) allLateInSess.add(cid);
+          }
+        }
+        for (const cid of allLateInSess) {
+          let rec = findPrintStudentRec(cid, sCls);
           if (rec) rec.lateCount++;
         }
       }
@@ -22848,7 +23428,8 @@
             <div>توقيع وتأشيرة الحراسة العامة</div>
             <div>خاتم وتوقيع رئيس المؤسسة</div>
           </div>
-        </body>
+          
+</body>
         </html>
       `);
       win.document.close();
@@ -23044,7 +23625,8 @@
             <div>توقيع وتأشيرة الحراسة العامة</div>
             <div>خاتم وتوقيع رئيس المؤسسة</div>
           </div>
-        </body>
+          
+</body>
         </html>
       `);
       win.document.close();
@@ -23873,6 +24455,7 @@
     <div>رئيس المؤسسة:</div>
   </div>
 
+  
 </body>
 </html>`;
       printWin.document.write(html);
@@ -25327,6 +25910,117 @@
   </div>
 
 
+  <!-- ================= MASTER TIMETABLE MODAL (SINGLE SOURCE OF TRUTH) ================= -->
+  <div id="modal-master-timetable" class="fixed inset-0 z-[99999] flex items-center justify-center bg-black/80 backdrop-blur-sm hidden">
+    <div class="bg-slate-900 border border-emerald-500/40 rounded-3xl max-w-3xl w-full flex flex-col shadow-2xl mx-4 overflow-hidden max-h-[92vh]">
+      <!-- Header -->
+      <div class="p-5 border-b border-slate-800 flex items-center justify-between bg-gradient-to-r from-emerald-950/80 via-slate-900 to-teal-950/80">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-xl text-emerald-400 shadow-inner">
+            📥
+          </div>
+          <div>
+            <h3 class="font-extrabold text-base text-white flex items-center gap-2">
+              <span>جدول العام الدراسي المعتمد</span>
+              <span class="text-[10px] bg-emerald-950 text-emerald-300 border border-emerald-700/60 font-mono px-2 py-0.5 rounded-full font-bold">Single Source of Truth</span>
+            </h3>
+            <p class="text-xs text-slate-400 mt-0.5">القاعدة البيانية الأساسية المعتمدة لكافة العمليات (الأساتذة، الأقسام، القاعات، ورقة الإسناد، ومسك الغياب والفروض)</p>
+          </div>
+        </div>
+        <button onclick="closeMasterTimetableModal()" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center text-sm transition cursor-pointer">✕</button>
+      </div>
+
+      <!-- Body -->
+      <div class="p-6 overflow-y-auto space-y-5 text-xs">
+        <!-- Active Timetable Info Banner -->
+        <div id="master-tt-status-card" class="bg-slate-950 border border-emerald-500/30 rounded-2xl p-4 space-y-3">
+          <div class="flex items-center justify-between flex-wrap gap-2">
+            <div class="flex items-center gap-2">
+              <span id="master-tt-dot" class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span id="master-tt-status-title" class="font-black text-sm text-emerald-300">جاري تحميل بيانات الجدول...</span>
+            </div>
+            <span id="master-tt-source-badge" class="font-mono text-[11px] bg-slate-900 text-slate-300 border border-slate-700 px-2.5 py-1 rounded-lg">المصدر: غير محدد</span>
+          </div>
+
+          <div id="master-tt-metrics" class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-2 border-t border-slate-800/80">
+            <div class="bg-slate-900/90 p-2.5 rounded-xl border border-slate-800 text-center">
+              <span class="block text-[10.5px] text-slate-400">هيئة التدريس</span>
+              <span id="metric-tt-teachers" class="font-mono font-black text-base text-white">0</span>
+            </div>
+            <div class="bg-slate-900/90 p-2.5 rounded-xl border border-slate-800 text-center">
+              <span class="block text-[10.5px] text-slate-400">الأقسام التربوية</span>
+              <span id="metric-tt-classes" class="font-mono font-black text-base text-cyan-300">0</span>
+            </div>
+            <div class="bg-slate-900/90 p-2.5 rounded-xl border border-slate-800 text-center">
+              <span class="block text-[10.5px] text-slate-400">القاعات والملاعب</span>
+              <span id="metric-tt-rooms" class="font-mono font-black text-base text-amber-300">0</span>
+            </div>
+            <div class="bg-slate-900/90 p-2.5 rounded-xl border border-slate-800 text-center">
+              <span class="block text-[10.5px] text-slate-400">إجمالي الحصص</span>
+              <span id="metric-tt-sessions" class="font-mono font-black text-base text-emerald-300">0</span>
+            </div>
+          </div>
+          <div id="master-tt-timestamp" class="text-[10.5px] text-slate-400 text-left dir-ltr font-mono">--</div>
+        </div>
+
+        <!-- Action Option 1: File Upload -->
+        <div class="bg-slate-950/80 border border-slate-800 rounded-2xl p-4 space-y-3">
+          <div class="flex items-center gap-2">
+            <span class="text-base">📁</span>
+            <div>
+              <h4 class="font-bold text-sm text-white">الخيار 1: استيراد واعتماد ملف جدول خارجي</h4>
+              <p class="text-[11px] text-slate-400">يدعم ملفات FET XML (أنشطة/مدرسين)، ملفات .fet، جداول Excel الرسمية (.xlsx)، أو ملفات JSON/RZF/ZIP.</p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3 flex-wrap">
+            <input type="file" id="master-timetable-file-input" accept=".xml,.fet,.xlsx,.json,.zip" class="hidden" onchange="handleMasterTimetableUpload(event)">
+            <button type="button" onclick="document.getElementById('master-timetable-file-input').click()" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs px-4 py-2.5 rounded-xl shadow-lg transition flex items-center gap-2 cursor-pointer">
+              <span>📥</span>
+              <span>اختيار وتحميل ملف الجدول العام</span>
+            </button>
+            <span class="text-slate-400 text-[11px]">الملفات المدعومة: XML, FET, XLSX, JSON, ZIP</span>
+          </div>
+        </div>
+
+        <!-- Action Option 2: Adopt Current Generated Timetable -->
+        <div class="bg-slate-950/80 border border-slate-800 rounded-2xl p-4 space-y-3">
+          <div class="flex items-center gap-2">
+            <span class="text-base">⚡</span>
+            <div>
+              <h4 class="font-bold text-sm text-white">الخيار 2: اعتماد الجدول المُنتج داخل البرنامج</h4>
+              <p class="text-[11px] text-slate-400">إذا قمت بتوليد جدول جديد ناجح من الواجهة رقم 8 (إنتاج الجداول)، يمكنك اعتماده كمرجع أساسي بضغطة زر واحدة.</p>
+            </div>
+          </div>
+
+          <button type="button" onclick="adoptCurrentlyGeneratedTimetable()" class="bg-slate-800 hover:bg-slate-700 text-emerald-300 border border-emerald-600/50 font-bold text-xs px-4 py-2.5 rounded-xl shadow transition flex items-center gap-2 cursor-pointer">
+            <span>⚡</span>
+            <span>اعتماد الجدول المُنتَج حالياً كجدول عام رسمي للمؤسسة</span>
+          </button>
+        </div>
+
+        <!-- Architectural Explainer Note -->
+        <div class="bg-emerald-950/30 border border-emerald-700/40 rounded-xl p-3.5 text-[11px] text-emerald-200 leading-relaxed">
+          <span class="font-bold block text-emerald-300 mb-1">📌 الأثر المباشر لاعتماد الجدول العام:</span>
+          فور الاعتماد، يتم تحديث المنظومة بالكامل فوراً:
+          <ul class="list-disc list-inside mt-1 space-y-0.5 text-slate-300">
+            <li><strong>ورقة الإسناد الرسمية (الواجهة 11):</strong> تُستنتج بالكامل 100% من هذا الجدول الأسبوعي.</li>
+            <li><strong>هيئة التدريس والقاعات (الواجهات 4 و5):</strong> تُستخلص كافة الأساتذة وأرقام دخولهم والقاعات المعتمدة.</li>
+            <li><strong>مسك الغياب بالهاتف (Mobile PWA & السيرفر السحابي):</strong> تُنقل الحصص بدقة لتطبيق الهاتف لتمكين الأساتذة من مسك الغياب بدقة 100%.</li>
+            <li><strong>برمجة الفروض المحروسة والتقارير اليومية (الواجهات 14 و17):</strong> تُربط مباشرة بحصص الأساتذة المستنتجة.</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="p-4 bg-slate-950 border-t border-slate-800 flex items-center justify-end">
+        <button onclick="closeMasterTimetableModal()" class="px-5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs cursor-pointer transition">
+          إغلاق النافذة
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- ================= MULTI-DEVICE SYNC & BACKUP MODAL ================= -->
   <div id="modal-sync-backup" class="fixed inset-0 z-[99999] flex items-center justify-center bg-black/80 backdrop-blur-sm hidden">
     <div class="bg-slate-900 border border-slate-700 rounded-3xl max-w-2xl w-full flex flex-col shadow-2xl mx-4 overflow-hidden">
@@ -26036,7 +26730,218 @@
     window.loadMasterTimetableFromDesktop = loadMasterTimetableFromDesktop;
     window.handleUploadTimetableFile = handleUploadTimetableFile;
 
+
+    // ================= MASTER TIMETABLE & CYCLE CONTROLLERS =================
+    function selectInstitutionCycleInForm(cycle) {
+      const qRadio = document.getElementById('cycle-radio-qualifying');
+      const mRadio = document.getElementById('cycle-radio-middle');
+      const qCard = document.getElementById('cycle-card-qualifying');
+      const mCard = document.getElementById('cycle-card-middle');
+      const isMiddle = (cycle === 'middle');
+
+      if (isMiddle) {
+        if (mRadio) mRadio.checked = true;
+        if (qRadio) qRadio.checked = false;
+        if (mCard) {
+          mCard.className = 'flex items-center gap-3 p-3.5 rounded-xl border-2 cursor-pointer transition border-indigo-500 bg-indigo-950/50 text-white shadow-md';
+        }
+        if (qCard) {
+          qCard.className = 'flex items-center gap-3 p-3.5 rounded-xl border-2 cursor-pointer transition border-slate-700 bg-slate-900/60 text-slate-300 hover:border-slate-500';
+        }
+      } else {
+        if (qRadio) qRadio.checked = true;
+        if (mRadio) mRadio.checked = false;
+        if (qCard) {
+          qCard.className = 'flex items-center gap-3 p-3.5 rounded-xl border-2 cursor-pointer transition border-indigo-500 bg-indigo-950/50 text-white shadow-md';
+        }
+        if (mCard) {
+          mCard.className = 'flex items-center gap-3 p-3.5 rounded-xl border-2 cursor-pointer transition border-slate-700 bg-slate-900/60 text-slate-300 hover:border-slate-500';
+        }
+      }
+    }
+    window.selectInstitutionCycleInForm = selectInstitutionCycleInForm;
+
+    async function openMasterTimetableModal() {
+      const modal = document.getElementById('modal-master-timetable');
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.style.display = 'flex';
+      }
+      await refreshMasterTimetableStatus();
+    }
+    window.openMasterTimetableModal = openMasterTimetableModal;
+
+    function closeMasterTimetableModal() {
+      const modal = document.getElementById('modal-master-timetable');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.style.display = 'none';
+      }
+    }
+    window.closeMasterTimetableModal = closeMasterTimetableModal;
+
+    async function refreshMasterTimetableStatus() {
+      try {
+        const res = await fetch('/api/timetable/master_info');
+        const data = await res.json();
+        updateMasterTimetableUI(data);
+      } catch (err) {
+        console.warn('Error fetching master timetable info:', err);
+      }
+    }
+    window.refreshMasterTimetableStatus = refreshMasterTimetableStatus;
+
+    function updateMasterTimetableUI(data) {
+      const headerBadge = document.getElementById('header-master-tt-badge');
+      const headerStatus = document.getElementById('header-master-tt-status');
+      const statusTitle = document.getElementById('master-tt-status-title');
+      const sourceBadge = document.getElementById('master-tt-source-badge');
+      const teachersEl = document.getElementById('metric-tt-teachers');
+      const classesEl = document.getElementById('metric-tt-classes');
+      const roomsEl = document.getElementById('metric-tt-rooms');
+      const sessionsEl = document.getElementById('metric-tt-sessions');
+      const tsEl = document.getElementById('master-tt-timestamp');
+      const dotEl = document.getElementById('master-tt-dot');
+
+      const isOk = data && (data.has_master || data.success) && (data.master_info || data.info);
+      if (isOk) {
+        const info = data.master_info || data.info || {};
+        const tCount = info.total_teachers || info.teachers_count || 0;
+        const cCount = info.total_classes || info.classes_count || 0;
+        const rCount = info.total_rooms || info.rooms_count || (appData && appData.rooms ? appData.rooms.length : 0);
+        const sCount = info.total_sessions || info.slots_count || 0;
+        const fName = info.source_filename || info.filename || 'جدول العام الدراسي المعتمد';
+
+        if (headerBadge) {
+          headerBadge.textContent = 'معتمد ✓ (' + tCount + ' أستاذ • ' + sCount + ' حصة)';
+          headerBadge.className = 'px-2 py-0.5 text-[10px] rounded-full bg-emerald-900/90 text-emerald-300 border border-emerald-400 font-mono font-bold';
+        }
+        if (headerStatus) {
+          headerStatus.textContent = fName;
+        }
+        if (statusTitle) {
+          statusTitle.textContent = '✓ تم اعتماد الجدول العام بنجاح (' + fName + ')';
+          statusTitle.className = 'font-black text-sm text-emerald-300';
+        }
+        if (sourceBadge) {
+          sourceBadge.textContent = 'المصدر: ' + fName;
+        }
+        if (teachersEl) teachersEl.textContent = tCount;
+        if (classesEl) classesEl.textContent = cCount;
+        if (roomsEl) roomsEl.textContent = rCount;
+        if (sessionsEl) sessionsEl.textContent = sCount;
+        if (tsEl) tsEl.textContent = 'تاريخ ووقت الاعتماد: ' + (info.adopted_at || '--');
+        if (dotEl) dotEl.className = 'w-3 h-3 rounded-full bg-emerald-500 animate-pulse';
+      } else {
+        if (headerBadge) {
+          headerBadge.textContent = 'غير معتمد ⚠️';
+          headerBadge.className = 'px-2 py-0.5 text-[10px] rounded-full bg-amber-950/80 text-amber-300 border border-amber-600/40 font-mono font-bold';
+        }
+        if (headerStatus) {
+          headerStatus.textContent = 'اضغط لاعتماد جدول رسمي للمؤسسة';
+        }
+        if (statusTitle) {
+          statusTitle.textContent = '⚠️ لم يتم اعتماد جدول عام رسمي بعد';
+          statusTitle.className = 'font-black text-sm text-amber-300';
+        }
+        if (sourceBadge) sourceBadge.textContent = 'المصدر: غير محدد';
+        if (teachersEl) teachersEl.textContent = (appData && appData.teachers ? appData.teachers.length : 0);
+        if (classesEl) classesEl.textContent = (appData && appData.classes ? appData.classes.length : 0);
+        if (roomsEl) roomsEl.textContent = (appData && appData.rooms ? appData.rooms.length : 0);
+        if (sessionsEl) sessionsEl.textContent = '--';
+        if (tsEl) tsEl.textContent = 'يرجى تحميل ملف جدول أو اعتماد الجدول الحالي';
+        if (dotEl) dotEl.className = 'w-3 h-3 rounded-full bg-amber-500';
+      }
+    }
+    window.updateMasterTimetableUI = updateMasterTimetableUI;
+
+    async function handleMasterTimetableUpload(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+
+      showToast('⏳ جاري قراءة وتحليل ملف الجدول العام المعتمد...');
+
+      const reader = new FileReader();
+      reader.onload = async function(e) {
+        try {
+          const base64Data = e.target.result;
+          const payload = {
+            filename: file.name,
+            file_content: base64Data,
+            is_base64: true
+          };
+
+          const res = await fetch('/api/timetable/adopt_master', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          const result = await res.json();
+
+          if (result.success) {
+            showToast('🎉 ' + result.message);
+            if (result.state) {
+              appData = result.state;
+              renderApp();
+            }
+            if (result.master_info) {
+              updateMasterTimetableUI({ has_master: true, master_info: result.master_info });
+            }
+            if (typeof checkExistingTimetable === 'function') {
+              checkExistingTimetable();
+            }
+            if (typeof renderAssignmentsTable === 'function') {
+              renderAssignmentsTable();
+            }
+          } else {
+            showToast('❌ فشل اعتماد الجدول: ' + (result.error || 'خطأ غير معروف'));
+          }
+        } catch (err) {
+          showToast('❌ خطأ في الاتصال بالخادم: ' + err.message);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+    window.handleMasterTimetableUpload = handleMasterTimetableUpload;
+
+    async function adoptCurrentlyGeneratedTimetable() {
+      if (!confirm('هل ترغب في اعتماد جدول الحصص المُنتج حالياً ليكون القاعدة البيانية الأساسية الوحيدة المعتمدة لكافة عمليات البرنامج (ورقة الإسناد، مسك الغياب، وبرمجة الفروض)؟')) {
+        return;
+      }
+      showToast('⏳ جاري اعتماد الجدول وتحديث كافة قواعد البيانات...');
+      try {
+        const res = await fetch('/api/timetable/adopt_master', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'adopt_current_generated' })
+        });
+        const result = await res.json();
+        if (result.success) {
+          showToast('🎉 ' + result.message);
+          if (result.state) {
+            appData = result.state;
+            renderApp();
+          }
+          if (result.master_info) {
+            updateMasterTimetableUI({ has_master: true, master_info: result.master_info });
+          }
+          if (typeof checkExistingTimetable === 'function') {
+            checkExistingTimetable();
+          }
+          if (typeof renderAssignmentsTable === 'function') {
+            renderAssignmentsTable();
+          }
+        } else {
+          showToast('❌ ' + (result.error || 'فشل اعتماد الجدول'));
+        }
+      } catch (err) {
+        showToast('❌ خطأ في الاتصال: ' + err.message);
+      }
+    }
+    window.adoptCurrentlyGeneratedTimetable = adoptCurrentlyGeneratedTimetable;
   </script>
 
+  
+  <script src="exams_planning.js"></script>
 </body>
 </html>

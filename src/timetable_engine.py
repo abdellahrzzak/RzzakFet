@@ -231,8 +231,8 @@ class TimetableEngine:
                 if r.afternoon_teacher and "شاغر" not in r.afternoon_teacher and r.afternoon_teacher != "-":
                     e_teacher_to_room[r.afternoon_teacher] = r.room_name
 
-        room_slot_occupied = {}
-
+        # Collect and parse all scheduled activities
+        scheduled_activities = []
         for act in res_tree.findall("Activity"):
             aid = act.find("Id").text
             day = act.find("Day").text
@@ -250,82 +250,153 @@ class TimetableEngine:
             raw_room = act.find("Room")
             fet_room = raw_room.text.strip() if (raw_room is not None and raw_room.text and raw_room.text.strip() and raw_room.text.strip() != "null") else None
 
-            # Resolve room candidate pool
-            if any(k in subject for k in ["علوم الحياة", "SVT"]):
-                pool = svt_rooms + gen_rooms
-            elif any(k in subject for k in ["الفيزياء", "PC", "الكيمياء"]):
-                pool = pc_rooms + gen_rooms
-            elif any(k in subject for k in ["معلوميات", "إعلاميات", "INFO"]):
-                pool = it_rooms + gen_rooms
-            elif any(k in subject for k in ["بدنية", "رياضة", "EPS", "Terrain"]):
-                pool = sport_rooms
-            elif subject in custom_rooms_by_subject:
-                # Custom dedicated rooms for this subject (e.g. الاجتماعيات -> S-GH 1, 2, 3, 4)
-                c_rooms = custom_rooms_by_subject[subject]
-                primary = m_teacher_to_room.get(teacher) if is_morning else e_teacher_to_room.get(teacher)
+            scheduled_activities.append({
+                "id": aid,
+                "teacher": teacher,
+                "subject": subject,
+                "students": students,
+                "duration": dur,
+                "day": day,
+                "start_hour": start_hour,
+                "hours": occupied_hours,
+                "is_morning": is_morning,
+                "fet_room": fet_room
+            })
+
+        room_slot_occupied = {}
+        assigned_room_map = {} # aid -> chosen_room
+
+        # PASS 1A: Physical Education & Sports -> Sports fields
+        for item in scheduled_activities:
+            aid = item["id"]
+            subj = item["subject"]
+            day = item["day"]
+            hours = item["hours"]
+            if any(k in subj for k in ["بدنية", "رياضة", "EPS", "Terrain", "ملعب"]):
+                chosen = None
+                for r_cand in (sport_rooms or ["ملعب  1"]):
+                    if all((r_cand, day, h) not in room_slot_occupied for h in hours):
+                        chosen = r_cand
+                        break
+                chosen = chosen or (sport_rooms[0] if sport_rooms else "ملعب  1")
+                assigned_room_map[aid] = chosen
+                for h in hours:
+                    room_slot_occupied[(chosen, day, h)] = (item["teacher"], subj, item["students"])
+
+        # PASS 1B: Subject Specialty Dedicated Rooms & Labs (SVT labs, PC labs, IT, custom subject rooms)
+        for item in scheduled_activities:
+            aid = item["id"]
+            if aid in assigned_room_map:
+                continue
+            subj = item["subject"]
+            teacher = item["teacher"]
+            day = item["day"]
+            hours = item["hours"]
+            is_m = item["is_morning"]
+
+            if subj in custom_rooms_by_subject:
+                c_rooms = custom_rooms_by_subject[subj]
+                primary = m_teacher_to_room.get(teacher) if is_m else e_teacher_to_room.get(teacher)
                 if not primary or primary not in c_rooms:
                     primary = m_teacher_to_room.get(teacher) or e_teacher_to_room.get(teacher)
-                
-                # Priority:
-                # 1. The teacher's assigned dedicated room first
-                # 2. All other dedicated rooms for this subject
-                # 3. Only if ALL dedicated rooms are occupied in this slot -> fallback to general rooms
-                if primary and primary in c_rooms:
-                    pool = [primary] + [r for r in c_rooms if r != primary] + gen_rooms
-                else:
-                    pool = list(c_rooms) + gen_rooms
-            else:
-                # General subjects (الرياضيات, اللغة العربية, اللغة الفرنسية, التربية الإسلامية, etc.)
-                primary = m_teacher_to_room.get(teacher) if is_morning else e_teacher_to_room.get(teacher)
-                if not primary:
-                    primary = m_teacher_to_room.get(teacher) or e_teacher_to_room.get(teacher)
-                
-                # Teachers of general subjects must NEVER be placed in dedicated custom rooms of other subjects
-                if primary and (primary in all_custom_room_names or primary not in gen_rooms):
-                    primary = None
-                
-                if primary:
-                    pool = [primary] + [r for r in gen_rooms if r != primary]
-                else:
-                    pool = gen_rooms
+                pool = ([primary] if primary and primary in c_rooms else []) + [r for r in c_rooms if r != primary]
+                for r_cand in pool:
+                    if all((r_cand, day, h) not in room_slot_occupied for h in hours):
+                        assigned_room_map[aid] = r_cand
+                        for h in hours:
+                            room_slot_occupied[(r_cand, day, h)] = (teacher, subj, item["students"])
+                        break
+            elif any(k in subj for k in ["علوم الحياة", "SVT"]) and svt_rooms:
+                for r_cand in svt_rooms:
+                    if all((r_cand, day, h) not in room_slot_occupied for h in hours):
+                        assigned_room_map[aid] = r_cand
+                        for h in hours:
+                            room_slot_occupied[(r_cand, day, h)] = (teacher, subj, item["students"])
+                        break
+            elif any(k in subj for k in ["الفيزياء", "PC", "الكيمياء"]) and pc_rooms:
+                for r_cand in pc_rooms:
+                    if all((r_cand, day, h) not in room_slot_occupied for h in hours):
+                        assigned_room_map[aid] = r_cand
+                        for h in hours:
+                            room_slot_occupied[(r_cand, day, h)] = (teacher, subj, item["students"])
+                        break
+            elif any(k in subj for k in ["معلوميات", "إعلاميات", "INFO"]) and it_rooms:
+                for r_cand in it_rooms:
+                    if all((r_cand, day, h) not in room_slot_occupied for h in hours):
+                        assigned_room_map[aid] = r_cand
+                        for h in hours:
+                            room_slot_occupied[(r_cand, day, h)] = (teacher, subj, item["students"])
+                        break
+
+        # PASS 1C: Primary Session Anchor Teachers (توطين القاعات)
+        # Morning anchor teacher in morning slot, or Afternoon anchor teacher in afternoon slot
+        for item in scheduled_activities:
+            aid = item["id"]
+            if aid in assigned_room_map:
+                continue
+            teacher = item["teacher"]
+            day = item["day"]
+            hours = item["hours"]
+            is_m = item["is_morning"]
+            home_room = m_teacher_to_room.get(teacher) if is_m else e_teacher_to_room.get(teacher)
+            if home_room and all((home_room, day, h) not in room_slot_occupied for h in hours):
+                assigned_room_map[aid] = home_room
+                for h in hours:
+                    room_slot_occupied[(home_room, day, h)] = (teacher, item["subject"], item["students"])
+
+        # PASS 1D: Opposite Session Anchor Teachers (teaching across the opposite half-day)
+        # If their home room is not occupied by the counterpart teacher at this slot, they keep their home room!
+        for item in scheduled_activities:
+            aid = item["id"]
+            if aid in assigned_room_map:
+                continue
+            teacher = item["teacher"]
+            day = item["day"]
+            hours = item["hours"]
+            is_m = item["is_morning"]
+            home_room = e_teacher_to_room.get(teacher) if is_m else m_teacher_to_room.get(teacher)
+            if home_room and all((home_room, day, h) not in room_slot_occupied for h in hours):
+                assigned_room_map[aid] = home_room
+                for h in hours:
+                    room_slot_occupied[(home_room, day, h)] = (teacher, item["subject"], item["students"])
+
+        # PASS 2: Floating / Unassigned Teachers and Overflow
+        for item in scheduled_activities:
+            aid = item["id"]
+            if aid in assigned_room_map:
+                continue
+            teacher = item["teacher"]
+            subj = item["subject"]
+            day = item["day"]
+            hours = item["hours"]
+            fet_room = item["fet_room"]
 
             chosen_room = None
-            valid_fet_room = False
-            if fet_room and all((fet_room, day, h) not in room_slot_occupied for h in occupied_hours):
-                if subject in custom_rooms_by_subject:
-                    c_rooms = custom_rooms_by_subject[subject]
-                    if fet_room in c_rooms:
-                        valid_fet_room = True
-                    elif fet_room in gen_rooms:
-                        # Allow gen_room from FET ONLY IF all dedicated rooms are full at this slot
-                        has_free_custom = any(all((cr, day, h) not in room_slot_occupied for h in occupied_hours) for cr in c_rooms)
-                        if not has_free_custom:
-                            valid_fet_room = True
-                elif fet_room in all_custom_room_names:
-                    # Reject dedicated custom room assigned to a non-matching general subject (e.g. Math in S-GH)
-                    valid_fet_room = False
-                else:
-                    valid_fet_room = True
-
-            if valid_fet_room:
+            if fet_room and all((fet_room, day, h) not in room_slot_occupied for h in hours):
                 chosen_room = fet_room
             else:
-                for r_cand in pool:
-                    if all((r_cand, day, h) not in room_slot_occupied for h in occupied_hours):
+                for r_cand in gen_rooms:
+                    if all((r_cand, day, h) not in room_slot_occupied for h in hours):
                         chosen_room = r_cand
                         break
                 if not chosen_room:
-                    for r_cand in gen_rooms:
-                        if all((r_cand, day, h) not in room_slot_occupied for h in occupied_hours):
-                            chosen_room = r_cand
-                            break
-                if not chosen_room:
-                    chosen_room = pool[0] if pool else "قاعة عامة"
+                    chosen_room = gen_rooms[0] if gen_rooms else "قاعة عامة"
 
-            for h in occupied_hours:
-                room_slot_occupied[(chosen_room, day, h)] = (teacher, subject, students)
+            assigned_room_map[aid] = chosen_room
+            for h in hours:
+                room_slot_occupied[(chosen_room, day, h)] = (teacher, subj, item["students"])
 
-            room = chosen_room
+        # Now build timetables and all_activities_list with guaranteed assigned rooms
+        for item in scheduled_activities:
+            aid = item["id"]
+            teacher = item["teacher"]
+            subject = item["subject"]
+            students = item["students"]
+            dur = item["duration"]
+            day = item["day"]
+            start_hour = item["start_hour"]
+            occupied_hours = item["hours"]
+            room = assigned_room_map.get(aid, "قاعة عامة")
 
             all_activities_list.append({
                 "id": aid,

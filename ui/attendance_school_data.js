@@ -1,139 +1,1484 @@
 window.INITIAL_SCHOOL_DATA = {
-  "updatedAt": 1794068744469,
+  "updatedAt": 1794236779280,
   "attendanceSessions": {
-    "2026-11-07_1_TCLSHF-2": {
-      "dayOfWeek": 6,
-      "lateStudentIds": [
-        "TCLSHF-2_J178006002",
-        "TCLSHF-2_J162007456"
-      ],
-      "absentCount": 0,
-      "className": "TCLSHF-2",
-      "teacherName": "رقية أجديك",
-      "absentStudentIds": [],
-      "updatedAt": 1794062583831,
-      "status": "LATE",
-      "totalStudents": 34,
-      "classCode": "TCLSHF-2",
-      "sessionId": "2026-11-07_1_TCLSHF-2",
-      "teacherId": "T04",
-      "presentCount": 34,
-      "slotIndex": 1,
-      "scheduledEnd": "09:00",
-      "subject": "اللغة الفرنسية",
-      "attendanceMap": {
-        "TCLSHF-2_J162007465": "P",
-        "TCLSHF-2_J174010919": "P",
-        "TCLSHF-2_J175004549": "P",
-        "TCLSHF-2_J171004551": "P",
-        "TCLSHF-2_D159038798": "P",
-        "TCLSHF-2_J175010874": "P",
-        "TCLSHF-2_J172005211": "P",
-        "TCLSHF-2_E154032516": "P",
-        "TCLSHF-2_J176005201": "P",
-        "TCLSHF-2_J167006954": "P",
-        "TCLSHF-2_J162008091": "P",
-        "TCLSHF-2_J168005720": "P",
-        "TCLSHF-2_D151065051": "P",
-        "TCLSHF-2_J178004319": "P",
-        "TCLSHF-2_D150057955": "P",
-        "TCLSHF-2_D158064008": "P",
-        "TCLSHF-2_J173006170": "P",
-        "TCLSHF-2_J178005007": "P",
-        "TCLSHF-2_J160007195": "P",
-        "TCLSHF-2_D156011833": "P",
-        "TCLSHF-2_J165005210": "P",
-        "TCLSHF-2_J176005196": "P",
-        "TCLSHF-2_J178005792": "P",
-        "TCLSHF-2_J170006105": "P",
-        "TCLSHF-2_J166006824": "P",
-        "TCLSHF-2_J176003876": "P",
-        "TCLSHF-2_J178006002": "L",
-        "TCLSHF-2_D150064983": "P",
-        "TCLSHF-2_D148130196": "P",
-        "TCLSHF-2_J171006172": "P",
-        "TCLSHF-2_A161050685": "P",
-        "TCLSHF-2_J177004744": "P",
-        "TCLSHF-2_J162007456": "L",
-        "TCLSHF-2_J178004321": "P"
-      },
+    "2026-11-07_4_2BACSPF-1": {
       "date": "2026-11-07",
-      "scheduledStart": "08:00"
+      "absentCount": 0,
+      "teacherId": "T21",
+      "updatedAt": 1794172211485,
+      "className": "2BACSPF-1",
+      "totalStudents": 20,
+      "teacherName": "مليكة أمين",
+      "classCode": "2BACSPF-1",
+      "slotIndex": 4,
+      "scheduledEnd": "12:00",
+      "scheduledStart": "11:00",
+      "absentStudentIds": [],
+      "sessionId": "2026-11-07_4_2BACSPF-1",
+      "status": "LATE",
+      "dayOfWeek": 6,
+      "lateStudentIds": [],
+      "subject": "التربية الإسلامية",
+      "attendanceMap": {
+        "2BACSPF-1_D159058754": "P",
+        "2BACSPF-1_D150007081": "P",
+        "2BACSPF-1_D150007069": "P",
+        "2BACSPF-1_D141141015": "P",
+        "2BACSPF-1_D158011855": "P",
+        "2BACSPF-1_D157011847": "P",
+        "2BACSPF-1_D158065049": "P",
+        "2BACSPF-1_D144123859": "P",
+        "2BACSPF-1_D154054353": "P",
+        "2BACSPF-1_D155064961": "P",
+        "2BACSPF-1_D148110831": "P",
+        "2BACSPF-1_D154054355": "P",
+        "2BACSPF-1_D159065062": "P",
+        "2BACSPF-1_D159051025": "P",
+        "2BACSPF-1_D149124105": "P",
+        "2BACSPF-1_D147104058": "P",
+        "2BACSPF-1_D148124155": "P",
+        "2BACSPF-1_D153007073": "P",
+        "2BACSPF-1_D156007080": "P",
+        "2BACSPF-1_D150037437": "P"
+      },
+      "presentCount": 20
+    },
+    "2026-11-07_1_TCLSHF-1": {
+      "className": "TCLSHF-1",
+      "slotIndex": 1,
+      "classCode": "TCLSHF-1",
+      "absentCount": 0,
+      "attendanceMap": {
+        "TCLSHF-1_J178005009": "P",
+        "TCLSHF-1_J173006623": "P",
+        "TCLSHF-1_J160008006": "P",
+        "TCLSHF-1_J172005215": "P",
+        "TCLSHF-1_J172011015": "P",
+        "TCLSHF-1_J178005631": "P",
+        "TCLSHF-1_J175010872": "P",
+        "TCLSHF-1_J175004546": "P",
+        "TCLSHF-1_J168005671": "P",
+        "TCLSHF-1_J177005208": "P",
+        "TCLSHF-1_D150064979": "P",
+        "TCLSHF-1_D154054357": "P",
+        "TCLSHF-1_D158058758": "P",
+        "TCLSHF-1_J174004937": "P",
+        "TCLSHF-1_J176005194": "P",
+        "TCLSHF-1_J172005213": "P",
+        "TCLSHF-1_J168006422": "P",
+        "TCLSHF-1_J166007455": "P",
+        "TCLSHF-1_J171004550": "P",
+        "TCLSHF-1_J177005210": "P",
+        "TCLSHF-1_J166006826": "P",
+        "TCLSHF-1_J173005014": "P",
+        "TCLSHF-1_D157064962": "P",
+        "TCLSHF-1_J178005946": "P",
+        "TCLSHF-1_J177004746": "P",
+        "TCLSHF-1_F175027013": "P",
+        "TCLSHF-1_J161006425": "P",
+        "TCLSHF-1_D153011835": "P",
+        "TCLSHF-1_D158041975": "P",
+        "TCLSHF-1_J161006427": "P",
+        "TCLSHF-1_J163008004": "P",
+        "TCLSHF-1_J162008092": "P",
+        "TCLSHF-1_J175004429": "P",
+        "TCLSHF-1_J176006106": "P",
+        "TCLSHF-1_R161032495": "P",
+        "TCLSHF-1_J177004742": "P"
+      },
+      "updatedAt": 1794173955250,
+      "teacherId": "T21",
+      "presentCount": 36,
+      "teacherName": "مليكة أمين",
+      "dayOfWeek": 6,
+      "totalStudents": 36,
+      "scheduledStart": "08:00",
+      "status": "LATE",
+      "subject": "التربية الإسلامية",
+      "lateStudentIds": [],
+      "scheduledEnd": "09:00",
+      "date": "2026-11-07",
+      "absentStudentIds": [],
+      "sessionId": "2026-11-07_1_TCLSHF-1"
+    },
+    "2026-11-07_2_1BACSEF-1": {
+      "teacherId": "T21",
+      "updatedAt": 1794173951659,
+      "totalStudents": 18,
+      "scheduledEnd": "10:00",
+      "className": "1BACSEF-1",
+      "status": "LATE",
+      "subject": "التربية الإسلامية",
+      "classCode": "1BACSEF-1",
+      "slotIndex": 2,
+      "date": "2026-11-07",
+      "teacherName": "مليكة أمين",
+      "lateStudentIds": [],
+      "attendanceMap": {
+        "1BACSEF-1_J168008002": "P",
+        "1BACSEF-1_J165005012": "P",
+        "1BACSEF-1_J166001949": "P",
+        "1BACSEF-1_D153064019": "P",
+        "1BACSEF-1_D146123888": "P",
+        "1BACSEF-1_D146114195": "P",
+        "1BACSEF-1_J166003621": "P",
+        "1BACSEF-1_J163008019": "P",
+        "1BACSEF-1_J165005672": "P",
+        "1BACSEF-1_J166006825": "P",
+        "1BACSEF-1_J169007199": "P",
+        "1BACSEF-1_J165005185": "P",
+        "1BACSEF-1_J166003482": "P",
+        "1BACSEF-1_J160008008": "P",
+        "1BACSEF-1_J161005714": "P",
+        "1BACSEF-1_J166005713": "P",
+        "1BACSEF-1_D155054390": "P",
+        "1BACSEF-1_J165007469": "P"
+      },
+      "absentStudentIds": [],
+      "sessionId": "2026-11-07_2_1BACSEF-1",
+      "presentCount": 18,
+      "scheduledStart": "09:00",
+      "dayOfWeek": 6,
+      "absentCount": 0
+    },
+    "2026-11-07_3_2BACLF-1": {
+      "attendanceMap": {
+        "2BACLF-1_D157011828": "P",
+        "2BACLF-1_D147104060": "P",
+        "2BACLF-1_D152064985": "P",
+        "2BACLF-1_D148114215": "P",
+        "2BACLF-1_D132757875": "P",
+        "2BACLF-1_D157011849": "P",
+        "2BACLF-1_D134700855": "P",
+        "2BACLF-1_D157043008": "P",
+        "2BACLF-1_D151065067": "P",
+        "2BACLF-1_D148105856": "P",
+        "2BACLF-1_D157011846": "P",
+        "2BACLF-1_D157011844": "P",
+        "2BACLF-1_D140130204": "P",
+        "2BACLF-1_D158064007": "P",
+        "2BACLF-1_D130008617": "P",
+        "2BACLF-1_D158065048": "P",
+        "2BACLF-1_D158011859": "P",
+        "2BACLF-1_D144123857": "P",
+        "2BACLF-1_D155058022": "P",
+        "2BACLF-1_D140096088": "P",
+        "2BACLF-1_D150064982": "P",
+        "2BACLF-1_D146105850": "P",
+        "2BACLF-1_D147104059": "P",
+        "2BACLF-1_D152065052": "P",
+        "2BACLF-1_D153038546": "P",
+        "2BACLF-1_D151037441": "P",
+        "2BACLF-1_D149062727": "P",
+        "2BACLF-1_D156007076": "P",
+        "2BACLF-1_D156007087": "P",
+        "2BACLF-1_D136729742": "P",
+        "2BACLF-1_D142104033": "P",
+        "2BACLF-1_D135830691": "P",
+        "2BACLF-1_D142109710": "P",
+        "2BACLF-1_D155054391": "P",
+        "2BACLF-1_D151037444": "P"
+      },
+      "sessionId": "2026-11-07_3_2BACLF-1",
+      "date": "2026-11-07",
+      "scheduledEnd": "11:00",
+      "status": "LATE",
+      "dayOfWeek": 6,
+      "absentCount": 0,
+      "subject": "التربية الإسلامية",
+      "lateStudentIds": [],
+      "teacherId": "T21",
+      "updatedAt": 1794173942657,
+      "totalStudents": 35,
+      "classCode": "2BACLF-1",
+      "slotIndex": 3,
+      "absentStudentIds": [],
+      "scheduledStart": "10:00",
+      "presentCount": 35,
+      "teacherName": "مليكة أمين",
+      "className": "2BACLF-1"
+    },
+    "2026-11-07_2_2BACLF-1": {
+      "sessionId": "2026-11-07_2_2BACLF-1",
+      "date": "2026-11-07",
+      "slotIndex": 2,
+      "classCode": "2BACLF-1",
+      "teacherId": "ADMIN",
+      "teacherName": "الحراسة العامة / إدارة المؤسسة",
+      "subject": "متابعة الحراسة العامة",
+      "status": "ON_TIME",
+      "submittedDate": "2026-11-07",
+      "submittedAt": "09:07",
+      "totalStudents": 0,
+      "presentCount": 0,
+      "absentCount": 3,
+      "lateCount": 0,
+      "absentStudentIds": [
+        "2BACLF-1_D153038546",
+        "2BACLF-1_D151037441"
+      ],
+      "lateStudentIds": [],
+      "attendanceMap": {
+        "2BACLF-1_D153038546": "A",
+        "D153038546": "A",
+        "2BACLF-1_D151037441": "A",
+        "D151037441": "A"
+      },
+      "updatedAtTs": 1794216344653
+    },
+    "2026-11-07_4_2BACLF-1": {
+      "sessionId": "2026-11-07_4_2BACLF-1",
+      "date": "2026-11-07",
+      "slotIndex": 4,
+      "classCode": "2BACLF-1",
+      "teacherId": "ADMIN",
+      "teacherName": "الحراسة العامة / إدارة المؤسسة",
+      "subject": "متابعة الحراسة العامة",
+      "status": "ON_TIME",
+      "submittedDate": "2026-11-07",
+      "submittedAt": "09:07",
+      "totalStudents": 0,
+      "presentCount": 0,
+      "absentCount": 3,
+      "lateCount": 0,
+      "absentStudentIds": [
+        "2BACLF-1_D153038546",
+        "2BACLF-1_D151037441"
+      ],
+      "lateStudentIds": [],
+      "attendanceMap": {
+        "2BACLF-1_D153038546": "A",
+        "D153038546": "A",
+        "2BACLF-1_D151037441": "A",
+        "D151037441": "A"
+      },
+      "updatedAtTs": 1794216344653
+    },
+    "2026-11-09_2_2BACLF-1": {
+      "dayOfWeek": 1,
+      "lateStudentIds": [],
+      "className": "2BACLF-1",
+      "slotIndex": 2,
+      "totalStudents": 35,
+      "updatedAt": 1794216933247,
+      "absentStudentIds": [],
+      "classCode": "2BACLF-1",
+      "teacherName": "الصديق بوعلي",
+      "scheduledEnd": "10:00",
+      "attendanceMap": {
+        "2BACLF-1_D153038546": "P",
+        "2BACLF-1_D157011846": "P",
+        "2BACLF-1_D155054391": "P",
+        "2BACLF-1_D158064007": "P",
+        "2BACLF-1_D158065048": "P",
+        "2BACLF-1_D156007076": "P",
+        "2BACLF-1_D146105850": "P",
+        "2BACLF-1_D150064982": "P",
+        "2BACLF-1_D158011859": "P",
+        "2BACLF-1_D151065067": "P",
+        "2BACLF-1_D144123857": "P",
+        "2BACLF-1_D135830691": "P",
+        "2BACLF-1_D148105856": "P",
+        "2BACLF-1_D140096088": "P",
+        "2BACLF-1_D157011844": "P",
+        "2BACLF-1_D132757875": "P",
+        "2BACLF-1_D130008617": "P",
+        "2BACLF-1_D148114215": "P",
+        "2BACLF-1_D134700855": "P",
+        "2BACLF-1_D151037441": "P",
+        "2BACLF-1_D149062727": "P",
+        "2BACLF-1_D152064985": "P",
+        "2BACLF-1_D157043008": "P",
+        "2BACLF-1_D140130204": "P",
+        "2BACLF-1_D142104033": "P",
+        "2BACLF-1_D147104059": "P",
+        "2BACLF-1_D156007087": "P",
+        "2BACLF-1_D155058022": "P",
+        "2BACLF-1_D136729742": "P",
+        "2BACLF-1_D152065052": "P",
+        "2BACLF-1_D157011828": "P",
+        "2BACLF-1_D151037444": "P",
+        "2BACLF-1_D157011849": "P",
+        "2BACLF-1_D142109710": "P",
+        "2BACLF-1_D147104060": "P"
+      },
+      "subject": "اللغة الإنجليزية",
+      "presentCount": 35,
+      "sessionId": "2026-11-09_2_2BACLF-1",
+      "date": "2026-11-09",
+      "teacherId": "T09",
+      "status": "ON_TIME",
+      "absentCount": 0,
+      "scheduledStart": "09:00"
+    },
+    "2026-11-09_3_2BACLF-1": {
+      "sessionId": "2026-11-09_3_2BACLF-1",
+      "date": "2026-11-09",
+      "slotIndex": 3,
+      "classCode": "2BACLF-1",
+      "teacherId": "ADMIN",
+      "teacherName": "الحراسة العامة / إدارة المؤسسة",
+      "subject": "متابعة الحراسة العامة",
+      "status": "ON_TIME",
+      "submittedDate": "2026-11-09",
+      "submittedAt": "09:25",
+      "totalStudents": 0,
+      "presentCount": 2,
+      "absentCount": 0,
+      "lateCount": 0,
+      "absentStudentIds": [],
+      "lateStudentIds": [],
+      "attendanceMap": {
+        "2BACLF-1_D151037441": "P",
+        "D151037441": "P"
+      },
+      "updatedAtTs": 1794216308346,
+      "updatedAt": 1794216326008
+    },
+    "2026-11-09_4_2BACLF-1": {
+      "sessionId": "2026-11-09_4_2BACLF-1",
+      "date": "2026-11-09",
+      "slotIndex": 4,
+      "classCode": "2BACLF-1",
+      "teacherId": "ADMIN",
+      "teacherName": "الحراسة العامة / إدارة المؤسسة",
+      "subject": "متابعة الحراسة العامة",
+      "status": "ON_TIME",
+      "submittedDate": "2026-11-09",
+      "submittedAt": "09:25",
+      "totalStudents": 0,
+      "presentCount": 2,
+      "absentCount": 0,
+      "lateCount": 0,
+      "absentStudentIds": [],
+      "lateStudentIds": [],
+      "attendanceMap": {
+        "2BACLF-1_D151037441": "P",
+        "D151037441": "P"
+      },
+      "updatedAtTs": 1794216308346,
+      "updatedAt": 1794216330044
+    },
+    "2026-10-30_3_TCLSHF-1": {
+      "sessionId": "2026-10-30_3_TCLSHF-1",
+      "date": "2026-10-30",
+      "slotIndex": 3,
+      "classCode": "TCLSHF-1",
+      "teacherId": "ADMIN",
+      "teacherName": "الحراسة العامة / إدارة المؤسسة",
+      "subject": "متابعة الحراسة العامة",
+      "status": "ON_TIME",
+      "submittedDate": "2026-10-30",
+      "submittedAt": "13:38",
+      "totalStudents": 0,
+      "presentCount": 0,
+      "absentCount": 2,
+      "lateCount": 0,
+      "absentStudentIds": [
+        "TCLSHF-1_J172005213"
+      ],
+      "lateStudentIds": [],
+      "attendanceMap": {
+        "TCLSHF-1_J172005213": "A",
+        "J172005213": "A"
+      },
+      "updatedAtTs": 1794231538295
+    },
+    "2026-10-30_4_TCLSHF-1": {
+      "sessionId": "2026-10-30_4_TCLSHF-1",
+      "date": "2026-10-30",
+      "slotIndex": 4,
+      "classCode": "TCLSHF-1",
+      "teacherId": "ADMIN",
+      "teacherName": "الحراسة العامة / إدارة المؤسسة",
+      "subject": "متابعة الحراسة العامة",
+      "status": "ON_TIME",
+      "submittedDate": "2026-10-30",
+      "submittedAt": "13:38",
+      "totalStudents": 0,
+      "presentCount": 0,
+      "absentCount": 2,
+      "lateCount": 0,
+      "absentStudentIds": [
+        "TCLSHF-1_J172005213"
+      ],
+      "lateStudentIds": [],
+      "attendanceMap": {
+        "TCLSHF-1_J172005213": "A",
+        "J172005213": "A"
+      },
+      "updatedAtTs": 1794231538295
+    },
+    "2026-11-02_1_TCLSHF-1": {
+      "sessionId": "2026-11-02_1_TCLSHF-1",
+      "date": "2026-11-02",
+      "slotIndex": 1,
+      "classCode": "TCLSHF-1",
+      "teacherId": "ADMIN",
+      "teacherName": "الحراسة العامة / إدارة المؤسسة",
+      "subject": "متابعة الحراسة العامة",
+      "status": "ON_TIME",
+      "submittedDate": "2026-11-02",
+      "submittedAt": "13:39",
+      "totalStudents": 0,
+      "presentCount": 0,
+      "absentCount": 2,
+      "lateCount": 0,
+      "absentStudentIds": [
+        "TCLSHF-1_J172005213"
+      ],
+      "lateStudentIds": [],
+      "attendanceMap": {
+        "TCLSHF-1_J172005213": "A",
+        "J172005213": "A"
+      },
+      "updatedAtTs": 1794231563309
+    },
+    "2026-11-02_2_TCLSHF-1": {
+      "sessionId": "2026-11-02_2_TCLSHF-1",
+      "date": "2026-11-02",
+      "slotIndex": 2,
+      "classCode": "TCLSHF-1",
+      "teacherId": "ADMIN",
+      "teacherName": "الحراسة العامة / إدارة المؤسسة",
+      "subject": "متابعة الحراسة العامة",
+      "status": "ON_TIME",
+      "submittedDate": "2026-11-02",
+      "submittedAt": "13:39",
+      "totalStudents": 0,
+      "presentCount": 0,
+      "absentCount": 2,
+      "lateCount": 0,
+      "absentStudentIds": [
+        "TCLSHF-1_J172005213"
+      ],
+      "lateStudentIds": [],
+      "attendanceMap": {
+        "TCLSHF-1_J172005213": "A",
+        "J172005213": "A"
+      },
+      "updatedAtTs": 1794231563309
+    },
+    "2026-11-03_1_TCLSHF-1": {
+      "sessionId": "2026-11-03_1_TCLSHF-1",
+      "date": "2026-11-03",
+      "slotIndex": 1,
+      "classCode": "TCLSHF-1",
+      "teacherId": "ADMIN",
+      "teacherName": "الحراسة العامة / إدارة المؤسسة",
+      "subject": "متابعة الحراسة العامة",
+      "status": "ON_TIME",
+      "submittedDate": "2026-11-03",
+      "submittedAt": "13:39",
+      "totalStudents": 0,
+      "presentCount": 0,
+      "absentCount": 2,
+      "lateCount": 0,
+      "absentStudentIds": [
+        "TCLSHF-1_J172005213"
+      ],
+      "lateStudentIds": [],
+      "attendanceMap": {
+        "TCLSHF-1_J172005213": "A",
+        "J172005213": "A"
+      },
+      "updatedAtTs": 1794231570200
+    },
+    "2026-11-03_2_TCLSHF-1": {
+      "sessionId": "2026-11-03_2_TCLSHF-1",
+      "date": "2026-11-03",
+      "slotIndex": 2,
+      "classCode": "TCLSHF-1",
+      "teacherId": "ADMIN",
+      "teacherName": "الحراسة العامة / إدارة المؤسسة",
+      "subject": "متابعة الحراسة العامة",
+      "status": "ON_TIME",
+      "submittedDate": "2026-11-03",
+      "submittedAt": "13:39",
+      "totalStudents": 0,
+      "presentCount": 0,
+      "absentCount": 2,
+      "lateCount": 0,
+      "absentStudentIds": [
+        "TCLSHF-1_J172005213"
+      ],
+      "lateStudentIds": [],
+      "attendanceMap": {
+        "TCLSHF-1_J172005213": "A",
+        "J172005213": "A"
+      },
+      "updatedAtTs": 1794231570200
+    },
+    "2026-11-04_1_TCLSHF-1": {
+      "sessionId": "2026-11-04_1_TCLSHF-1",
+      "date": "2026-11-04",
+      "slotIndex": 1,
+      "classCode": "TCLSHF-1",
+      "teacherId": "ADMIN",
+      "teacherName": "الحراسة العامة / إدارة المؤسسة",
+      "subject": "متابعة الحراسة العامة",
+      "status": "ON_TIME",
+      "submittedDate": "2026-11-04",
+      "submittedAt": "13:39",
+      "totalStudents": 0,
+      "presentCount": 0,
+      "absentCount": 2,
+      "lateCount": 0,
+      "absentStudentIds": [
+        "TCLSHF-1_J172005213"
+      ],
+      "lateStudentIds": [],
+      "attendanceMap": {
+        "TCLSHF-1_J172005213": "A",
+        "J172005213": "A"
+      },
+      "updatedAtTs": 1794231584890
+    },
+    "2026-11-04_2_TCLSHF-1": {
+      "sessionId": "2026-11-04_2_TCLSHF-1",
+      "date": "2026-11-04",
+      "slotIndex": 2,
+      "classCode": "TCLSHF-1",
+      "teacherId": "ADMIN",
+      "teacherName": "الحراسة العامة / إدارة المؤسسة",
+      "subject": "متابعة الحراسة العامة",
+      "status": "ON_TIME",
+      "submittedDate": "2026-11-04",
+      "submittedAt": "13:39",
+      "totalStudents": 0,
+      "presentCount": 0,
+      "absentCount": 2,
+      "lateCount": 0,
+      "absentStudentIds": [
+        "TCLSHF-1_J172005213"
+      ],
+      "lateStudentIds": [],
+      "attendanceMap": {
+        "TCLSHF-1_J172005213": "A",
+        "J172005213": "A"
+      },
+      "updatedAtTs": 1794231584890
+    },
+    "2026-11-04_3_TCLSHF-1": {
+      "sessionId": "2026-11-04_3_TCLSHF-1",
+      "date": "2026-11-04",
+      "slotIndex": 3,
+      "classCode": "TCLSHF-1",
+      "teacherId": "ADMIN",
+      "teacherName": "الحراسة العامة / إدارة المؤسسة",
+      "subject": "متابعة الحراسة العامة",
+      "status": "ON_TIME",
+      "submittedDate": "2026-11-04",
+      "submittedAt": "13:39",
+      "totalStudents": 0,
+      "presentCount": 0,
+      "absentCount": 2,
+      "lateCount": 0,
+      "absentStudentIds": [
+        "TCLSHF-1_J172005213"
+      ],
+      "lateStudentIds": [],
+      "attendanceMap": {
+        "TCLSHF-1_J172005213": "A",
+        "J172005213": "A"
+      },
+      "updatedAtTs": 1794231584890
+    },
+    "2026-11-04_4_TCLSHF-1": {
+      "sessionId": "2026-11-04_4_TCLSHF-1",
+      "date": "2026-11-04",
+      "slotIndex": 4,
+      "classCode": "TCLSHF-1",
+      "teacherId": "ADMIN",
+      "teacherName": "الحراسة العامة / إدارة المؤسسة",
+      "subject": "متابعة الحراسة العامة",
+      "status": "ON_TIME",
+      "submittedDate": "2026-11-04",
+      "submittedAt": "13:39",
+      "totalStudents": 0,
+      "presentCount": 0,
+      "absentCount": 2,
+      "lateCount": 0,
+      "absentStudentIds": [
+        "TCLSHF-1_J172005213"
+      ],
+      "lateStudentIds": [],
+      "attendanceMap": {
+        "TCLSHF-1_J172005213": "A",
+        "J172005213": "A"
+      },
+      "updatedAtTs": 1794231584890
+    },
+    "2026-11-04_5_TCLSHF-1": {
+      "sessionId": "2026-11-04_5_TCLSHF-1",
+      "date": "2026-11-04",
+      "slotIndex": 5,
+      "classCode": "TCLSHF-1",
+      "teacherId": "ADMIN",
+      "teacherName": "الحراسة العامة / إدارة المؤسسة",
+      "subject": "متابعة الحراسة العامة",
+      "status": "ON_TIME",
+      "submittedDate": "2026-11-04",
+      "submittedAt": "13:39",
+      "totalStudents": 0,
+      "presentCount": 0,
+      "absentCount": 2,
+      "lateCount": 0,
+      "absentStudentIds": [
+        "TCLSHF-1_J172005213"
+      ],
+      "lateStudentIds": [],
+      "attendanceMap": {
+        "TCLSHF-1_J172005213": "A",
+        "J172005213": "A"
+      },
+      "updatedAtTs": 1794231584890
+    },
+    "2026-11-04_6_TCLSHF-1": {
+      "sessionId": "2026-11-04_6_TCLSHF-1",
+      "date": "2026-11-04",
+      "slotIndex": 6,
+      "classCode": "TCLSHF-1",
+      "teacherId": "ADMIN",
+      "teacherName": "الحراسة العامة / إدارة المؤسسة",
+      "subject": "متابعة الحراسة العامة",
+      "status": "ON_TIME",
+      "submittedDate": "2026-11-04",
+      "submittedAt": "13:39",
+      "totalStudents": 0,
+      "presentCount": 0,
+      "absentCount": 2,
+      "lateCount": 0,
+      "absentStudentIds": [
+        "TCLSHF-1_J172005213"
+      ],
+      "lateStudentIds": [],
+      "attendanceMap": {
+        "TCLSHF-1_J172005213": "A",
+        "J172005213": "A"
+      },
+      "updatedAtTs": 1794231584890
+    },
+    "2026-11-05_3_TCLSHF-1": {
+      "sessionId": "2026-11-05_3_TCLSHF-1",
+      "date": "2026-11-05",
+      "slotIndex": 3,
+      "classCode": "TCLSHF-1",
+      "teacherId": "ADMIN",
+      "teacherName": "الحراسة العامة / إدارة المؤسسة",
+      "subject": "متابعة الحراسة العامة",
+      "status": "ON_TIME",
+      "submittedDate": "2026-11-05",
+      "submittedAt": "13:40",
+      "totalStudents": 0,
+      "presentCount": 0,
+      "absentCount": 2,
+      "lateCount": 0,
+      "absentStudentIds": [
+        "TCLSHF-1_J172005213"
+      ],
+      "lateStudentIds": [],
+      "attendanceMap": {
+        "TCLSHF-1_J172005213": "A",
+        "J172005213": "A"
+      },
+      "updatedAtTs": 1794231615077
+    },
+    "2026-11-05_4_TCLSHF-1": {
+      "sessionId": "2026-11-05_4_TCLSHF-1",
+      "date": "2026-11-05",
+      "slotIndex": 4,
+      "classCode": "TCLSHF-1",
+      "teacherId": "ADMIN",
+      "teacherName": "الحراسة العامة / إدارة المؤسسة",
+      "subject": "متابعة الحراسة العامة",
+      "status": "ON_TIME",
+      "submittedDate": "2026-11-05",
+      "submittedAt": "13:40",
+      "totalStudents": 0,
+      "presentCount": 0,
+      "absentCount": 2,
+      "lateCount": 0,
+      "absentStudentIds": [
+        "TCLSHF-1_J172005213"
+      ],
+      "lateStudentIds": [],
+      "attendanceMap": {
+        "TCLSHF-1_J172005213": "A",
+        "J172005213": "A"
+      },
+      "updatedAtTs": 1794231615077
+    },
+    "2026-11-05_6_TCLSHF-1": {
+      "sessionId": "2026-11-05_6_TCLSHF-1",
+      "date": "2026-11-05",
+      "slotIndex": 6,
+      "classCode": "TCLSHF-1",
+      "teacherId": "ADMIN",
+      "teacherName": "الحراسة العامة / إدارة المؤسسة",
+      "subject": "متابعة الحراسة العامة",
+      "status": "ON_TIME",
+      "submittedDate": "2026-11-05",
+      "submittedAt": "13:40",
+      "totalStudents": 0,
+      "presentCount": 0,
+      "absentCount": 2,
+      "lateCount": 0,
+      "absentStudentIds": [
+        "TCLSHF-1_J172005213"
+      ],
+      "lateStudentIds": [],
+      "attendanceMap": {
+        "TCLSHF-1_J172005213": "A",
+        "J172005213": "A"
+      },
+      "updatedAtTs": 1794231615077
+    },
+    "2026-11-05_7_TCLSHF-1": {
+      "sessionId": "2026-11-05_7_TCLSHF-1",
+      "date": "2026-11-05",
+      "slotIndex": 7,
+      "classCode": "TCLSHF-1",
+      "teacherId": "ADMIN",
+      "teacherName": "الحراسة العامة / إدارة المؤسسة",
+      "subject": "متابعة الحراسة العامة",
+      "status": "ON_TIME",
+      "submittedDate": "2026-11-05",
+      "submittedAt": "13:40",
+      "totalStudents": 0,
+      "presentCount": 0,
+      "absentCount": 2,
+      "lateCount": 0,
+      "absentStudentIds": [
+        "TCLSHF-1_J172005213"
+      ],
+      "lateStudentIds": [],
+      "attendanceMap": {
+        "TCLSHF-1_J172005213": "A",
+        "J172005213": "A"
+      },
+      "updatedAtTs": 1794231615077
+    },
+    "2026-11-05_8_TCLSHF-1": {
+      "sessionId": "2026-11-05_8_TCLSHF-1",
+      "date": "2026-11-05",
+      "slotIndex": 8,
+      "classCode": "TCLSHF-1",
+      "teacherId": "ADMIN",
+      "teacherName": "الحراسة العامة / إدارة المؤسسة",
+      "subject": "متابعة الحراسة العامة",
+      "status": "ON_TIME",
+      "submittedDate": "2026-11-05",
+      "submittedAt": "13:40",
+      "totalStudents": 0,
+      "presentCount": 0,
+      "absentCount": 2,
+      "lateCount": 0,
+      "absentStudentIds": [
+        "TCLSHF-1_J172005213"
+      ],
+      "lateStudentIds": [],
+      "attendanceMap": {
+        "TCLSHF-1_J172005213": "A",
+        "J172005213": "A"
+      },
+      "updatedAtTs": 1794231615077
+    },
+    "2026-11-06_3_TCLSHF-1": {
+      "sessionId": "2026-11-06_3_TCLSHF-1",
+      "date": "2026-11-06",
+      "slotIndex": 3,
+      "classCode": "TCLSHF-1",
+      "teacherId": "ADMIN",
+      "teacherName": "الحراسة العامة / إدارة المؤسسة",
+      "subject": "متابعة الحراسة العامة",
+      "status": "ON_TIME",
+      "submittedDate": "2026-11-06",
+      "submittedAt": "13:40",
+      "totalStudents": 0,
+      "presentCount": 0,
+      "absentCount": 2,
+      "lateCount": 0,
+      "absentStudentIds": [
+        "TCLSHF-1_J172005213"
+      ],
+      "lateStudentIds": [],
+      "attendanceMap": {
+        "TCLSHF-1_J172005213": "A",
+        "J172005213": "A"
+      },
+      "updatedAtTs": 1794231628205
+    },
+    "2026-11-06_4_TCLSHF-1": {
+      "sessionId": "2026-11-06_4_TCLSHF-1",
+      "date": "2026-11-06",
+      "slotIndex": 4,
+      "classCode": "TCLSHF-1",
+      "teacherId": "ADMIN",
+      "teacherName": "الحراسة العامة / إدارة المؤسسة",
+      "subject": "متابعة الحراسة العامة",
+      "status": "ON_TIME",
+      "submittedDate": "2026-11-06",
+      "submittedAt": "13:40",
+      "totalStudents": 0,
+      "presentCount": 0,
+      "absentCount": 2,
+      "lateCount": 0,
+      "absentStudentIds": [
+        "TCLSHF-1_J172005213"
+      ],
+      "lateStudentIds": [],
+      "attendanceMap": {
+        "TCLSHF-1_J172005213": "A",
+        "J172005213": "A"
+      },
+      "updatedAtTs": 1794231628205
+    },
+    "2026-11-07_2_TCLSHF-1": {
+      "sessionId": "2026-11-07_2_TCLSHF-1",
+      "date": "2026-11-07",
+      "slotIndex": 2,
+      "classCode": "TCLSHF-1",
+      "teacherId": "ADMIN",
+      "teacherName": "الحراسة العامة / إدارة المؤسسة",
+      "subject": "متابعة الحراسة العامة",
+      "status": "ON_TIME",
+      "submittedDate": "2026-11-07",
+      "submittedAt": "13:40",
+      "totalStudents": 0,
+      "presentCount": 0,
+      "absentCount": 2,
+      "lateCount": 0,
+      "absentStudentIds": [
+        "TCLSHF-1_J172005213"
+      ],
+      "lateStudentIds": [],
+      "attendanceMap": {
+        "TCLSHF-1_J172005213": "A",
+        "J172005213": "A"
+      },
+      "updatedAtTs": 1794231644449
+    },
+    "2026-11-09_1_TCLSHF-1": {
+      "sessionId": "2026-11-09_1_TCLSHF-1",
+      "date": "2026-11-09",
+      "slotIndex": 1,
+      "classCode": "TCLSHF-1",
+      "teacherId": "ADMIN",
+      "teacherName": "الحراسة العامة / إدارة المؤسسة",
+      "subject": "متابعة الحراسة العامة",
+      "status": "ON_TIME",
+      "submittedDate": "2026-11-09",
+      "submittedAt": "13:40",
+      "totalStudents": 0,
+      "presentCount": 0,
+      "absentCount": 2,
+      "lateCount": 0,
+      "absentStudentIds": [
+        "TCLSHF-1_J172005213"
+      ],
+      "lateStudentIds": [],
+      "attendanceMap": {
+        "TCLSHF-1_J172005213": "A",
+        "J172005213": "A"
+      },
+      "updatedAtTs": 1794231659037
+    },
+    "2026-11-09_2_TCLSHF-1": {
+      "sessionId": "2026-11-09_2_TCLSHF-1",
+      "date": "2026-11-09",
+      "slotIndex": 2,
+      "classCode": "TCLSHF-1",
+      "teacherId": "ADMIN",
+      "teacherName": "الحراسة العامة / إدارة المؤسسة",
+      "subject": "متابعة الحراسة العامة",
+      "status": "ON_TIME",
+      "submittedDate": "2026-11-09",
+      "submittedAt": "13:40",
+      "totalStudents": 0,
+      "presentCount": 0,
+      "absentCount": 2,
+      "lateCount": 0,
+      "absentStudentIds": [
+        "TCLSHF-1_J172005213"
+      ],
+      "lateStudentIds": [],
+      "attendanceMap": {
+        "TCLSHF-1_J172005213": "A",
+        "J172005213": "A"
+      },
+      "updatedAtTs": 1794231659037
+    },
+    "2026-11-09_3_2BACSHF-1": {
+      "sessionId": "2026-11-09_3_2BACSHF-1",
+      "date": "2026-11-09",
+      "slotIndex": 3,
+      "classCode": "2BACSHF-1",
+      "teacherId": "ADMIN",
+      "teacherName": "الحراسة العامة / إدارة المؤسسة",
+      "subject": "متابعة الحراسة العامة",
+      "status": "ON_TIME",
+      "submittedDate": "2026-11-09",
+      "submittedAt": "14:09",
+      "totalStudents": 0,
+      "presentCount": 0,
+      "absentCount": 2,
+      "lateCount": 0,
+      "absentStudentIds": [
+        "2BACSHF-1_D158064953"
+      ],
+      "lateStudentIds": [],
+      "attendanceMap": {
+        "2BACSHF-1_D158064953": "A",
+        "D158064953": "A"
+      },
+      "updatedAtTs": 1794233356616
+    },
+    "2026-11-09_4_2BACSHF-1": {
+      "sessionId": "2026-11-09_4_2BACSHF-1",
+      "date": "2026-11-09",
+      "slotIndex": 4,
+      "classCode": "2BACSHF-1",
+      "teacherId": "ADMIN",
+      "teacherName": "الحراسة العامة / إدارة المؤسسة",
+      "subject": "متابعة الحراسة العامة",
+      "status": "ON_TIME",
+      "submittedDate": "2026-11-09",
+      "submittedAt": "14:09",
+      "totalStudents": 0,
+      "presentCount": 0,
+      "absentCount": 2,
+      "lateCount": 0,
+      "absentStudentIds": [
+        "2BACSHF-1_D158064953"
+      ],
+      "lateStudentIds": [],
+      "attendanceMap": {
+        "2BACSHF-1_D158064953": "A",
+        "D158064953": "A"
+      },
+      "updatedAtTs": 1794233356616
     }
   },
-  "justifiedAbsences": {},
+  "justifiedAbsences": {
+    "2026-11-07_2_2BACLF-1_2BACLF-1_D153038546": {
+      "justifiedAt": 1794215223501,
+      "justifiedDate": "2026-11-07",
+      "reason": "تبرير إداري",
+      "notes": "",
+      "admin": "الحراسة العامة / إدارة المؤسسة"
+    },
+    "2026-11-07_2_2BACLF-1_D153038546": {
+      "justifiedAt": 1794215223501,
+      "justifiedDate": "2026-11-07",
+      "reason": "تبرير إداري",
+      "notes": "",
+      "admin": "الحراسة العامة / إدارة المؤسسة"
+    },
+    "2026-11-07_3_2BACLF-1_2BACLF-1_D153038546": {
+      "justifiedAt": 1794215223501,
+      "justifiedDate": "2026-11-07",
+      "reason": "تبرير إداري",
+      "notes": "",
+      "admin": "الحراسة العامة / إدارة المؤسسة"
+    },
+    "2026-11-07_3_2BACLF-1_D153038546": {
+      "justifiedAt": 1794215223501,
+      "justifiedDate": "2026-11-07",
+      "reason": "تبرير إداري",
+      "notes": "",
+      "admin": "الحراسة العامة / إدارة المؤسسة"
+    },
+    "2026-11-07_4_2BACLF-1_2BACLF-1_D153038546": {
+      "justifiedAt": 1794215223501,
+      "justifiedDate": "2026-11-07",
+      "reason": "تبرير إداري",
+      "notes": "",
+      "admin": "الحراسة العامة / إدارة المؤسسة"
+    },
+    "2026-11-07_4_2BACLF-1_D153038546": {
+      "justifiedAt": 1794215223501,
+      "justifiedDate": "2026-11-07",
+      "reason": "تبرير إداري",
+      "notes": "",
+      "admin": "الحراسة العامة / إدارة المؤسسة"
+    },
+    "2026-11-07_2_2BACLF-1_2BACLF-1_D151037441": {
+      "justifiedAt": 1794216344653,
+      "justifiedDate": "2026-11-07",
+      "reason": "التواصل مع ابيه",
+      "notes": "",
+      "admin": "الحراسة العامة / إدارة المؤسسة"
+    },
+    "2026-11-07_2_2BACLF-1_D151037441": {
+      "justifiedAt": 1794216344653,
+      "justifiedDate": "2026-11-07",
+      "reason": "التواصل مع ابيه",
+      "notes": "",
+      "admin": "الحراسة العامة / إدارة المؤسسة"
+    },
+    "2026-11-07_3_2BACLF-1_2BACLF-1_D151037441": {
+      "justifiedAt": 1794216344653,
+      "justifiedDate": "2026-11-07",
+      "reason": "التواصل مع ابيه",
+      "notes": "",
+      "admin": "الحراسة العامة / إدارة المؤسسة"
+    },
+    "2026-11-07_3_2BACLF-1_D151037441": {
+      "justifiedAt": 1794216344653,
+      "justifiedDate": "2026-11-07",
+      "reason": "التواصل مع ابيه",
+      "notes": "",
+      "admin": "الحراسة العامة / إدارة المؤسسة"
+    },
+    "2026-11-07_4_2BACLF-1_2BACLF-1_D151037441": {
+      "justifiedAt": 1794216344653,
+      "justifiedDate": "2026-11-07",
+      "reason": "التواصل مع ابيه",
+      "notes": "",
+      "admin": "الحراسة العامة / إدارة المؤسسة"
+    },
+    "2026-11-07_4_2BACLF-1_D151037441": {
+      "justifiedAt": 1794216344653,
+      "justifiedDate": "2026-11-07",
+      "reason": "التواصل مع ابيه",
+      "notes": "",
+      "admin": "الحراسة العامة / إدارة المؤسسة"
+    },
+    "2026-10-30_3_TCLSHF-1_TCLSHF-1_J172005213": {
+      "justifiedAt": 1794232383666,
+      "justifiedDate": "2026-11-09",
+      "reason": "ورقة السماح بالدخول رقم 20261109-CDE4",
+      "notes": "تسوية الوضعية الإدارية لدى الحراسة العامة /  المصادقة على الالتزام",
+      "admin": "الحارس العام للخارجية (الحارس العام للخارجية)"
+    },
+    "2026-10-30_3_TCLSHF-1_J172005213": {
+      "justifiedAt": 1794232383666,
+      "justifiedDate": "2026-11-09",
+      "reason": "ورقة السماح بالدخول رقم 20261109-CDE4",
+      "notes": "تسوية الوضعية الإدارية لدى الحراسة العامة /  المصادقة على الالتزام",
+      "admin": "الحارس العام للخارجية (الحارس العام للخارجية)"
+    },
+    "2026-10-30_4_TCLSHF-1_TCLSHF-1_J172005213": {
+      "justifiedAt": 1794232383666,
+      "justifiedDate": "2026-11-09",
+      "reason": "ورقة السماح بالدخول رقم 20261109-CDE4",
+      "notes": "تسوية الوضعية الإدارية لدى الحراسة العامة /  المصادقة على الالتزام",
+      "admin": "الحارس العام للخارجية (الحارس العام للخارجية)"
+    },
+    "2026-10-30_4_TCLSHF-1_J172005213": {
+      "justifiedAt": 1794232383666,
+      "justifiedDate": "2026-11-09",
+      "reason": "ورقة السماح بالدخول رقم 20261109-CDE4",
+      "notes": "تسوية الوضعية الإدارية لدى الحراسة العامة /  المصادقة على الالتزام",
+      "admin": "الحارس العام للخارجية (الحارس العام للخارجية)"
+    },
+    "2026-11-02_1_TCLSHF-1_TCLSHF-1_J172005213": {
+      "justifiedAt": 1794232383666,
+      "justifiedDate": "2026-11-09",
+      "reason": "ورقة السماح بالدخول رقم 20261109-CDE4",
+      "notes": "تسوية الوضعية الإدارية لدى الحراسة العامة /  المصادقة على الالتزام",
+      "admin": "الحارس العام للخارجية (الحارس العام للخارجية)"
+    },
+    "2026-11-02_1_TCLSHF-1_J172005213": {
+      "justifiedAt": 1794232383666,
+      "justifiedDate": "2026-11-09",
+      "reason": "ورقة السماح بالدخول رقم 20261109-CDE4",
+      "notes": "تسوية الوضعية الإدارية لدى الحراسة العامة /  المصادقة على الالتزام",
+      "admin": "الحارس العام للخارجية (الحارس العام للخارجية)"
+    },
+    "2026-11-02_2_TCLSHF-1_TCLSHF-1_J172005213": {
+      "justifiedAt": 1794232383666,
+      "justifiedDate": "2026-11-09",
+      "reason": "ورقة السماح بالدخول رقم 20261109-CDE4",
+      "notes": "تسوية الوضعية الإدارية لدى الحراسة العامة /  المصادقة على الالتزام",
+      "admin": "الحارس العام للخارجية (الحارس العام للخارجية)"
+    },
+    "2026-11-02_2_TCLSHF-1_J172005213": {
+      "justifiedAt": 1794232383666,
+      "justifiedDate": "2026-11-09",
+      "reason": "ورقة السماح بالدخول رقم 20261109-CDE4",
+      "notes": "تسوية الوضعية الإدارية لدى الحراسة العامة /  المصادقة على الالتزام",
+      "admin": "الحارس العام للخارجية (الحارس العام للخارجية)"
+    },
+    "2026-11-03_1_TCLSHF-1_TCLSHF-1_J172005213": {
+      "justifiedAt": 1794232383666,
+      "justifiedDate": "2026-11-09",
+      "reason": "ورقة السماح بالدخول رقم 20261109-CDE4",
+      "notes": "تسوية الوضعية الإدارية لدى الحراسة العامة /  المصادقة على الالتزام",
+      "admin": "الحارس العام للخارجية (الحارس العام للخارجية)"
+    },
+    "2026-11-03_1_TCLSHF-1_J172005213": {
+      "justifiedAt": 1794232383666,
+      "justifiedDate": "2026-11-09",
+      "reason": "ورقة السماح بالدخول رقم 20261109-CDE4",
+      "notes": "تسوية الوضعية الإدارية لدى الحراسة العامة /  المصادقة على الالتزام",
+      "admin": "الحارس العام للخارجية (الحارس العام للخارجية)"
+    },
+    "2026-11-03_2_TCLSHF-1_TCLSHF-1_J172005213": {
+      "justifiedAt": 1794232383666,
+      "justifiedDate": "2026-11-09",
+      "reason": "ورقة السماح بالدخول رقم 20261109-CDE4",
+      "notes": "تسوية الوضعية الإدارية لدى الحراسة العامة /  المصادقة على الالتزام",
+      "admin": "الحارس العام للخارجية (الحارس العام للخارجية)"
+    },
+    "2026-11-03_2_TCLSHF-1_J172005213": {
+      "justifiedAt": 1794232383666,
+      "justifiedDate": "2026-11-09",
+      "reason": "ورقة السماح بالدخول رقم 20261109-CDE4",
+      "notes": "تسوية الوضعية الإدارية لدى الحراسة العامة /  المصادقة على الالتزام",
+      "admin": "الحارس العام للخارجية (الحارس العام للخارجية)"
+    },
+    "2026-11-04_1_TCLSHF-1_TCLSHF-1_J172005213": {
+      "justifiedAt": 1794232383666,
+      "justifiedDate": "2026-11-09",
+      "reason": "ورقة السماح بالدخول رقم 20261109-CDE4",
+      "notes": "تسوية الوضعية الإدارية لدى الحراسة العامة /  المصادقة على الالتزام",
+      "admin": "الحارس العام للخارجية (الحارس العام للخارجية)"
+    },
+    "2026-11-04_1_TCLSHF-1_J172005213": {
+      "justifiedAt": 1794232383666,
+      "justifiedDate": "2026-11-09",
+      "reason": "ورقة السماح بالدخول رقم 20261109-CDE4",
+      "notes": "تسوية الوضعية الإدارية لدى الحراسة العامة /  المصادقة على الالتزام",
+      "admin": "الحارس العام للخارجية (الحارس العام للخارجية)"
+    },
+    "2026-11-04_2_TCLSHF-1_TCLSHF-1_J172005213": {
+      "justifiedAt": 1794232383666,
+      "justifiedDate": "2026-11-09",
+      "reason": "ورقة السماح بالدخول رقم 20261109-CDE4",
+      "notes": "تسوية الوضعية الإدارية لدى الحراسة العامة /  المصادقة على الالتزام",
+      "admin": "الحارس العام للخارجية (الحارس العام للخارجية)"
+    },
+    "2026-11-04_2_TCLSHF-1_J172005213": {
+      "justifiedAt": 1794232383666,
+      "justifiedDate": "2026-11-09",
+      "reason": "ورقة السماح بالدخول رقم 20261109-CDE4",
+      "notes": "تسوية الوضعية الإدارية لدى الحراسة العامة /  المصادقة على الالتزام",
+      "admin": "الحارس العام للخارجية (الحارس العام للخارجية)"
+    },
+    "2026-11-04_3_TCLSHF-1_TCLSHF-1_J172005213": {
+      "justifiedAt": 1794232383666,
+      "justifiedDate": "2026-11-09",
+      "reason": "ورقة السماح بالدخول رقم 20261109-CDE4",
+      "notes": "تسوية الوضعية الإدارية لدى الحراسة العامة /  المصادقة على الالتزام",
+      "admin": "الحارس العام للخارجية (الحارس العام للخارجية)"
+    },
+    "2026-11-04_3_TCLSHF-1_J172005213": {
+      "justifiedAt": 1794232383666,
+      "justifiedDate": "2026-11-09",
+      "reason": "ورقة السماح بالدخول رقم 20261109-CDE4",
+      "notes": "تسوية الوضعية الإدارية لدى الحراسة العامة /  المصادقة على الالتزام",
+      "admin": "الحارس العام للخارجية (الحارس العام للخارجية)"
+    },
+    "2026-11-04_4_TCLSHF-1_TCLSHF-1_J172005213": {
+      "justifiedAt": 1794232383666,
+      "justifiedDate": "2026-11-09",
+      "reason": "ورقة السماح بالدخول رقم 20261109-CDE4",
+      "notes": "تسوية الوضعية الإدارية لدى الحراسة العامة /  المصادقة على الالتزام",
+      "admin": "الحارس العام للخارجية (الحارس العام للخارجية)"
+    },
+    "2026-11-04_4_TCLSHF-1_J172005213": {
+      "justifiedAt": 1794232383666,
+      "justifiedDate": "2026-11-09",
+      "reason": "ورقة السماح بالدخول رقم 20261109-CDE4",
+      "notes": "تسوية الوضعية الإدارية لدى الحراسة العامة /  المصادقة على الالتزام",
+      "admin": "الحارس العام للخارجية (الحارس العام للخارجية)"
+    },
+    "2026-11-04_5_TCLSHF-1_TCLSHF-1_J172005213": {
+      "justifiedAt": 1794232383666,
+      "justifiedDate": "2026-11-09",
+      "reason": "ورقة السماح بالدخول رقم 20261109-CDE4",
+      "notes": "تسوية الوضعية الإدارية لدى الحراسة العامة /  المصادقة على الالتزام",
+      "admin": "الحارس العام للخارجية (الحارس العام للخارجية)"
+    },
+    "2026-11-04_5_TCLSHF-1_J172005213": {
+      "justifiedAt": 1794232383666,
+      "justifiedDate": "2026-11-09",
+      "reason": "ورقة السماح بالدخول رقم 20261109-CDE4",
+      "notes": "تسوية الوضعية الإدارية لدى الحراسة العامة /  المصادقة على الالتزام",
+      "admin": "الحارس العام للخارجية (الحارس العام للخارجية)"
+    },
+    "2026-11-04_6_TCLSHF-1_TCLSHF-1_J172005213": {
+      "justifiedAt": 1794232383666,
+      "justifiedDate": "2026-11-09",
+      "reason": "ورقة السماح بالدخول رقم 20261109-CDE4",
+      "notes": "تسوية الوضعية الإدارية لدى الحراسة العامة /  المصادقة على الالتزام",
+      "admin": "الحارس العام للخارجية (الحارس العام للخارجية)"
+    },
+    "2026-11-04_6_TCLSHF-1_J172005213": {
+      "justifiedAt": 1794232383666,
+      "justifiedDate": "2026-11-09",
+      "reason": "ورقة السماح بالدخول رقم 20261109-CDE4",
+      "notes": "تسوية الوضعية الإدارية لدى الحراسة العامة /  المصادقة على الالتزام",
+      "admin": "الحارس العام للخارجية (الحارس العام للخارجية)"
+    },
+    "2026-11-05_3_TCLSHF-1_TCLSHF-1_J172005213": {
+      "justifiedAt": 1794232383666,
+      "justifiedDate": "2026-11-09",
+      "reason": "ورقة السماح بالدخول رقم 20261109-CDE4",
+      "notes": "تسوية الوضعية الإدارية لدى الحراسة العامة /  المصادقة على الالتزام",
+      "admin": "الحارس العام للخارجية (الحارس العام للخارجية)"
+    },
+    "2026-11-05_3_TCLSHF-1_J172005213": {
+      "justifiedAt": 1794232383666,
+      "justifiedDate": "2026-11-09",
+      "reason": "ورقة السماح بالدخول رقم 20261109-CDE4",
+      "notes": "تسوية الوضعية الإدارية لدى الحراسة العامة /  المصادقة على الالتزام",
+      "admin": "الحارس العام للخارجية (الحارس العام للخارجية)"
+    },
+    "2026-11-05_4_TCLSHF-1_TCLSHF-1_J172005213": {
+      "justifiedAt": 1794232383666,
+      "justifiedDate": "2026-11-09",
+      "reason": "ورقة السماح بالدخول رقم 20261109-CDE4",
+      "notes": "تسوية الوضعية الإدارية لدى الحراسة العامة /  المصادقة على الالتزام",
+      "admin": "الحارس العام للخارجية (الحارس العام للخارجية)"
+    },
+    "2026-11-05_4_TCLSHF-1_J172005213": {
+      "justifiedAt": 1794232383666,
+      "justifiedDate": "2026-11-09",
+      "reason": "ورقة السماح بالدخول رقم 20261109-CDE4",
+      "notes": "تسوية الوضعية الإدارية لدى الحراسة العامة /  المصادقة على الالتزام",
+      "admin": "الحارس العام للخارجية (الحارس العام للخارجية)"
+    },
+    "2026-11-05_6_TCLSHF-1_TCLSHF-1_J172005213": {
+      "justifiedAt": 1794232383666,
+      "justifiedDate": "2026-11-09",
+      "reason": "ورقة السماح بالدخول رقم 20261109-CDE4",
+      "notes": "تسوية الوضعية الإدارية لدى الحراسة العامة /  المصادقة على الالتزام",
+      "admin": "الحارس العام للخارجية (الحارس العام للخارجية)"
+    },
+    "2026-11-05_6_TCLSHF-1_J172005213": {
+      "justifiedAt": 1794232383666,
+      "justifiedDate": "2026-11-09",
+      "reason": "ورقة السماح بالدخول رقم 20261109-CDE4",
+      "notes": "تسوية الوضعية الإدارية لدى الحراسة العامة /  المصادقة على الالتزام",
+      "admin": "الحارس العام للخارجية (الحارس العام للخارجية)"
+    },
+    "2026-11-05_7_TCLSHF-1_TCLSHF-1_J172005213": {
+      "justifiedAt": 1794232383666,
+      "justifiedDate": "2026-11-09",
+      "reason": "ورقة السماح بالدخول رقم 20261109-CDE4",
+      "notes": "تسوية الوضعية الإدارية لدى الحراسة العامة /  المصادقة على الالتزام",
+      "admin": "الحارس العام للخارجية (الحارس العام للخارجية)"
+    },
+    "2026-11-05_7_TCLSHF-1_J172005213": {
+      "justifiedAt": 1794232383666,
+      "justifiedDate": "2026-11-09",
+      "reason": "ورقة السماح بالدخول رقم 20261109-CDE4",
+      "notes": "تسوية الوضعية الإدارية لدى الحراسة العامة /  المصادقة على الالتزام",
+      "admin": "الحارس العام للخارجية (الحارس العام للخارجية)"
+    },
+    "2026-11-05_8_TCLSHF-1_TCLSHF-1_J172005213": {
+      "justifiedAt": 1794232383666,
+      "justifiedDate": "2026-11-09",
+      "reason": "ورقة السماح بالدخول رقم 20261109-CDE4",
+      "notes": "تسوية الوضعية الإدارية لدى الحراسة العامة /  المصادقة على الالتزام",
+      "admin": "الحارس العام للخارجية (الحارس العام للخارجية)"
+    },
+    "2026-11-05_8_TCLSHF-1_J172005213": {
+      "justifiedAt": 1794232383666,
+      "justifiedDate": "2026-11-09",
+      "reason": "ورقة السماح بالدخول رقم 20261109-CDE4",
+      "notes": "تسوية الوضعية الإدارية لدى الحراسة العامة /  المصادقة على الالتزام",
+      "admin": "الحارس العام للخارجية (الحارس العام للخارجية)"
+    },
+    "2026-11-06_3_TCLSHF-1_TCLSHF-1_J172005213": {
+      "justifiedAt": 1794232383666,
+      "justifiedDate": "2026-11-09",
+      "reason": "ورقة السماح بالدخول رقم 20261109-CDE4",
+      "notes": "تسوية الوضعية الإدارية لدى الحراسة العامة /  المصادقة على الالتزام",
+      "admin": "الحارس العام للخارجية (الحارس العام للخارجية)"
+    },
+    "2026-11-06_3_TCLSHF-1_J172005213": {
+      "justifiedAt": 1794232383666,
+      "justifiedDate": "2026-11-09",
+      "reason": "ورقة السماح بالدخول رقم 20261109-CDE4",
+      "notes": "تسوية الوضعية الإدارية لدى الحراسة العامة /  المصادقة على الالتزام",
+      "admin": "الحارس العام للخارجية (الحارس العام للخارجية)"
+    },
+    "2026-11-06_4_TCLSHF-1_TCLSHF-1_J172005213": {
+      "justifiedAt": 1794232383666,
+      "justifiedDate": "2026-11-09",
+      "reason": "ورقة السماح بالدخول رقم 20261109-CDE4",
+      "notes": "تسوية الوضعية الإدارية لدى الحراسة العامة /  المصادقة على الالتزام",
+      "admin": "الحارس العام للخارجية (الحارس العام للخارجية)"
+    },
+    "2026-11-06_4_TCLSHF-1_J172005213": {
+      "justifiedAt": 1794232383666,
+      "justifiedDate": "2026-11-09",
+      "reason": "ورقة السماح بالدخول رقم 20261109-CDE4",
+      "notes": "تسوية الوضعية الإدارية لدى الحراسة العامة /  المصادقة على الالتزام",
+      "admin": "الحارس العام للخارجية (الحارس العام للخارجية)"
+    },
+    "2026-11-07_2_TCLSHF-1_TCLSHF-1_J172005213": {
+      "justifiedAt": 1794232383666,
+      "justifiedDate": "2026-11-09",
+      "reason": "ورقة السماح بالدخول رقم 20261109-CDE4",
+      "notes": "تسوية الوضعية الإدارية لدى الحراسة العامة /  المصادقة على الالتزام",
+      "admin": "الحارس العام للخارجية (الحارس العام للخارجية)"
+    },
+    "2026-11-07_2_TCLSHF-1_J172005213": {
+      "justifiedAt": 1794232383666,
+      "justifiedDate": "2026-11-09",
+      "reason": "ورقة السماح بالدخول رقم 20261109-CDE4",
+      "notes": "تسوية الوضعية الإدارية لدى الحراسة العامة /  المصادقة على الالتزام",
+      "admin": "الحارس العام للخارجية (الحارس العام للخارجية)"
+    },
+    "2026-11-09_1_TCLSHF-1_TCLSHF-1_J172005213": {
+      "justifiedAt": 1794232383666,
+      "justifiedDate": "2026-11-09",
+      "reason": "ورقة السماح بالدخول رقم 20261109-CDE4",
+      "notes": "تسوية الوضعية الإدارية لدى الحراسة العامة /  المصادقة على الالتزام",
+      "admin": "الحارس العام للخارجية (الحارس العام للخارجية)"
+    },
+    "2026-11-09_1_TCLSHF-1_J172005213": {
+      "justifiedAt": 1794232383666,
+      "justifiedDate": "2026-11-09",
+      "reason": "ورقة السماح بالدخول رقم 20261109-CDE4",
+      "notes": "تسوية الوضعية الإدارية لدى الحراسة العامة /  المصادقة على الالتزام",
+      "admin": "الحارس العام للخارجية (الحارس العام للخارجية)"
+    },
+    "2026-11-09_2_TCLSHF-1_TCLSHF-1_J172005213": {
+      "justifiedAt": 1794232383666,
+      "justifiedDate": "2026-11-09",
+      "reason": "ورقة السماح بالدخول رقم 20261109-CDE4",
+      "notes": "تسوية الوضعية الإدارية لدى الحراسة العامة /  المصادقة على الالتزام",
+      "admin": "الحارس العام للخارجية (الحارس العام للخارجية)"
+    },
+    "2026-11-09_2_TCLSHF-1_J172005213": {
+      "justifiedAt": 1794232383666,
+      "justifiedDate": "2026-11-09",
+      "reason": "ورقة السماح بالدخول رقم 20261109-CDE4",
+      "notes": "تسوية الوضعية الإدارية لدى الحراسة العامة /  المصادقة على الالتزام",
+      "admin": "الحارس العام للخارجية (الحارس العام للخارجية)"
+    },
+    "2026-11-09_3_2BACSHF-1_2BACSHF-1_D158064953": {
+      "justifiedAt": 1794233356616,
+      "justifiedDate": "2026-11-09",
+      "reason": "مريضة، تم مرافقتها من طرف المربية الى دار الطالبة بأنفك",
+      "notes": "",
+      "admin": "الحراسة العامة / إدارة المؤسسة"
+    },
+    "2026-11-09_3_2BACSHF-1_D158064953": {
+      "justifiedAt": 1794233356616,
+      "justifiedDate": "2026-11-09",
+      "reason": "مريضة، تم مرافقتها من طرف المربية الى دار الطالبة بأنفك",
+      "notes": "",
+      "admin": "الحراسة العامة / إدارة المؤسسة"
+    },
+    "2026-11-09_4_2BACSHF-1_2BACSHF-1_D158064953": {
+      "justifiedAt": 1794233356616,
+      "justifiedDate": "2026-11-09",
+      "reason": "مريضة، تم مرافقتها من طرف المربية الى دار الطالبة بأنفك",
+      "notes": "",
+      "admin": "الحراسة العامة / إدارة المؤسسة"
+    },
+    "2026-11-09_4_2BACSHF-1_D158064953": {
+      "justifiedAt": 1794233356616,
+      "justifiedDate": "2026-11-09",
+      "reason": "مريضة، تم مرافقتها من طرف المربية الى دار الطالبة بأنفك",
+      "notes": "",
+      "admin": "الحراسة العامة / إدارة المؤسسة"
+    }
+  },
   "entryPasses": {
-    "BE-20261104-D34D": {
-      "passId": "BE-20261104-D34D",
-      "studentId": "2BACLF-1_D134700855",
-      "studentName": "تمراوي محمد رضى",
-      "massarCode": "D134700855",
+    "BE-20261109-334D": {
+      "passId": "BE-20261109-334D",
+      "studentId": "2BACLF-1_D153038546",
+      "studentName": "أسعدي إبراهيم",
+      "massarCode": "D153038546",
       "classCode": "2BACLF-1",
       "passType": "ABSENCE",
       "adminAction": "عذر استثنائي مقبول بإذن إداري مسبق.",
       "adminRole": "الحارس العام للخارجية",
       "adminName": "الحارس العام للخارجية",
-      "periodSummary": "2026-11-04",
-      "absentDate": "2026-11-04",
+      "periodSummary": "الفترة الصباحية لـ 2026-11-07",
+      "absentDate": "2026-11-09",
       "absentSlotIndex": 1,
       "absentSlotLabel": "حصة 1",
-      "issuedAt": "08:02:23",
-      "issuedDate": "2026-11-04",
-      "validForDate": "2026-11-04",
+      "issuedAt": "09:06:11",
+      "issuedDate": "2026-11-09",
+      "validForDate": "2026-11-09",
       "notes": "تسوية الوضعية الإدارية لدى الحراسة العامة / عذر مقبول.",
       "status": "VALID",
-      "createdAtTs": 1793779343396
+      "createdAtTs": 1794215171512
     },
-    "BE-20261104-2932": {
-      "passId": "BE-20261104-2932",
-      "studentId": "2BACLF-1_D134700855",
-      "studentName": "تمراوي محمد رضى",
-      "massarCode": "D134700855",
-      "classCode": "2BACLF-1",
+    "BE-20261109-CDE4": {
+      "passId": "BE-20261109-CDE4",
+      "studentId": "TCLSHF-1_J172005213",
+      "studentName": "الليون عبد الله",
+      "massarCode": "J172005213",
+      "classCode": "TCLSHF-1",
       "passType": "ABSENCE",
-      "adminAction": "عذر استثنائي مقبول بإذن إداري مسبق.",
+      "adminAction": "إمضاء التزام وتسوية الوضعية بالحراسة العامة.",
       "adminRole": "الحارس العام للخارجية",
       "adminName": "الحارس العام للخارجية",
-      "periodSummary": "2026-11-04",
-      "absentDate": "2026-11-04",
+      "periodSummary": "من 30/10/2026 الى 09/11/2026",
+      "absentDate": "2026-11-09",
       "absentSlotIndex": 1,
       "absentSlotLabel": "حصة 1",
-      "issuedAt": "08:07:15",
-      "issuedDate": "2026-11-04",
-      "validForDate": "2026-11-04",
-      "notes": "تسوية الوضعية الإدارية لدى الحراسة العامة / عذر مقبول.",
+      "issuedAt": "13:53:03",
+      "issuedDate": "2026-11-09",
+      "validForDate": "2026-11-09",
+      "notes": "تسوية الوضعية الإدارية لدى الحراسة العامة /  المصادقة على الالتزام",
       "status": "VALID",
-      "createdAtTs": 1793779635807
+      "createdAtTs": 1794232383666
     },
-    "BE-20261104-0583": {
-      "passId": "BE-20261104-0583",
-      "studentId": "2BACLF-1_D150064982",
-      "studentName": "سعداني صالح",
-      "massarCode": "D150064982",
-      "classCode": "2BACLF-1",
+    "BE-20261109-9510": {
+      "passId": "BE-20261109-9510",
+      "studentId": "2BACSHF-1_D158064953",
+      "studentName": "اكركس فرح",
+      "massarCode": "D158064953",
+      "classCode": "2BACSHF-1",
       "passType": "ABSENCE",
       "adminAction": "عذر استثنائي مقبول بإذن إداري مسبق.",
       "adminRole": "الحارس العام للخارجية",
       "adminName": "الحارس العام للخارجية",
-      "periodSummary": "الفترة الصباحية لـ 2026-11-04",
-      "absentDate": "2026-11-04",
+      "periodSummary": "الفترة الصباحية لـ 2026-11-09",
+      "absentDate": "2026-11-09",
       "absentSlotIndex": 1,
       "absentSlotLabel": "حصة 1",
-      "issuedAt": "11:32:31",
-      "issuedDate": "2026-11-04",
-      "validForDate": "2026-11-04",
+      "issuedAt": "14:07:49",
+      "issuedDate": "2026-11-09",
+      "validForDate": "2026-11-09",
       "notes": "تسوية الوضعية الإدارية لدى الحراسة العامة / عذر مقبول.",
       "status": "VALID",
-      "createdAtTs": 1793791951541
+      "createdAtTs": 1794233269137
+    },
+    "BE-20261109-D400": {
+      "passId": "BE-20261109-D400",
+      "studentId": "1BACSEF-1_D146114195",
+      "studentName": "بن داود مونة",
+      "massarCode": "D146114195",
+      "classCode": "1BACSEF-1",
+      "passType": "ABSENCE",
+      "adminAction": "عذر استثنائي مقبول بإذن إداري مسبق.",
+      "adminRole": "الحارس العام للخارجية",
+      "adminName": "الحارس العام للخارجية",
+      "periodSummary": "الفترة الصباحية لـ 2026-11-09",
+      "absentDate": "2026-11-09",
+      "absentSlotIndex": 1,
+      "absentSlotLabel": "حصة 1",
+      "issuedAt": "14:10:10",
+      "issuedDate": "2026-11-09",
+      "validForDate": "2026-11-09",
+      "notes": "تسوية الوضعية الإدارية لدى الحراسة العامة / عذر مقبول.",
+      "status": "VALID",
+      "createdAtTs": 1794233410742
     }
   },
   "dismissalReports": {},
   "settings": {
-    "schoolName": "الثانوية التأهيلية أنفك (045892P)",
-    "principalName": "رئيس المؤسسة",
+    "schoolName": "الثانوية التأهيلية أنفك",
+    "principalName": "محمد اكسيم",
     "principalCode": "ADMIN888",
     "lateEntryMaxDays": 1,
-    "scheduleMode": "NORMAL"
+    "scheduleMode": "NORMAL",
+    "gresa": "H12657",
+    "schoolId": "H12657",
+    "institution_cycle": "qualifying",
+    "cycle": "qualifying"
   },
   "timeSlots": [
     {
@@ -228,8 +1573,8 @@ window.INITIAL_SCHOOL_DATA = {
   "teachers": [
     {
       "teacherId": "T01",
-      "loginCode": "RBT7KRZ4",
-      "code": "RBT7KRZ4",
+      "loginCode": "SEN7YCAJ",
+      "code": "SEN7YCAJ",
       "excelAlias": "عبد العزيز بتوكنوت",
       "fullName": "عبد العزيز بتوكنوت",
       "defName": "أستاذ اللغة  العربية 1",
@@ -240,8 +1585,8 @@ window.INITIAL_SCHOOL_DATA = {
     },
     {
       "teacherId": "T02",
-      "loginCode": "YDXETPCL",
-      "code": "YDXETPCL",
+      "loginCode": "SQK8HTFD",
+      "code": "SQK8HTFD",
       "excelAlias": "عمر اعتزري",
       "fullName": "عمر اعتزري",
       "defName": "أستاذ اللغة  العربية 2",
@@ -252,8 +1597,8 @@ window.INITIAL_SCHOOL_DATA = {
     },
     {
       "teacherId": "T03",
-      "loginCode": "3RLM2AJM",
-      "code": "3RLM2AJM",
+      "loginCode": "QKTBNT93",
+      "code": "QKTBNT93",
       "excelAlias": "فتحية أزكي",
       "fullName": "فتحية أزكي",
       "defName": "أستاذ اللغة  العربية 3",
@@ -264,8 +1609,8 @@ window.INITIAL_SCHOOL_DATA = {
     },
     {
       "teacherId": "T04",
-      "loginCode": "T94LL6NW",
-      "code": "T94LL6NW",
+      "loginCode": "8QWF7ESH",
+      "code": "8QWF7ESH",
       "excelAlias": "رقية أجديك",
       "fullName": "رقية أجديك",
       "defName": "أستاذ اللغة  الفرنسية 1",
@@ -276,8 +1621,8 @@ window.INITIAL_SCHOOL_DATA = {
     },
     {
       "teacherId": "T05",
-      "loginCode": "SEN7YCAJ",
-      "code": "SEN7YCAJ",
+      "loginCode": "N2E9VQ3B",
+      "code": "N2E9VQ3B",
       "excelAlias": "إبراهيم ادبي",
       "fullName": "إبراهيم ادبي",
       "defName": "أستاذ اللغة  الفرنسية 2",
@@ -288,8 +1633,8 @@ window.INITIAL_SCHOOL_DATA = {
     },
     {
       "teacherId": "T06",
-      "loginCode": "G7MFUWTJ",
-      "code": "G7MFUWTJ",
+      "loginCode": "D4E2UMZH",
+      "code": "D4E2UMZH",
       "excelAlias": "غزلان جادور",
       "fullName": "غزلان جادور",
       "defName": "أستاذ اللغة  الفرنسية 3",
@@ -300,8 +1645,8 @@ window.INITIAL_SCHOOL_DATA = {
     },
     {
       "teacherId": "T07",
-      "loginCode": "A5R9MW7C",
-      "code": "A5R9MW7C",
+      "loginCode": "T94LL6NW",
+      "code": "T94LL6NW",
       "excelAlias": "فاطمة فهمي",
       "fullName": "فاطمة فهمي",
       "defName": "أستاذ اللغة  الفرنسية 4",
@@ -312,8 +1657,8 @@ window.INITIAL_SCHOOL_DATA = {
     },
     {
       "teacherId": "T08",
-      "loginCode": "D4E2UMZH",
-      "code": "D4E2UMZH",
+      "loginCode": "W4KHTCYS",
+      "code": "W4KHTCYS",
       "excelAlias": "رشيد ادات",
       "fullName": "رشيد ادات",
       "defName": "أستاذ اللغة الإنجليزية 1",
@@ -324,8 +1669,8 @@ window.INITIAL_SCHOOL_DATA = {
     },
     {
       "teacherId": "T09",
-      "loginCode": "SQK8HTFD",
-      "code": "SQK8HTFD",
+      "loginCode": "WYNSE5GY",
+      "code": "WYNSE5GY",
       "excelAlias": "الصديق بوعلي",
       "fullName": "الصديق بوعلي",
       "defName": "أستاذ اللغة الإنجليزية 2",
@@ -336,8 +1681,8 @@ window.INITIAL_SCHOOL_DATA = {
     },
     {
       "teacherId": "T10",
-      "loginCode": "TRRYUGQV",
-      "code": "TRRYUGQV",
+      "loginCode": "RBT7KRZ4",
+      "code": "RBT7KRZ4",
       "excelAlias": "هدى هباز",
       "fullName": "هدى هباز",
       "defName": "أستاذ اللغة الإنجليزية 3",
@@ -348,8 +1693,8 @@ window.INITIAL_SCHOOL_DATA = {
     },
     {
       "teacherId": "T11",
-      "loginCode": "E3Q4ZQDF",
-      "code": "E3Q4ZQDF",
+      "loginCode": "XU8WY35H",
+      "code": "XU8WY35H",
       "excelAlias": "مصطفى أكواس",
       "fullName": "مصطفى أكواس",
       "defName": "أستاذ الرياضيات 1",
@@ -372,8 +1717,8 @@ window.INITIAL_SCHOOL_DATA = {
     },
     {
       "teacherId": "T13",
-      "loginCode": "MK2NUW86",
-      "code": "MK2NUW86",
+      "loginCode": "Z8PVLU9E",
+      "code": "Z8PVLU9E",
       "excelAlias": "لطيفة لكوش",
       "fullName": "لطيفة لكوش",
       "defName": "أستاذ الرياضيات 3",
@@ -384,8 +1729,8 @@ window.INITIAL_SCHOOL_DATA = {
     },
     {
       "teacherId": "T14",
-      "loginCode": "XU8WY35H",
-      "code": "XU8WY35H",
+      "loginCode": "YDXETPCL",
+      "code": "YDXETPCL",
       "excelAlias": "عبد الله اغلاس",
       "fullName": "عبد الله اغلاس",
       "defName": "أستاذ الفيزياء والكيمياء 1",
@@ -396,8 +1741,8 @@ window.INITIAL_SCHOOL_DATA = {
     },
     {
       "teacherId": "T15",
-      "loginCode": "8QWF7ESH",
-      "code": "8QWF7ESH",
+      "loginCode": "G7MFUWTJ",
+      "code": "G7MFUWTJ",
       "excelAlias": "بونعطان ياسين",
       "fullName": "بونعطان ياسين",
       "defName": "أستاذ الفيزياء والكيمياء 2",
@@ -408,8 +1753,8 @@ window.INITIAL_SCHOOL_DATA = {
     },
     {
       "teacherId": "T16",
-      "loginCode": "N2E9VQ3B",
-      "code": "N2E9VQ3B",
+      "loginCode": "A5R9MW7C",
+      "code": "A5R9MW7C",
       "excelAlias": "حسناء أكجي",
       "fullName": "حسناء أكجي",
       "defName": "أستاذ علوم الحياة  والأرض 1",
@@ -420,8 +1765,8 @@ window.INITIAL_SCHOOL_DATA = {
     },
     {
       "teacherId": "T17",
-      "loginCode": "NFJCLKLU",
-      "code": "NFJCLKLU",
+      "loginCode": "3RLM2AJM",
+      "code": "3RLM2AJM",
       "excelAlias": "محمد زين الدين",
       "fullName": "محمد زين الدين",
       "defName": "أستاذ علوم الحياة  والأرض 2",
@@ -432,8 +1777,8 @@ window.INITIAL_SCHOOL_DATA = {
     },
     {
       "teacherId": "T18",
-      "loginCode": "XQ9YTBR3",
-      "code": "XQ9YTBR3",
+      "loginCode": "MK2NUW86",
+      "code": "MK2NUW86",
       "excelAlias": "محمد داعنو",
       "fullName": "محمد داعنو",
       "defName": "أستاذ التاريخ والجغرافيا 1",
@@ -444,8 +1789,8 @@ window.INITIAL_SCHOOL_DATA = {
     },
     {
       "teacherId": "T19",
-      "loginCode": "Z8PVLU9E",
-      "code": "Z8PVLU9E",
+      "loginCode": "XQ9YTBR3",
+      "code": "XQ9YTBR3",
       "excelAlias": "علي ازري",
       "fullName": "علي ازري",
       "defName": "أستاذ التاريخ والجغرافيا 2",
@@ -456,8 +1801,8 @@ window.INITIAL_SCHOOL_DATA = {
     },
     {
       "teacherId": "T20",
-      "loginCode": "WYNSE5GY",
-      "code": "WYNSE5GY",
+      "loginCode": "NFJCLKLU",
+      "code": "NFJCLKLU",
       "excelAlias": "عائشة السخني",
       "fullName": "عائشة السخني",
       "defName": "أستاذ الفلسفة 1",
@@ -468,8 +1813,8 @@ window.INITIAL_SCHOOL_DATA = {
     },
     {
       "teacherId": "T21",
-      "loginCode": "N7YQJJR2",
-      "code": "N7YQJJR2",
+      "loginCode": "E3Q4ZQDF",
+      "code": "E3Q4ZQDF",
       "excelAlias": "مليكة أمين",
       "fullName": "مليكة أمين",
       "defName": "أستاذ التربية الإسلامية 1",
@@ -480,8 +1825,8 @@ window.INITIAL_SCHOOL_DATA = {
     },
     {
       "teacherId": "T22",
-      "loginCode": "W4KHTCYS",
-      "code": "W4KHTCYS",
+      "loginCode": "N7YQJJR2",
+      "code": "N7YQJJR2",
       "excelAlias": "زكرياء مهتدي",
       "fullName": "زكرياء مهتدي",
       "defName": "أستاذ التربية البدنية والرياضة 1",
@@ -492,8 +1837,8 @@ window.INITIAL_SCHOOL_DATA = {
     },
     {
       "teacherId": "T23",
-      "loginCode": "QKTBNT93",
-      "code": "QKTBNT93",
+      "loginCode": "TRRYUGQV",
+      "code": "TRRYUGQV",
       "excelAlias": "بكر السادي",
       "fullName": "بكر السادي",
       "defName": "أستاذ التربية البدنية والرياضة 2",
@@ -3292,16 +4637,6 @@ window.INITIAL_SCHOOL_DATA = {
       "subject": "اجتماعيات"
     },
     {
-      "slotId": "T19_1_3",
-      "teacherId": "T19",
-      "teacherName": "علي ازري",
-      "classCode": "1BACSEF-1",
-      "dayOfWeek": 1,
-      "slotIndex": 3,
-      "room": "03",
-      "subject": "اجتماعيات"
-    },
-    {
       "slotId": "T19_1_2",
       "teacherId": "T19",
       "teacherName": "علي ازري",
@@ -3312,52 +4647,22 @@ window.INITIAL_SCHOOL_DATA = {
       "subject": "اجتماعيات"
     },
     {
+      "slotId": "T19_1_3",
+      "teacherId": "T19",
+      "teacherName": "علي ازري",
+      "classCode": "1BACSEF-1",
+      "dayOfWeek": 1,
+      "slotIndex": 3,
+      "room": "03",
+      "subject": "اجتماعيات"
+    },
+    {
       "slotId": "T19_1_4",
       "teacherId": "T19",
       "teacherName": "علي ازري",
       "classCode": "1BACSEF-2",
       "dayOfWeek": 1,
       "slotIndex": 4,
-      "room": "03",
-      "subject": "اجتماعيات"
-    },
-    {
-      "slotId": "T19_3_7",
-      "teacherId": "T19",
-      "teacherName": "علي ازري",
-      "classCode": "TCSEF-1",
-      "dayOfWeek": 3,
-      "slotIndex": 7,
-      "room": "03",
-      "subject": "اجتماعيات"
-    },
-    {
-      "slotId": "T19_3_6",
-      "teacherId": "T19",
-      "teacherName": "علي ازري",
-      "classCode": "1BACSEF-1",
-      "dayOfWeek": 3,
-      "slotIndex": 6,
-      "room": "03",
-      "subject": "اجتماعيات"
-    },
-    {
-      "slotId": "T19_3_8",
-      "teacherId": "T19",
-      "teacherName": "علي ازري",
-      "classCode": "1BACSHF-2",
-      "dayOfWeek": 3,
-      "slotIndex": 8,
-      "room": "03",
-      "subject": "اجتماعيات"
-    },
-    {
-      "slotId": "T19_3_5",
-      "teacherId": "T19",
-      "teacherName": "علي ازري",
-      "classCode": "1BACSEF-2",
-      "dayOfWeek": 3,
-      "slotIndex": 5,
       "room": "03",
       "subject": "اجتماعيات"
     },
@@ -3402,6 +4707,46 @@ window.INITIAL_SCHOOL_DATA = {
       "subject": "اجتماعيات"
     },
     {
+      "slotId": "T19_3_5",
+      "teacherId": "T19",
+      "teacherName": "علي ازري",
+      "classCode": "1BACSEF-2",
+      "dayOfWeek": 3,
+      "slotIndex": 5,
+      "room": "03",
+      "subject": "اجتماعيات"
+    },
+    {
+      "slotId": "T19_3_6",
+      "teacherId": "T19",
+      "teacherName": "علي ازري",
+      "classCode": "1BACSEF-1",
+      "dayOfWeek": 3,
+      "slotIndex": 6,
+      "room": "03",
+      "subject": "اجتماعيات"
+    },
+    {
+      "slotId": "T19_3_7",
+      "teacherId": "T19",
+      "teacherName": "علي ازري",
+      "classCode": "TCSEF-1",
+      "dayOfWeek": 3,
+      "slotIndex": 7,
+      "room": "03",
+      "subject": "اجتماعيات"
+    },
+    {
+      "slotId": "T19_3_8",
+      "teacherId": "T19",
+      "teacherName": "علي ازري",
+      "classCode": "1BACSHF-2",
+      "dayOfWeek": 3,
+      "slotIndex": 8,
+      "room": "03",
+      "subject": "اجتماعيات"
+    },
+    {
       "slotId": "T19_4_1",
       "teacherId": "T19",
       "teacherName": "علي ازري",
@@ -3428,17 +4773,7 @@ window.INITIAL_SCHOOL_DATA = {
       "classCode": "TCSEF-1",
       "dayOfWeek": 1,
       "slotIndex": 2,
-      "room": "02",
-      "subject": "إنجليزية"
-    },
-    {
-      "slotId": "T10_1_4",
-      "teacherId": "T10",
-      "teacherName": "هدى هباز",
-      "classCode": "1BACSEF-1",
-      "dayOfWeek": 1,
-      "slotIndex": 4,
-      "room": "02",
+      "room": "02، 01",
       "subject": "إنجليزية"
     },
     {
@@ -3448,7 +4783,17 @@ window.INITIAL_SCHOOL_DATA = {
       "classCode": "1BACSEF-2",
       "dayOfWeek": 1,
       "slotIndex": 3,
-      "room": "02",
+      "room": "02، 01",
+      "subject": "إنجليزية"
+    },
+    {
+      "slotId": "T10_1_4",
+      "teacherId": "T10",
+      "teacherName": "هدى هباز",
+      "classCode": "1BACSEF-1",
+      "dayOfWeek": 1,
+      "slotIndex": 4,
+      "room": "02، 01",
       "subject": "إنجليزية"
     },
     {
@@ -3458,7 +4803,7 @@ window.INITIAL_SCHOOL_DATA = {
       "classCode": "TCSEF-1",
       "dayOfWeek": 2,
       "slotIndex": 5,
-      "room": "02",
+      "room": "02، 01",
       "subject": "إنجليزية"
     },
     {
@@ -3468,7 +4813,7 @@ window.INITIAL_SCHOOL_DATA = {
       "classCode": "1BACSEF-1",
       "dayOfWeek": 2,
       "slotIndex": 6,
-      "room": "02",
+      "room": "02، 01",
       "subject": "إنجليزية"
     },
     {
@@ -3478,7 +4823,7 @@ window.INITIAL_SCHOOL_DATA = {
       "classCode": "1BACSEF-2",
       "dayOfWeek": 2,
       "slotIndex": 7,
-      "room": "02",
+      "room": "02، 01",
       "subject": "إنجليزية"
     },
     {
@@ -3488,47 +4833,7 @@ window.INITIAL_SCHOOL_DATA = {
       "classCode": "2BACSVTF-1",
       "dayOfWeek": 2,
       "slotIndex": 8,
-      "room": "02",
-      "subject": "إنجليزية"
-    },
-    {
-      "slotId": "T10_5_2",
-      "teacherId": "T10",
-      "teacherName": "هدى هباز",
-      "classCode": "TCSEF-1",
-      "dayOfWeek": 5,
-      "slotIndex": 2,
-      "room": "02",
-      "subject": "إنجليزية"
-    },
-    {
-      "slotId": "T10_5_3",
-      "teacherId": "T10",
-      "teacherName": "هدى هباز",
-      "classCode": "1BACSEF-1",
-      "dayOfWeek": 5,
-      "slotIndex": 3,
-      "room": "01",
-      "subject": "إنجليزية"
-    },
-    {
-      "slotId": "T10_5_4",
-      "teacherId": "T10",
-      "teacherName": "هدى هباز",
-      "classCode": "2BACSVTF-1",
-      "dayOfWeek": 5,
-      "slotIndex": 4,
-      "room": "01",
-      "subject": "إنجليزية"
-    },
-    {
-      "slotId": "T10_3_6",
-      "teacherId": "T10",
-      "teacherName": "هدى هباز",
-      "classCode": "1BACSEF-2",
-      "dayOfWeek": 3,
-      "slotIndex": 6,
-      "room": "02",
+      "room": "02، 01",
       "subject": "إنجليزية"
     },
     {
@@ -3538,8 +4843,68 @@ window.INITIAL_SCHOOL_DATA = {
       "classCode": "2BACSVTF-1",
       "dayOfWeek": 3,
       "slotIndex": 5,
-      "room": "02",
+      "room": "02، 01",
       "subject": "إنجليزية"
+    },
+    {
+      "slotId": "T10_3_6",
+      "teacherId": "T10",
+      "teacherName": "هدى هباز",
+      "classCode": "1BACSEF-2",
+      "dayOfWeek": 3,
+      "slotIndex": 6,
+      "room": "02، 01",
+      "subject": "إنجليزية"
+    },
+    {
+      "slotId": "T10_5_2",
+      "teacherId": "T10",
+      "teacherName": "هدى هباز",
+      "classCode": "TCSEF-1",
+      "dayOfWeek": 5,
+      "slotIndex": 2,
+      "room": "02، 01",
+      "subject": "إنجليزية"
+    },
+    {
+      "slotId": "T10_5_3",
+      "teacherId": "T10",
+      "teacherName": "هدى هباز",
+      "classCode": "1BACSEF-1",
+      "dayOfWeek": 5,
+      "slotIndex": 3,
+      "room": "02، 01",
+      "subject": "إنجليزية"
+    },
+    {
+      "slotId": "T10_5_4",
+      "teacherId": "T10",
+      "teacherName": "هدى هباز",
+      "classCode": "2BACSVTF-1",
+      "dayOfWeek": 5,
+      "slotIndex": 4,
+      "room": "02، 01",
+      "subject": "إنجليزية"
+    },
+    {
+      "slotId": "T04_1_1",
+      "teacherId": "T04",
+      "teacherName": "رقية أجديك",
+      "classCode": "TCLSHF-1",
+      "dayOfWeek": 1,
+      "slotIndex": 1,
+      "room": "08",
+      "subject": "فرنسية"
+    },
+    {
+      "slotId": "T04_1_2",
+      "teacherId": "T04",
+      "teacherName": "رقية أجديك",
+      "classCode": "TCLSHF-1",
+      "dayOfWeek": 1,
+      "slotIndex": 2,
+      "room": "08",
+      "subject": "فرنسية"
     },
     {
       "slotId": "T04_1_3",
@@ -3562,22 +4927,12 @@ window.INITIAL_SCHOOL_DATA = {
       "subject": "فرنسية"
     },
     {
-      "slotId": "T04_1_1",
+      "slotId": "T04_2_5",
       "teacherId": "T04",
       "teacherName": "رقية أجديك",
-      "classCode": "TCLSHF-1",
-      "dayOfWeek": 1,
-      "slotIndex": 1,
-      "room": "08",
-      "subject": "فرنسية"
-    },
-    {
-      "slotId": "T04_1_2",
-      "teacherId": "T04",
-      "teacherName": "رقية أجديك",
-      "classCode": "TCLSHF-1",
-      "dayOfWeek": 1,
-      "slotIndex": 2,
+      "classCode": "TCLSHF-2",
+      "dayOfWeek": 2,
+      "slotIndex": 5,
       "room": "08",
       "subject": "فرنسية"
     },
@@ -3612,12 +4967,22 @@ window.INITIAL_SCHOOL_DATA = {
       "subject": "فرنسية"
     },
     {
-      "slotId": "T04_2_5",
+      "slotId": "T04_3_1",
       "teacherId": "T04",
       "teacherName": "رقية أجديك",
       "classCode": "TCLSHF-2",
-      "dayOfWeek": 2,
-      "slotIndex": 5,
+      "dayOfWeek": 3,
+      "slotIndex": 1,
+      "room": "08",
+      "subject": "فرنسية"
+    },
+    {
+      "slotId": "T04_3_2",
+      "teacherId": "T04",
+      "teacherName": "رقية أجديك",
+      "classCode": "TCLSHF-2",
+      "dayOfWeek": 3,
+      "slotIndex": 2,
       "room": "08",
       "subject": "فرنسية"
     },
@@ -3642,21 +5007,61 @@ window.INITIAL_SCHOOL_DATA = {
       "subject": "فرنسية"
     },
     {
-      "slotId": "T04_3_1",
+      "slotId": "T04_4_5",
       "teacherId": "T04",
       "teacherName": "رقية أجديك",
       "classCode": "TCLSHF-2",
-      "dayOfWeek": 3,
+      "dayOfWeek": 4,
+      "slotIndex": 5,
+      "room": "08",
+      "subject": "فرنسية"
+    },
+    {
+      "slotId": "T04_4_6",
+      "teacherId": "T04",
+      "teacherName": "رقية أجديك",
+      "classCode": "TCLSHF-2",
+      "dayOfWeek": 4,
+      "slotIndex": 6,
+      "room": "08",
+      "subject": "فرنسية"
+    },
+    {
+      "slotId": "T04_4_7",
+      "teacherId": "T04",
+      "teacherName": "رقية أجديك",
+      "classCode": "TCLSHF-1",
+      "dayOfWeek": 4,
+      "slotIndex": 7,
+      "room": "08",
+      "subject": "فرنسية"
+    },
+    {
+      "slotId": "T04_4_8",
+      "teacherId": "T04",
+      "teacherName": "رقية أجديك",
+      "classCode": "TCLSHF-1",
+      "dayOfWeek": 4,
+      "slotIndex": 8,
+      "room": "08",
+      "subject": "فرنسية"
+    },
+    {
+      "slotId": "T04_6_1",
+      "teacherId": "T04",
+      "teacherName": "رقية أجديك",
+      "classCode": "TCLSHF-2",
+      "dayOfWeek": 6,
       "slotIndex": 1,
       "room": "08",
       "subject": "فرنسية"
     },
     {
-      "slotId": "T04_3_2",
+      "slotId": "T04_6_2",
       "teacherId": "T04",
       "teacherName": "رقية أجديك",
       "classCode": "TCLSHF-2",
-      "dayOfWeek": 3,
+      "dayOfWeek": 6,
       "slotIndex": 2,
       "room": "08",
       "subject": "فرنسية"
@@ -3682,64 +5087,24 @@ window.INITIAL_SCHOOL_DATA = {
       "subject": "فرنسية"
     },
     {
-      "slotId": "T04_6_1",
-      "teacherId": "T04",
-      "teacherName": "رقية أجديك",
+      "slotId": "T13_1_5",
+      "teacherId": "T13",
+      "teacherName": "لطيفة لكوش",
       "classCode": "TCLSHF-2",
-      "dayOfWeek": 6,
-      "slotIndex": 1,
-      "room": "08",
-      "subject": "فرنسية"
-    },
-    {
-      "slotId": "T04_6_2",
-      "teacherId": "T04",
-      "teacherName": "رقية أجديك",
-      "classCode": "TCLSHF-2",
-      "dayOfWeek": 6,
-      "slotIndex": 2,
-      "room": "08",
-      "subject": "فرنسية"
-    },
-    {
-      "slotId": "T04_4_7",
-      "teacherId": "T04",
-      "teacherName": "رقية أجديك",
-      "classCode": "TCLSHF-1",
-      "dayOfWeek": 4,
-      "slotIndex": 7,
-      "room": "08",
-      "subject": "فرنسية"
-    },
-    {
-      "slotId": "T04_4_8",
-      "teacherId": "T04",
-      "teacherName": "رقية أجديك",
-      "classCode": "TCLSHF-1",
-      "dayOfWeek": 4,
-      "slotIndex": 8,
-      "room": "08",
-      "subject": "فرنسية"
-    },
-    {
-      "slotId": "T04_4_5",
-      "teacherId": "T04",
-      "teacherName": "رقية أجديك",
-      "classCode": "TCLSHF-2",
-      "dayOfWeek": 4,
+      "dayOfWeek": 1,
       "slotIndex": 5,
-      "room": "08",
-      "subject": "فرنسية"
+      "room": "07",
+      "subject": "رياضيات"
     },
     {
-      "slotId": "T04_4_6",
-      "teacherId": "T04",
-      "teacherName": "رقية أجديك",
-      "classCode": "TCLSHF-2",
-      "dayOfWeek": 4,
+      "slotId": "T13_1_6",
+      "teacherId": "T13",
+      "teacherName": "لطيفة لكوش",
+      "classCode": "1BACSHF-2",
+      "dayOfWeek": 1,
       "slotIndex": 6,
-      "room": "08",
-      "subject": "فرنسية"
+      "room": "07",
+      "subject": "رياضيات"
     },
     {
       "slotId": "T13_1_7",
@@ -3762,32 +5127,12 @@ window.INITIAL_SCHOOL_DATA = {
       "subject": "رياضيات"
     },
     {
-      "slotId": "T13_1_5",
-      "teacherId": "T13",
-      "teacherName": "لطيفة لكوش",
-      "classCode": "TCLSHF-2",
-      "dayOfWeek": 1,
-      "slotIndex": 5,
-      "room": "07",
-      "subject": "رياضيات"
-    },
-    {
-      "slotId": "T13_1_6",
+      "slotId": "T13_2_6",
       "teacherId": "T13",
       "teacherName": "لطيفة لكوش",
       "classCode": "1BACSHF-2",
-      "dayOfWeek": 1,
-      "slotIndex": 6,
-      "room": "07",
-      "subject": "رياضيات"
-    },
-    {
-      "slotId": "T13_2_8",
-      "teacherId": "T13",
-      "teacherName": "لطيفة لكوش",
-      "classCode": "TCSEF-1",
       "dayOfWeek": 2,
-      "slotIndex": 8,
+      "slotIndex": 6,
       "room": "07",
       "subject": "رياضيات"
     },
@@ -3802,22 +5147,12 @@ window.INITIAL_SCHOOL_DATA = {
       "subject": "رياضيات"
     },
     {
-      "slotId": "T13_2_6",
-      "teacherId": "T13",
-      "teacherName": "لطيفة لكوش",
-      "classCode": "1BACSHF-2",
-      "dayOfWeek": 2,
-      "slotIndex": 6,
-      "room": "07",
-      "subject": "رياضيات"
-    },
-    {
-      "slotId": "T13_3_2",
+      "slotId": "T13_2_8",
       "teacherId": "T13",
       "teacherName": "لطيفة لكوش",
       "classCode": "TCSEF-1",
-      "dayOfWeek": 3,
-      "slotIndex": 2,
+      "dayOfWeek": 2,
+      "slotIndex": 8,
       "room": "07",
       "subject": "رياضيات"
     },
@@ -3828,6 +5163,16 @@ window.INITIAL_SCHOOL_DATA = {
       "classCode": "TCLSHF-1",
       "dayOfWeek": 3,
       "slotIndex": 1,
+      "room": "07",
+      "subject": "رياضيات"
+    },
+    {
+      "slotId": "T13_3_2",
+      "teacherId": "T13",
+      "teacherName": "لطيفة لكوش",
+      "classCode": "TCSEF-1",
+      "dayOfWeek": 3,
+      "slotIndex": 2,
       "room": "07",
       "subject": "رياضيات"
     },
@@ -3852,33 +5197,13 @@ window.INITIAL_SCHOOL_DATA = {
       "subject": "رياضيات"
     },
     {
-      "slotId": "T02_1_8",
-      "teacherId": "T02",
-      "teacherName": "عمر اعتزري",
-      "classCode": "TCSEF-1",
-      "dayOfWeek": 1,
-      "slotIndex": 8,
-      "room": "09",
-      "subject": "عربية"
-    },
-    {
       "slotId": "T02_1_5",
       "teacherId": "T02",
       "teacherName": "عمر اعتزري",
       "classCode": "TCLSHF-1",
       "dayOfWeek": 1,
       "slotIndex": 5,
-      "room": "09",
-      "subject": "عربية"
-    },
-    {
-      "slotId": "T02_1_7",
-      "teacherId": "T02",
-      "teacherName": "عمر اعتزري",
-      "classCode": "1BACSEF-1",
-      "dayOfWeek": 1,
-      "slotIndex": 7,
-      "room": "09",
+      "room": "09، 08",
       "subject": "عربية"
     },
     {
@@ -3888,27 +5213,27 @@ window.INITIAL_SCHOOL_DATA = {
       "classCode": "1BACSEF-2",
       "dayOfWeek": 1,
       "slotIndex": 6,
-      "room": "09",
+      "room": "09، 08",
       "subject": "عربية"
     },
     {
-      "slotId": "T02_5_3",
+      "slotId": "T02_1_7",
+      "teacherId": "T02",
+      "teacherName": "عمر اعتزري",
+      "classCode": "1BACSEF-1",
+      "dayOfWeek": 1,
+      "slotIndex": 7,
+      "room": "09، 08",
+      "subject": "عربية"
+    },
+    {
+      "slotId": "T02_1_8",
       "teacherId": "T02",
       "teacherName": "عمر اعتزري",
       "classCode": "TCSEF-1",
-      "dayOfWeek": 5,
-      "slotIndex": 3,
-      "room": "09",
-      "subject": "عربية"
-    },
-    {
-      "slotId": "T02_5_4",
-      "teacherId": "T02",
-      "teacherName": "عمر اعتزري",
-      "classCode": "TCLSHF-1",
-      "dayOfWeek": 5,
-      "slotIndex": 4,
-      "room": "09",
+      "dayOfWeek": 1,
+      "slotIndex": 8,
+      "room": "09، 08",
       "subject": "عربية"
     },
     {
@@ -3918,7 +5243,7 @@ window.INITIAL_SCHOOL_DATA = {
       "classCode": "TCLSHF-1",
       "dayOfWeek": 2,
       "slotIndex": 3,
-      "room": "08",
+      "room": "09، 08",
       "subject": "عربية"
     },
     {
@@ -3928,17 +5253,7 @@ window.INITIAL_SCHOOL_DATA = {
       "classCode": "TCLSHF-1",
       "dayOfWeek": 2,
       "slotIndex": 4,
-      "room": "08",
-      "subject": "عربية"
-    },
-    {
-      "slotId": "T02_3_3",
-      "teacherId": "T02",
-      "teacherName": "عمر اعتزري",
-      "classCode": "TCLSHF-1",
-      "dayOfWeek": 3,
-      "slotIndex": 3,
-      "room": "09",
+      "room": "09، 08",
       "subject": "عربية"
     },
     {
@@ -3948,7 +5263,17 @@ window.INITIAL_SCHOOL_DATA = {
       "classCode": "1BACSEF-1",
       "dayOfWeek": 3,
       "slotIndex": 2,
-      "room": "09",
+      "room": "09، 08",
+      "subject": "عربية"
+    },
+    {
+      "slotId": "T02_3_3",
+      "teacherId": "T02",
+      "teacherName": "عمر اعتزري",
+      "classCode": "TCLSHF-1",
+      "dayOfWeek": 3,
+      "slotIndex": 3,
+      "room": "09، 08",
       "subject": "عربية"
     },
     {
@@ -3958,8 +5283,58 @@ window.INITIAL_SCHOOL_DATA = {
       "classCode": "1BACSEF-2",
       "dayOfWeek": 3,
       "slotIndex": 4,
-      "room": "09",
+      "room": "09، 08",
       "subject": "عربية"
+    },
+    {
+      "slotId": "T02_5_3",
+      "teacherId": "T02",
+      "teacherName": "عمر اعتزري",
+      "classCode": "TCSEF-1",
+      "dayOfWeek": 5,
+      "slotIndex": 3,
+      "room": "09، 08",
+      "subject": "عربية"
+    },
+    {
+      "slotId": "T02_5_4",
+      "teacherId": "T02",
+      "teacherName": "عمر اعتزري",
+      "classCode": "TCLSHF-1",
+      "dayOfWeek": 5,
+      "slotIndex": 4,
+      "room": "09، 08",
+      "subject": "عربية"
+    },
+    {
+      "slotId": "T20_1_5",
+      "teacherId": "T20",
+      "teacherName": "عائشة السخني",
+      "classCode": "2BACSHF-1",
+      "dayOfWeek": 1,
+      "slotIndex": 5,
+      "room": "03",
+      "subject": "فلسفة"
+    },
+    {
+      "slotId": "T20_1_6",
+      "teacherId": "T20",
+      "teacherName": "عائشة السخني",
+      "classCode": "2BACLF-1",
+      "dayOfWeek": 1,
+      "slotIndex": 6,
+      "room": "03",
+      "subject": "فلسفة"
+    },
+    {
+      "slotId": "T20_1_7",
+      "teacherId": "T20",
+      "teacherName": "عائشة السخني",
+      "classCode": "1BACSEF-2",
+      "dayOfWeek": 1,
+      "slotIndex": 7,
+      "room": "03",
+      "subject": "فلسفة"
     },
     {
       "slotId": "T20_2_1",
@@ -3998,66 +5373,6 @@ window.INITIAL_SCHOOL_DATA = {
       "classCode": "2BACSVTF-1",
       "dayOfWeek": 2,
       "slotIndex": 4,
-      "room": "03",
-      "subject": "فلسفة"
-    },
-    {
-      "slotId": "T20_6_3",
-      "teacherId": "T20",
-      "teacherName": "عائشة السخني",
-      "classCode": "TCLSHF-1",
-      "dayOfWeek": 6,
-      "slotIndex": 3,
-      "room": "03",
-      "subject": "فلسفة"
-    },
-    {
-      "slotId": "T20_6_4",
-      "teacherId": "T20",
-      "teacherName": "عائشة السخني",
-      "classCode": "TCLSHF-1",
-      "dayOfWeek": 6,
-      "slotIndex": 4,
-      "room": "03",
-      "subject": "فلسفة"
-    },
-    {
-      "slotId": "T20_6_1",
-      "teacherId": "T20",
-      "teacherName": "عائشة السخني",
-      "classCode": "2BACSHF-1",
-      "dayOfWeek": 6,
-      "slotIndex": 1,
-      "room": "03",
-      "subject": "فلسفة"
-    },
-    {
-      "slotId": "T20_6_2",
-      "teacherId": "T20",
-      "teacherName": "عائشة السخني",
-      "classCode": "2BACSHF-1",
-      "dayOfWeek": 6,
-      "slotIndex": 2,
-      "room": "03",
-      "subject": "فلسفة"
-    },
-    {
-      "slotId": "T20_5_1",
-      "teacherId": "T20",
-      "teacherName": "عائشة السخني",
-      "classCode": "TCLSHF-2",
-      "dayOfWeek": 5,
-      "slotIndex": 1,
-      "room": "03",
-      "subject": "فلسفة"
-    },
-    {
-      "slotId": "T20_5_2",
-      "teacherId": "T20",
-      "teacherName": "عائشة السخني",
-      "classCode": "TCLSHF-2",
-      "dayOfWeek": 5,
-      "slotIndex": 2,
       "room": "03",
       "subject": "فلسفة"
     },
@@ -4102,31 +5417,21 @@ window.INITIAL_SCHOOL_DATA = {
       "subject": "فلسفة"
     },
     {
-      "slotId": "T20_1_7",
+      "slotId": "T20_4_5",
       "teacherId": "T20",
       "teacherName": "عائشة السخني",
-      "classCode": "1BACSEF-2",
-      "dayOfWeek": 1,
-      "slotIndex": 7,
-      "room": "03",
-      "subject": "فلسفة"
-    },
-    {
-      "slotId": "T20_1_5",
-      "teacherId": "T20",
-      "teacherName": "عائشة السخني",
-      "classCode": "2BACSHF-1",
-      "dayOfWeek": 1,
+      "classCode": "2BACLF-1",
+      "dayOfWeek": 4,
       "slotIndex": 5,
       "room": "03",
       "subject": "فلسفة"
     },
     {
-      "slotId": "T20_1_6",
+      "slotId": "T20_4_6",
       "teacherId": "T20",
       "teacherName": "عائشة السخني",
       "classCode": "2BACLF-1",
-      "dayOfWeek": 1,
+      "dayOfWeek": 4,
       "slotIndex": 6,
       "room": "03",
       "subject": "فلسفة"
@@ -4152,34 +5457,84 @@ window.INITIAL_SCHOOL_DATA = {
       "subject": "فلسفة"
     },
     {
-      "slotId": "T20_4_5",
+      "slotId": "T20_5_1",
       "teacherId": "T20",
       "teacherName": "عائشة السخني",
-      "classCode": "2BACLF-1",
-      "dayOfWeek": 4,
-      "slotIndex": 5,
+      "classCode": "TCLSHF-2",
+      "dayOfWeek": 5,
+      "slotIndex": 1,
       "room": "03",
       "subject": "فلسفة"
     },
     {
-      "slotId": "T20_4_6",
+      "slotId": "T20_5_2",
       "teacherId": "T20",
       "teacherName": "عائشة السخني",
-      "classCode": "2BACLF-1",
-      "dayOfWeek": 4,
-      "slotIndex": 6,
+      "classCode": "TCLSHF-2",
+      "dayOfWeek": 5,
+      "slotIndex": 2,
       "room": "03",
       "subject": "فلسفة"
     },
     {
-      "slotId": "T17_2_7",
+      "slotId": "T20_6_1",
+      "teacherId": "T20",
+      "teacherName": "عائشة السخني",
+      "classCode": "2BACSHF-1",
+      "dayOfWeek": 6,
+      "slotIndex": 1,
+      "room": "03",
+      "subject": "فلسفة"
+    },
+    {
+      "slotId": "T20_6_2",
+      "teacherId": "T20",
+      "teacherName": "عائشة السخني",
+      "classCode": "2BACSHF-1",
+      "dayOfWeek": 6,
+      "slotIndex": 2,
+      "room": "03",
+      "subject": "فلسفة"
+    },
+    {
+      "slotId": "T20_6_3",
+      "teacherId": "T20",
+      "teacherName": "عائشة السخني",
+      "classCode": "TCLSHF-1",
+      "dayOfWeek": 6,
+      "slotIndex": 3,
+      "room": "03",
+      "subject": "فلسفة"
+    },
+    {
+      "slotId": "T20_6_4",
+      "teacherId": "T20",
+      "teacherName": "عائشة السخني",
+      "classCode": "TCLSHF-1",
+      "dayOfWeek": 6,
+      "slotIndex": 4,
+      "room": "03",
+      "subject": "فلسفة"
+    },
+    {
+      "slotId": "T17_1_1",
       "teacherId": "T17",
       "teacherName": "محمد زين الدين",
-      "classCode": "TCSEF-1",
-      "dayOfWeek": 2,
-      "slotIndex": 7,
+      "classCode": "2BACSVTF-1",
+      "dayOfWeek": 1,
+      "slotIndex": 1,
       "room": "05",
-      "subject": "ع. ح. أ"
+      "subject": "ع. ج. أ"
+    },
+    {
+      "slotId": "T17_1_2",
+      "teacherId": "T17",
+      "teacherName": "محمد زين الدين",
+      "classCode": "2BACSVTF-1",
+      "dayOfWeek": 1,
+      "slotIndex": 2,
+      "room": "05",
+      "subject": "ع. ج. أ"
     },
     {
       "slotId": "T17_2_5",
@@ -4202,82 +5557,12 @@ window.INITIAL_SCHOOL_DATA = {
       "subject": "ع. ج. أ"
     },
     {
-      "slotId": "T17_4_5",
+      "slotId": "T17_2_7",
       "teacherId": "T17",
       "teacherName": "محمد زين الدين",
       "classCode": "TCSEF-1",
-      "dayOfWeek": 4,
-      "slotIndex": 5,
-      "room": "05",
-      "subject": "ع. ج. أ G1"
-    },
-    {
-      "slotId": "T17_4_7",
-      "teacherId": "T17",
-      "teacherName": "محمد زين الدين",
-      "classCode": "TCSEF-1",
-      "dayOfWeek": 4,
+      "dayOfWeek": 2,
       "slotIndex": 7,
-      "room": "05",
-      "subject": "ع. ح. أ G2"
-    },
-    {
-      "slotId": "T17_5_3",
-      "teacherId": "T17",
-      "teacherName": "محمد زين الدين",
-      "classCode": "2BACSPF-1",
-      "dayOfWeek": 5,
-      "slotIndex": 3,
-      "room": "05",
-      "subject": "ع. ج. أ"
-    },
-    {
-      "slotId": "T17_5_4",
-      "teacherId": "T17",
-      "teacherName": "محمد زين الدين",
-      "classCode": "2BACSPF-1",
-      "dayOfWeek": 5,
-      "slotIndex": 4,
-      "room": "05",
-      "subject": "ع. ج. أ"
-    },
-    {
-      "slotId": "T17_5_1",
-      "teacherId": "T17",
-      "teacherName": "محمد زين الدين",
-      "classCode": "2BACSVTF-1",
-      "dayOfWeek": 5,
-      "slotIndex": 1,
-      "room": "05",
-      "subject": "ع. ج. أ"
-    },
-    {
-      "slotId": "T17_5_2",
-      "teacherId": "T17",
-      "teacherName": "محمد زين الدين",
-      "classCode": "2BACSVTF-1",
-      "dayOfWeek": 5,
-      "slotIndex": 2,
-      "room": "05",
-      "subject": "ع. ج. أ"
-    },
-    {
-      "slotId": "T17_1_1",
-      "teacherId": "T17",
-      "teacherName": "محمد زين الدين",
-      "classCode": "2BACSVTF-1",
-      "dayOfWeek": 1,
-      "slotIndex": 1,
-      "room": "05",
-      "subject": "ع. ج. أ"
-    },
-    {
-      "slotId": "T17_1_2",
-      "teacherId": "T17",
-      "teacherName": "محمد زين الدين",
-      "classCode": "2BACSVTF-1",
-      "dayOfWeek": 1,
-      "slotIndex": 2,
       "room": "05",
       "subject": "ع. ج. أ"
     },
@@ -4302,62 +5587,72 @@ window.INITIAL_SCHOOL_DATA = {
       "subject": "ع. ج. أ"
     },
     {
-      "slotId": "T21_3_1",
-      "teacherId": "T21",
-      "teacherName": "مليكة أمين",
+      "slotId": "T17_4_5",
+      "teacherId": "T17",
+      "teacherName": "محمد زين الدين",
       "classCode": "TCSEF-1",
-      "dayOfWeek": 3,
-      "slotIndex": 1,
-      "room": "02",
-      "subject": "تربية إسلامية"
+      "dayOfWeek": 4,
+      "slotIndex": 5,
+      "room": "05",
+      "subject": "ع. ج. أ"
     },
     {
-      "slotId": "T21_3_4",
-      "teacherId": "T21",
-      "teacherName": "مليكة أمين",
-      "classCode": "TCLSHF-2",
-      "dayOfWeek": 3,
-      "slotIndex": 4,
-      "room": "02",
-      "subject": "تربية إسلامية"
-    },
-    {
-      "slotId": "T21_3_3",
-      "teacherId": "T21",
-      "teacherName": "مليكة أمين",
-      "classCode": "1BACSEF-1",
-      "dayOfWeek": 3,
-      "slotIndex": 3,
-      "room": "02",
-      "subject": "تربية إسلامية"
-    },
-    {
-      "slotId": "T21_3_2",
-      "teacherId": "T21",
-      "teacherName": "مليكة أمين",
-      "classCode": "2BACSHF-1",
-      "dayOfWeek": 3,
-      "slotIndex": 2,
-      "room": "02",
-      "subject": "تربية إسلامية"
-    },
-    {
-      "slotId": "T21_5_4",
-      "teacherId": "T21",
-      "teacherName": "مليكة أمين",
+      "slotId": "T17_4_7",
+      "teacherId": "T17",
+      "teacherName": "محمد زين الدين",
       "classCode": "TCSEF-1",
-      "dayOfWeek": 5,
-      "slotIndex": 4,
-      "room": "02",
-      "subject": "تربية إسلامية"
+      "dayOfWeek": 4,
+      "slotIndex": 7,
+      "room": "05",
+      "subject": "ع. ج. أ"
     },
     {
-      "slotId": "T21_5_3",
-      "teacherId": "T21",
-      "teacherName": "مليكة أمين",
+      "slotId": "T17_5_1",
+      "teacherId": "T17",
+      "teacherName": "محمد زين الدين",
       "classCode": "2BACSVTF-1",
       "dayOfWeek": 5,
+      "slotIndex": 1,
+      "room": "05",
+      "subject": "ع. ج. أ"
+    },
+    {
+      "slotId": "T17_5_2",
+      "teacherId": "T17",
+      "teacherName": "محمد زين الدين",
+      "classCode": "2BACSVTF-1",
+      "dayOfWeek": 5,
+      "slotIndex": 2,
+      "room": "05",
+      "subject": "ع. ج. أ"
+    },
+    {
+      "slotId": "T17_5_3",
+      "teacherId": "T17",
+      "teacherName": "محمد زين الدين",
+      "classCode": "2BACSPF-1",
+      "dayOfWeek": 5,
       "slotIndex": 3,
+      "room": "05",
+      "subject": "ع. ج. أ"
+    },
+    {
+      "slotId": "T17_5_4",
+      "teacherId": "T17",
+      "teacherName": "محمد زين الدين",
+      "classCode": "2BACSPF-1",
+      "dayOfWeek": 5,
+      "slotIndex": 4,
+      "room": "05",
+      "subject": "ع. ج. أ"
+    },
+    {
+      "slotId": "T21_1_5",
+      "teacherId": "T21",
+      "teacherName": "مليكة أمين",
+      "classCode": "1BACSEF-2",
+      "dayOfWeek": 1,
+      "slotIndex": 5,
       "room": "02",
       "subject": "تربية إسلامية"
     },
@@ -4382,52 +5677,12 @@ window.INITIAL_SCHOOL_DATA = {
       "subject": "تربية إسلامية"
     },
     {
-      "slotId": "T21_1_5",
-      "teacherId": "T21",
-      "teacherName": "مليكة أمين",
-      "classCode": "1BACSEF-2",
-      "dayOfWeek": 1,
-      "slotIndex": 5,
-      "room": "02",
-      "subject": "تربية إسلامية"
-    },
-    {
-      "slotId": "T21_6_1",
-      "teacherId": "T21",
-      "teacherName": "مليكة أمين",
-      "classCode": "TCLSHF-1",
-      "dayOfWeek": 6,
-      "slotIndex": 1,
-      "room": "02",
-      "subject": "تربية إسلامية"
-    },
-    {
-      "slotId": "T21_6_2",
-      "teacherId": "T21",
-      "teacherName": "مليكة أمين",
-      "classCode": "1BACSEF-1",
-      "dayOfWeek": 6,
-      "slotIndex": 2,
-      "room": "02",
-      "subject": "تربية إسلامية"
-    },
-    {
-      "slotId": "T21_6_4",
-      "teacherId": "T21",
-      "teacherName": "مليكة أمين",
-      "classCode": "2BACSPF-1",
-      "dayOfWeek": 6,
-      "slotIndex": 4,
-      "room": "02",
-      "subject": "تربية إسلامية"
-    },
-    {
-      "slotId": "T21_6_3",
+      "slotId": "T21_2_1",
       "teacherId": "T21",
       "teacherName": "مليكة أمين",
       "classCode": "2BACLF-1",
-      "dayOfWeek": 6,
-      "slotIndex": 3,
+      "dayOfWeek": 2,
+      "slotIndex": 1,
       "room": "02",
       "subject": "تربية إسلامية"
     },
@@ -4462,22 +5717,42 @@ window.INITIAL_SCHOOL_DATA = {
       "subject": "تربية إسلامية"
     },
     {
-      "slotId": "T21_2_1",
+      "slotId": "T21_3_1",
       "teacherId": "T21",
       "teacherName": "مليكة أمين",
-      "classCode": "2BACLF-1",
-      "dayOfWeek": 2,
+      "classCode": "TCSEF-1",
+      "dayOfWeek": 3,
       "slotIndex": 1,
       "room": "02",
       "subject": "تربية إسلامية"
     },
     {
-      "slotId": "T21_4_8",
+      "slotId": "T21_3_2",
       "teacherId": "T21",
       "teacherName": "مليكة أمين",
-      "classCode": "1BACSHF-1",
-      "dayOfWeek": 4,
-      "slotIndex": 8,
+      "classCode": "2BACSHF-1",
+      "dayOfWeek": 3,
+      "slotIndex": 2,
+      "room": "02",
+      "subject": "تربية إسلامية"
+    },
+    {
+      "slotId": "T21_3_3",
+      "teacherId": "T21",
+      "teacherName": "مليكة أمين",
+      "classCode": "1BACSEF-1",
+      "dayOfWeek": 3,
+      "slotIndex": 3,
+      "room": "02",
+      "subject": "تربية إسلامية"
+    },
+    {
+      "slotId": "T21_3_4",
+      "teacherId": "T21",
+      "teacherName": "مليكة أمين",
+      "classCode": "TCLSHF-2",
+      "dayOfWeek": 3,
+      "slotIndex": 4,
       "room": "02",
       "subject": "تربية إسلامية"
     },
@@ -4492,16 +5767,6 @@ window.INITIAL_SCHOOL_DATA = {
       "subject": "تربية إسلامية"
     },
     {
-      "slotId": "T21_4_7",
-      "teacherId": "T21",
-      "teacherName": "مليكة أمين",
-      "classCode": "1BACSEF-2",
-      "dayOfWeek": 4,
-      "slotIndex": 7,
-      "room": "02",
-      "subject": "تربية إسلامية"
-    },
-    {
       "slotId": "T21_4_6",
       "teacherId": "T21",
       "teacherName": "مليكة أمين",
@@ -4512,84 +5777,84 @@ window.INITIAL_SCHOOL_DATA = {
       "subject": "تربية إسلامية"
     },
     {
-      "slotId": "T22_3_4",
-      "teacherId": "T22",
-      "teacherName": "زكرياء مهتدي",
-      "classCode": "TCSEF-1",
-      "dayOfWeek": 3,
-      "slotIndex": 4,
-      "room": "",
-      "subject": "تربية بدنية"
-    },
-    {
-      "slotId": "T22_5_1",
-      "teacherId": "T22",
-      "teacherName": "زكرياء مهتدي",
-      "classCode": "TCSEF-1",
-      "dayOfWeek": 5,
-      "slotIndex": 1,
-      "room": "",
-      "subject": "تربية بدنية"
-    },
-    {
-      "slotId": "T22_5_2",
-      "teacherId": "T22",
-      "teacherName": "زكرياء مهتدي",
-      "classCode": "1BACSHF-1",
-      "dayOfWeek": 5,
-      "slotIndex": 2,
-      "room": "",
-      "subject": "تربية بدنية"
-    },
-    {
-      "slotId": "T22_2_2",
-      "teacherId": "T22",
-      "teacherName": "زكرياء مهتدي",
-      "classCode": "TCLSHF-1",
-      "dayOfWeek": 2,
-      "slotIndex": 2,
-      "room": "",
-      "subject": "تربية بدنية"
-    },
-    {
-      "slotId": "T22_2_3",
-      "teacherId": "T22",
-      "teacherName": "زكرياء مهتدي",
-      "classCode": "TCLSHF-2",
-      "dayOfWeek": 2,
-      "slotIndex": 3,
-      "room": "",
-      "subject": "تربية بدنية"
-    },
-    {
-      "slotId": "T22_4_6",
-      "teacherId": "T22",
-      "teacherName": "زكرياء مهتدي",
-      "classCode": "TCLSHF-1",
-      "dayOfWeek": 4,
-      "slotIndex": 6,
-      "room": "",
-      "subject": "تربية بدنية"
-    },
-    {
-      "slotId": "T22_4_7",
-      "teacherId": "T22",
-      "teacherName": "زكرياء مهتدي",
-      "classCode": "TCLSHF-2",
-      "dayOfWeek": 4,
-      "slotIndex": 7,
-      "room": "",
-      "subject": "تربية بدنية"
-    },
-    {
-      "slotId": "T22_4_8",
-      "teacherId": "T22",
-      "teacherName": "زكرياء مهتدي",
+      "slotId": "T21_4_7",
+      "teacherId": "T21",
+      "teacherName": "مليكة أمين",
       "classCode": "1BACSEF-2",
       "dayOfWeek": 4,
+      "slotIndex": 7,
+      "room": "02",
+      "subject": "تربية إسلامية"
+    },
+    {
+      "slotId": "T21_4_8",
+      "teacherId": "T21",
+      "teacherName": "مليكة أمين",
+      "classCode": "1BACSHF-1",
+      "dayOfWeek": 4,
       "slotIndex": 8,
-      "room": "",
-      "subject": "تربية بدنية"
+      "room": "02",
+      "subject": "تربية إسلامية"
+    },
+    {
+      "slotId": "T21_5_3",
+      "teacherId": "T21",
+      "teacherName": "مليكة أمين",
+      "classCode": "2BACSVTF-1",
+      "dayOfWeek": 5,
+      "slotIndex": 3,
+      "room": "02",
+      "subject": "تربية إسلامية"
+    },
+    {
+      "slotId": "T21_5_4",
+      "teacherId": "T21",
+      "teacherName": "مليكة أمين",
+      "classCode": "TCSEF-1",
+      "dayOfWeek": 5,
+      "slotIndex": 4,
+      "room": "02",
+      "subject": "تربية إسلامية"
+    },
+    {
+      "slotId": "T21_6_1",
+      "teacherId": "T21",
+      "teacherName": "مليكة أمين",
+      "classCode": "TCLSHF-1",
+      "dayOfWeek": 6,
+      "slotIndex": 1,
+      "room": "02",
+      "subject": "تربية إسلامية"
+    },
+    {
+      "slotId": "T21_6_2",
+      "teacherId": "T21",
+      "teacherName": "مليكة أمين",
+      "classCode": "1BACSEF-1",
+      "dayOfWeek": 6,
+      "slotIndex": 2,
+      "room": "02",
+      "subject": "تربية إسلامية"
+    },
+    {
+      "slotId": "T21_6_3",
+      "teacherId": "T21",
+      "teacherName": "مليكة أمين",
+      "classCode": "2BACLF-1",
+      "dayOfWeek": 6,
+      "slotIndex": 3,
+      "room": "02",
+      "subject": "تربية إسلامية"
+    },
+    {
+      "slotId": "T21_6_4",
+      "teacherId": "T21",
+      "teacherName": "مليكة أمين",
+      "classCode": "2BACSPF-1",
+      "dayOfWeek": 6,
+      "slotIndex": 4,
+      "room": "02",
+      "subject": "تربية إسلامية"
     },
     {
       "slotId": "T22_1_6",
@@ -4598,7 +5863,7 @@ window.INITIAL_SCHOOL_DATA = {
       "classCode": "1BACSEF-1",
       "dayOfWeek": 1,
       "slotIndex": 6,
-      "room": "",
+      "room": "غير محددة",
       "subject": "تربية بدنية"
     },
     {
@@ -4608,7 +5873,7 @@ window.INITIAL_SCHOOL_DATA = {
       "classCode": "1BACSHF-1",
       "dayOfWeek": 1,
       "slotIndex": 7,
-      "room": "",
+      "room": "غير محددة",
       "subject": "تربية بدنية"
     },
     {
@@ -4618,7 +5883,37 @@ window.INITIAL_SCHOOL_DATA = {
       "classCode": "1BACSEF-2",
       "dayOfWeek": 1,
       "slotIndex": 8,
-      "room": "",
+      "room": "غير محددة",
+      "subject": "تربية بدنية"
+    },
+    {
+      "slotId": "T22_2_2",
+      "teacherId": "T22",
+      "teacherName": "زكرياء مهتدي",
+      "classCode": "TCLSHF-1",
+      "dayOfWeek": 2,
+      "slotIndex": 2,
+      "room": "غير محددة",
+      "subject": "تربية بدنية"
+    },
+    {
+      "slotId": "T22_2_3",
+      "teacherId": "T22",
+      "teacherName": "زكرياء مهتدي",
+      "classCode": "TCLSHF-2",
+      "dayOfWeek": 2,
+      "slotIndex": 3,
+      "room": "غير محددة",
+      "subject": "تربية بدنية"
+    },
+    {
+      "slotId": "T22_3_4",
+      "teacherId": "T22",
+      "teacherName": "زكرياء مهتدي",
+      "classCode": "TCSEF-1",
+      "dayOfWeek": 3,
+      "slotIndex": 4,
+      "room": "غير محددة",
       "subject": "تربية بدنية"
     },
     {
@@ -4628,8 +5923,98 @@ window.INITIAL_SCHOOL_DATA = {
       "classCode": "1BACSEF-1",
       "dayOfWeek": 3,
       "slotIndex": 7,
-      "room": "",
+      "room": "غير محددة",
       "subject": "تربية بدنية"
+    },
+    {
+      "slotId": "T22_4_6",
+      "teacherId": "T22",
+      "teacherName": "زكرياء مهتدي",
+      "classCode": "TCLSHF-1",
+      "dayOfWeek": 4,
+      "slotIndex": 6,
+      "room": "غير محددة",
+      "subject": "تربية بدنية"
+    },
+    {
+      "slotId": "T22_4_7",
+      "teacherId": "T22",
+      "teacherName": "زكرياء مهتدي",
+      "classCode": "TCLSHF-2",
+      "dayOfWeek": 4,
+      "slotIndex": 7,
+      "room": "غير محددة",
+      "subject": "تربية بدنية"
+    },
+    {
+      "slotId": "T22_4_8",
+      "teacherId": "T22",
+      "teacherName": "زكرياء مهتدي",
+      "classCode": "1BACSEF-2",
+      "dayOfWeek": 4,
+      "slotIndex": 8,
+      "room": "غير محددة",
+      "subject": "تربية بدنية"
+    },
+    {
+      "slotId": "T22_5_1",
+      "teacherId": "T22",
+      "teacherName": "زكرياء مهتدي",
+      "classCode": "TCSEF-1",
+      "dayOfWeek": 5,
+      "slotIndex": 1,
+      "room": "غير محددة",
+      "subject": "تربية بدنية"
+    },
+    {
+      "slotId": "T22_5_2",
+      "teacherId": "T22",
+      "teacherName": "زكرياء مهتدي",
+      "classCode": "1BACSHF-1",
+      "dayOfWeek": 5,
+      "slotIndex": 2,
+      "room": "غير محددة",
+      "subject": "تربية بدنية"
+    },
+    {
+      "slotId": "T14_2_1",
+      "teacherId": "T14",
+      "teacherName": "عبد الله اغلاس",
+      "classCode": "1BACSEF-2",
+      "dayOfWeek": 2,
+      "slotIndex": 1,
+      "room": "04",
+      "subject": "فيزياء"
+    },
+    {
+      "slotId": "T14_2_2",
+      "teacherId": "T14",
+      "teacherName": "عبد الله اغلاس",
+      "classCode": "1BACSEF-2",
+      "dayOfWeek": 2,
+      "slotIndex": 2,
+      "room": "04",
+      "subject": "فيزياء"
+    },
+    {
+      "slotId": "T14_2_3",
+      "teacherId": "T14",
+      "teacherName": "عبد الله اغلاس",
+      "classCode": "1BACSEF-1",
+      "dayOfWeek": 2,
+      "slotIndex": 3,
+      "room": "04",
+      "subject": "فيزياء"
+    },
+    {
+      "slotId": "T14_2_4",
+      "teacherId": "T14",
+      "teacherName": "عبد الله اغلاس",
+      "classCode": "1BACSEF-1",
+      "dayOfWeek": 2,
+      "slotIndex": 4,
+      "room": "04",
+      "subject": "فيزياء"
     },
     {
       "slotId": "T14_4_6",
@@ -4639,7 +6024,7 @@ window.INITIAL_SCHOOL_DATA = {
       "dayOfWeek": 4,
       "slotIndex": 6,
       "room": "04",
-      "subject": "فيزياء G1"
+      "subject": "فيزياء"
     },
     {
       "slotId": "T14_4_8",
@@ -4649,7 +6034,27 @@ window.INITIAL_SCHOOL_DATA = {
       "dayOfWeek": 4,
       "slotIndex": 8,
       "room": "04",
-      "subject": "فيزياء G2"
+      "subject": "فيزياء"
+    },
+    {
+      "slotId": "T14_5_3",
+      "teacherId": "T14",
+      "teacherName": "عبد الله اغلاس",
+      "classCode": "1BACSEF-2",
+      "dayOfWeek": 5,
+      "slotIndex": 3,
+      "room": "04",
+      "subject": "فيزياء"
+    },
+    {
+      "slotId": "T14_5_4",
+      "teacherId": "T14",
+      "teacherName": "عبد الله اغلاس",
+      "classCode": "1BACSEF-2",
+      "dayOfWeek": 5,
+      "slotIndex": 4,
+      "room": "04",
+      "subject": "فيزياء"
     },
     {
       "slotId": "T14_6_1",
@@ -4692,72 +6097,12 @@ window.INITIAL_SCHOOL_DATA = {
       "subject": "فيزياء"
     },
     {
-      "slotId": "T14_2_3",
-      "teacherId": "T14",
-      "teacherName": "عبد الله اغلاس",
-      "classCode": "1BACSEF-1",
-      "dayOfWeek": 2,
-      "slotIndex": 3,
-      "room": "04",
-      "subject": "فيزياء"
-    },
-    {
-      "slotId": "T14_2_4",
-      "teacherId": "T14",
-      "teacherName": "عبد الله اغلاس",
-      "classCode": "1BACSEF-1",
-      "dayOfWeek": 2,
-      "slotIndex": 4,
-      "room": "04",
-      "subject": "فيزياء"
-    },
-    {
-      "slotId": "T14_2_1",
-      "teacherId": "T14",
-      "teacherName": "عبد الله اغلاس",
-      "classCode": "1BACSEF-2",
-      "dayOfWeek": 2,
-      "slotIndex": 1,
-      "room": "04",
-      "subject": "فيزياء"
-    },
-    {
-      "slotId": "T14_2_2",
-      "teacherId": "T14",
-      "teacherName": "عبد الله اغلاس",
-      "classCode": "1BACSEF-2",
-      "dayOfWeek": 2,
-      "slotIndex": 2,
-      "room": "04",
-      "subject": "فيزياء"
-    },
-    {
-      "slotId": "T14_5_3",
-      "teacherId": "T14",
-      "teacherName": "عبد الله اغلاس",
-      "classCode": "1BACSEF-2",
-      "dayOfWeek": 5,
-      "slotIndex": 3,
-      "room": "04",
-      "subject": "فيزياء"
-    },
-    {
-      "slotId": "T14_5_4",
-      "teacherId": "T14",
-      "teacherName": "عبد الله اغلاس",
-      "classCode": "1BACSEF-2",
-      "dayOfWeek": 5,
-      "slotIndex": 4,
-      "room": "04",
-      "subject": "فيزياء"
-    },
-    {
-      "slotId": "T08_1_7",
+      "slotId": "T08_1_5",
       "teacherId": "T08",
       "teacherName": "رشيد ادات",
-      "classCode": "TCLSHF-1",
+      "classCode": "1BACSHF-2",
       "dayOfWeek": 1,
-      "slotIndex": 7,
+      "slotIndex": 5,
       "room": "01",
       "subject": "إنجليزية"
     },
@@ -4772,22 +6117,22 @@ window.INITIAL_SCHOOL_DATA = {
       "subject": "إنجليزية"
     },
     {
+      "slotId": "T08_1_7",
+      "teacherId": "T08",
+      "teacherName": "رشيد ادات",
+      "classCode": "TCLSHF-1",
+      "dayOfWeek": 1,
+      "slotIndex": 7,
+      "room": "01",
+      "subject": "إنجليزية"
+    },
+    {
       "slotId": "T08_1_8",
       "teacherId": "T08",
       "teacherName": "رشيد ادات",
       "classCode": "1BACSHF-1",
       "dayOfWeek": 1,
       "slotIndex": 8,
-      "room": "01",
-      "subject": "إنجليزية"
-    },
-    {
-      "slotId": "T08_1_5",
-      "teacherId": "T08",
-      "teacherName": "رشيد ادات",
-      "classCode": "1BACSHF-2",
-      "dayOfWeek": 1,
-      "slotIndex": 5,
       "room": "01",
       "subject": "إنجليزية"
     },
@@ -4832,6 +6177,16 @@ window.INITIAL_SCHOOL_DATA = {
       "subject": "إنجليزية"
     },
     {
+      "slotId": "T08_3_1",
+      "teacherId": "T08",
+      "teacherName": "رشيد ادات",
+      "classCode": "1BACSHF-1",
+      "dayOfWeek": 3,
+      "slotIndex": 1,
+      "room": "01",
+      "subject": "إنجليزية"
+    },
+    {
       "slotId": "T08_3_2",
       "teacherId": "T08",
       "teacherName": "رشيد ادات",
@@ -4852,42 +6207,12 @@ window.INITIAL_SCHOOL_DATA = {
       "subject": "إنجليزية"
     },
     {
-      "slotId": "T08_3_1",
-      "teacherId": "T08",
-      "teacherName": "رشيد ادات",
-      "classCode": "1BACSHF-1",
-      "dayOfWeek": 3,
-      "slotIndex": 1,
-      "room": "01",
-      "subject": "إنجليزية"
-    },
-    {
-      "slotId": "T08_6_2",
-      "teacherId": "T08",
-      "teacherName": "رشيد ادات",
-      "classCode": "TCLSHF-1",
-      "dayOfWeek": 6,
-      "slotIndex": 2,
-      "room": "01",
-      "subject": "إنجليزية"
-    },
-    {
-      "slotId": "T08_6_4",
-      "teacherId": "T08",
-      "teacherName": "رشيد ادات",
-      "classCode": "TCLSHF-2",
-      "dayOfWeek": 6,
-      "slotIndex": 4,
-      "room": "01",
-      "subject": "إنجليزية"
-    },
-    {
-      "slotId": "T08_6_3",
+      "slotId": "T08_4_6",
       "teacherId": "T08",
       "teacherName": "رشيد ادات",
       "classCode": "1BACSHF-2",
-      "dayOfWeek": 6,
-      "slotIndex": 3,
+      "dayOfWeek": 4,
+      "slotIndex": 6,
       "room": "01",
       "subject": "إنجليزية"
     },
@@ -4902,14 +6227,84 @@ window.INITIAL_SCHOOL_DATA = {
       "subject": "إنجليزية"
     },
     {
-      "slotId": "T08_4_6",
+      "slotId": "T08_6_2",
+      "teacherId": "T08",
+      "teacherName": "رشيد ادات",
+      "classCode": "TCLSHF-1",
+      "dayOfWeek": 6,
+      "slotIndex": 2,
+      "room": "01",
+      "subject": "إنجليزية"
+    },
+    {
+      "slotId": "T08_6_3",
       "teacherId": "T08",
       "teacherName": "رشيد ادات",
       "classCode": "1BACSHF-2",
-      "dayOfWeek": 4,
-      "slotIndex": 6,
+      "dayOfWeek": 6,
+      "slotIndex": 3,
       "room": "01",
       "subject": "إنجليزية"
+    },
+    {
+      "slotId": "T08_6_4",
+      "teacherId": "T08",
+      "teacherName": "رشيد ادات",
+      "classCode": "TCLSHF-2",
+      "dayOfWeek": 6,
+      "slotIndex": 4,
+      "room": "01",
+      "subject": "إنجليزية"
+    },
+    {
+      "slotId": "T18_1_6",
+      "teacherId": "T18",
+      "teacherName": "محمد داعنو",
+      "classCode": "2BACSHF-1",
+      "dayOfWeek": 1,
+      "slotIndex": 6,
+      "room": "08",
+      "subject": "اجتماعيات"
+    },
+    {
+      "slotId": "T18_1_7",
+      "teacherId": "T18",
+      "teacherName": "محمد داعنو",
+      "classCode": "2BACLF-1",
+      "dayOfWeek": 1,
+      "slotIndex": 7,
+      "room": "08",
+      "subject": "اجتماعيات"
+    },
+    {
+      "slotId": "T18_1_8",
+      "teacherId": "T18",
+      "teacherName": "محمد داعنو",
+      "classCode": "2BACLF-1",
+      "dayOfWeek": 1,
+      "slotIndex": 8,
+      "room": "08",
+      "subject": "اجتماعيات"
+    },
+    {
+      "slotId": "T18_2_1",
+      "teacherId": "T18",
+      "teacherName": "محمد داعنو",
+      "classCode": "TCLSHF-2",
+      "dayOfWeek": 2,
+      "slotIndex": 1,
+      "room": "08",
+      "subject": "اجتماعيات"
+    },
+    {
+      "slotId": "T18_2_2",
+      "teacherId": "T18",
+      "teacherName": "محمد داعنو",
+      "classCode": "2BACSHF-1",
+      "dayOfWeek": 2,
+      "slotIndex": 2,
+      "room": "08",
+      "subject": "اجتماعيات"
     },
     {
       "slotId": "T18_3_5",
@@ -4952,26 +6347,6 @@ window.INITIAL_SCHOOL_DATA = {
       "subject": "اجتماعيات"
     },
     {
-      "slotId": "T18_4_3",
-      "teacherId": "T18",
-      "teacherName": "محمد داعنو",
-      "classCode": "TCLSHF-1",
-      "dayOfWeek": 4,
-      "slotIndex": 3,
-      "room": "08",
-      "subject": "اجتماعيات"
-    },
-    {
-      "slotId": "T18_4_4",
-      "teacherId": "T18",
-      "teacherName": "محمد داعنو",
-      "classCode": "TCLSHF-1",
-      "dayOfWeek": 4,
-      "slotIndex": 4,
-      "room": "08",
-      "subject": "اجتماعيات"
-    },
-    {
       "slotId": "T18_4_1",
       "teacherId": "T18",
       "teacherName": "محمد داعنو",
@@ -4992,12 +6367,22 @@ window.INITIAL_SCHOOL_DATA = {
       "subject": "اجتماعيات"
     },
     {
-      "slotId": "T18_5_3",
+      "slotId": "T18_4_3",
       "teacherId": "T18",
       "teacherName": "محمد داعنو",
       "classCode": "TCLSHF-1",
-      "dayOfWeek": 5,
+      "dayOfWeek": 4,
       "slotIndex": 3,
+      "room": "08",
+      "subject": "اجتماعيات"
+    },
+    {
+      "slotId": "T18_4_4",
+      "teacherId": "T18",
+      "teacherName": "محمد داعنو",
+      "classCode": "TCLSHF-1",
+      "dayOfWeek": 4,
+      "slotIndex": 4,
       "room": "08",
       "subject": "اجتماعيات"
     },
@@ -5022,6 +6407,16 @@ window.INITIAL_SCHOOL_DATA = {
       "subject": "اجتماعيات"
     },
     {
+      "slotId": "T18_5_3",
+      "teacherId": "T18",
+      "teacherName": "محمد داعنو",
+      "classCode": "TCLSHF-1",
+      "dayOfWeek": 5,
+      "slotIndex": 3,
+      "room": "08",
+      "subject": "اجتماعيات"
+    },
+    {
       "slotId": "T18_5_4",
       "teacherId": "T18",
       "teacherName": "محمد داعنو",
@@ -5030,106 +6425,6 @@ window.INITIAL_SCHOOL_DATA = {
       "slotIndex": 4,
       "room": "08",
       "subject": "اجتماعيات"
-    },
-    {
-      "slotId": "T18_2_1",
-      "teacherId": "T18",
-      "teacherName": "محمد داعنو",
-      "classCode": "TCLSHF-2",
-      "dayOfWeek": 2,
-      "slotIndex": 1,
-      "room": "08",
-      "subject": "اجتماعيات"
-    },
-    {
-      "slotId": "T18_2_2",
-      "teacherId": "T18",
-      "teacherName": "محمد داعنو",
-      "classCode": "2BACSHF-1",
-      "dayOfWeek": 2,
-      "slotIndex": 2,
-      "room": "08",
-      "subject": "اجتماعيات"
-    },
-    {
-      "slotId": "T18_1_6",
-      "teacherId": "T18",
-      "teacherName": "محمد داعنو",
-      "classCode": "2BACSHF-1",
-      "dayOfWeek": 1,
-      "slotIndex": 6,
-      "room": "08",
-      "subject": "اجتماعيات"
-    },
-    {
-      "slotId": "T18_1_7",
-      "teacherId": "T18",
-      "teacherName": "محمد داعنو",
-      "classCode": "2BACLF-1",
-      "dayOfWeek": 1,
-      "slotIndex": 7,
-      "room": "08",
-      "subject": "اجتماعيات"
-    },
-    {
-      "slotId": "T18_1_8",
-      "teacherId": "T18",
-      "teacherName": "محمد داعنو",
-      "classCode": "2BACLF-1",
-      "dayOfWeek": 1,
-      "slotIndex": 8,
-      "room": "08",
-      "subject": "اجتماعيات"
-    },
-    {
-      "slotId": "T16_3_6",
-      "teacherId": "T16",
-      "teacherName": "حسناء أكجي",
-      "classCode": "TCLSHF-1",
-      "dayOfWeek": 3,
-      "slotIndex": 6,
-      "room": "05",
-      "subject": "ع. ج. أ"
-    },
-    {
-      "slotId": "T16_3_7",
-      "teacherId": "T16",
-      "teacherName": "حسناء أكجي",
-      "classCode": "1BACSHF-2",
-      "dayOfWeek": 3,
-      "slotIndex": 7,
-      "room": "05",
-      "subject": "ع. ج. أ"
-    },
-    {
-      "slotId": "T16_4_3",
-      "teacherId": "T16",
-      "teacherName": "حسناء أكجي",
-      "classCode": "TCLSHF-2",
-      "dayOfWeek": 4,
-      "slotIndex": 3,
-      "room": "05",
-      "subject": "ع. ج. أ"
-    },
-    {
-      "slotId": "T16_4_1",
-      "teacherId": "T16",
-      "teacherName": "حسناء أكجي",
-      "classCode": "1BACSEF-1",
-      "dayOfWeek": 4,
-      "slotIndex": 1,
-      "room": "05",
-      "subject": "ع. ج. أ"
-    },
-    {
-      "slotId": "T16_4_2",
-      "teacherId": "T16",
-      "teacherName": "حسناء أكجي",
-      "classCode": "1BACSEF-1",
-      "dayOfWeek": 4,
-      "slotIndex": 2,
-      "room": "05",
-      "subject": "ع. ج. أ"
     },
     {
       "slotId": "T16_2_1",
@@ -5172,11 +6467,51 @@ window.INITIAL_SCHOOL_DATA = {
       "subject": "ع. ج. أ"
     },
     {
-      "slotId": "T16_6_3",
+      "slotId": "T16_3_6",
       "teacherId": "T16",
       "teacherName": "حسناء أكجي",
-      "classCode": "1BACSHF-1",
-      "dayOfWeek": 6,
+      "classCode": "TCLSHF-1",
+      "dayOfWeek": 3,
+      "slotIndex": 6,
+      "room": "05",
+      "subject": "ع. ج. أ"
+    },
+    {
+      "slotId": "T16_3_7",
+      "teacherId": "T16",
+      "teacherName": "حسناء أكجي",
+      "classCode": "1BACSHF-2",
+      "dayOfWeek": 3,
+      "slotIndex": 7,
+      "room": "05",
+      "subject": "ع. ج. أ"
+    },
+    {
+      "slotId": "T16_4_1",
+      "teacherId": "T16",
+      "teacherName": "حسناء أكجي",
+      "classCode": "1BACSEF-1",
+      "dayOfWeek": 4,
+      "slotIndex": 1,
+      "room": "05",
+      "subject": "ع. ج. أ"
+    },
+    {
+      "slotId": "T16_4_2",
+      "teacherId": "T16",
+      "teacherName": "حسناء أكجي",
+      "classCode": "1BACSEF-1",
+      "dayOfWeek": 4,
+      "slotIndex": 2,
+      "room": "05",
+      "subject": "ع. ج. أ"
+    },
+    {
+      "slotId": "T16_4_3",
+      "teacherId": "T16",
+      "teacherName": "حسناء أكجي",
+      "classCode": "TCLSHF-2",
+      "dayOfWeek": 4,
       "slotIndex": 3,
       "room": "05",
       "subject": "ع. ج. أ"
@@ -5202,6 +6537,26 @@ window.INITIAL_SCHOOL_DATA = {
       "subject": "ع. ج. أ"
     },
     {
+      "slotId": "T16_6_3",
+      "teacherId": "T16",
+      "teacherName": "حسناء أكجي",
+      "classCode": "1BACSHF-1",
+      "dayOfWeek": 6,
+      "slotIndex": 3,
+      "room": "05",
+      "subject": "ع. ج. أ"
+    },
+    {
+      "slotId": "T01_2_5",
+      "teacherId": "T01",
+      "teacherName": "عبد العزيز بتوكنوت",
+      "classCode": "1BACSHF-2",
+      "dayOfWeek": 2,
+      "slotIndex": 5,
+      "room": "09",
+      "subject": "عربية"
+    },
+    {
       "slotId": "T01_2_6",
       "teacherId": "T01",
       "teacherName": "عبد العزيز بتوكنوت",
@@ -5222,12 +6577,22 @@ window.INITIAL_SCHOOL_DATA = {
       "subject": "عربية"
     },
     {
-      "slotId": "T01_2_5",
+      "slotId": "T01_3_5",
       "teacherId": "T01",
       "teacherName": "عبد العزيز بتوكنوت",
       "classCode": "1BACSHF-2",
-      "dayOfWeek": 2,
+      "dayOfWeek": 3,
       "slotIndex": 5,
+      "room": "09",
+      "subject": "عربية"
+    },
+    {
+      "slotId": "T01_3_6",
+      "teacherId": "T01",
+      "teacherName": "عبد العزيز بتوكنوت",
+      "classCode": "1BACSHF-1",
+      "dayOfWeek": 3,
+      "slotIndex": 6,
       "room": "09",
       "subject": "عربية"
     },
@@ -5247,36 +6612,6 @@ window.INITIAL_SCHOOL_DATA = {
       "teacherName": "عبد العزيز بتوكنوت",
       "classCode": "TCLSHF-2",
       "dayOfWeek": 3,
-      "slotIndex": 8,
-      "room": "09",
-      "subject": "عربية"
-    },
-    {
-      "slotId": "T01_3_6",
-      "teacherId": "T01",
-      "teacherName": "عبد العزيز بتوكنوت",
-      "classCode": "1BACSHF-1",
-      "dayOfWeek": 3,
-      "slotIndex": 6,
-      "room": "09",
-      "subject": "عربية"
-    },
-    {
-      "slotId": "T01_3_5",
-      "teacherId": "T01",
-      "teacherName": "عبد العزيز بتوكنوت",
-      "classCode": "1BACSHF-2",
-      "dayOfWeek": 3,
-      "slotIndex": 5,
-      "room": "09",
-      "subject": "عربية"
-    },
-    {
-      "slotId": "T01_4_8",
-      "teacherId": "T01",
-      "teacherName": "عبد العزيز بتوكنوت",
-      "classCode": "TCLSHF-2",
-      "dayOfWeek": 4,
       "slotIndex": 8,
       "room": "09",
       "subject": "عربية"
@@ -5312,22 +6647,12 @@ window.INITIAL_SCHOOL_DATA = {
       "subject": "عربية"
     },
     {
-      "slotId": "T01_6_3",
+      "slotId": "T01_4_8",
       "teacherId": "T01",
       "teacherName": "عبد العزيز بتوكنوت",
       "classCode": "TCLSHF-2",
-      "dayOfWeek": 6,
-      "slotIndex": 3,
-      "room": "09",
-      "subject": "عربية"
-    },
-    {
-      "slotId": "T01_6_4",
-      "teacherId": "T01",
-      "teacherName": "عبد العزيز بتوكنوت",
-      "classCode": "1BACSHF-1",
-      "dayOfWeek": 6,
-      "slotIndex": 4,
+      "dayOfWeek": 4,
+      "slotIndex": 8,
       "room": "09",
       "subject": "عربية"
     },
@@ -5352,164 +6677,24 @@ window.INITIAL_SCHOOL_DATA = {
       "subject": "عربية"
     },
     {
-      "slotId": "T06_2_5",
-      "teacherId": "T06",
-      "teacherName": "غزلان جادور",
-      "classCode": "1BACSEF-1",
-      "dayOfWeek": 2,
-      "slotIndex": 5,
-      "room": "04",
-      "subject": "فرنسية"
-    },
-    {
-      "slotId": "T06_2_6",
-      "teacherId": "T06",
-      "teacherName": "غزلان جادور",
-      "classCode": "1BACSEF-2",
-      "dayOfWeek": 2,
-      "slotIndex": 6,
-      "room": "04",
-      "subject": "فرنسية"
-    },
-    {
-      "slotId": "T06_2_7",
-      "teacherId": "T06",
-      "teacherName": "غزلان جادور",
-      "classCode": "2BACSHF-1",
-      "dayOfWeek": 2,
-      "slotIndex": 7,
-      "room": "04",
-      "subject": "فرنسية"
-    },
-    {
-      "slotId": "T06_2_8",
-      "teacherId": "T06",
-      "teacherName": "غزلان جادور",
-      "classCode": "2BACSHF-1",
-      "dayOfWeek": 2,
-      "slotIndex": 8,
-      "room": "04",
-      "subject": "فرنسية"
-    },
-    {
-      "slotId": "T06_3_5",
-      "teacherId": "T06",
-      "teacherName": "غزلان جادور",
-      "classCode": "1BACSEF-1",
-      "dayOfWeek": 3,
-      "slotIndex": 5,
-      "room": "04",
-      "subject": "فرنسية"
-    },
-    {
-      "slotId": "T06_3_7",
-      "teacherId": "T06",
-      "teacherName": "غزلان جادور",
-      "classCode": "1BACSEF-2",
-      "dayOfWeek": 3,
-      "slotIndex": 7,
-      "room": "04",
-      "subject": "فرنسية"
-    },
-    {
-      "slotId": "T06_3_8",
-      "teacherId": "T06",
-      "teacherName": "غزلان جادور",
-      "classCode": "1BACSEF-2",
-      "dayOfWeek": 3,
-      "slotIndex": 8,
-      "room": "04",
-      "subject": "فرنسية"
-    },
-    {
-      "slotId": "T06_3_6",
-      "teacherId": "T06",
-      "teacherName": "غزلان جادور",
-      "classCode": "2BACSHF-1",
-      "dayOfWeek": 3,
-      "slotIndex": 6,
-      "room": "04",
-      "subject": "فرنسية"
-    },
-    {
-      "slotId": "T06_4_3",
-      "teacherId": "T06",
-      "teacherName": "غزلان جادور",
-      "classCode": "1BACSEF-1",
-      "dayOfWeek": 4,
+      "slotId": "T01_6_3",
+      "teacherId": "T01",
+      "teacherName": "عبد العزيز بتوكنوت",
+      "classCode": "TCLSHF-2",
+      "dayOfWeek": 6,
       "slotIndex": 3,
-      "room": "03",
-      "subject": "فرنسية"
+      "room": "09",
+      "subject": "عربية"
     },
     {
-      "slotId": "T06_4_4",
-      "teacherId": "T06",
-      "teacherName": "غزلان جادور",
-      "classCode": "1BACSEF-1",
-      "dayOfWeek": 4,
+      "slotId": "T01_6_4",
+      "teacherId": "T01",
+      "teacherName": "عبد العزيز بتوكنوت",
+      "classCode": "1BACSHF-1",
+      "dayOfWeek": 6,
       "slotIndex": 4,
-      "room": "03",
-      "subject": "فرنسية"
-    },
-    {
-      "slotId": "T06_4_1",
-      "teacherId": "T06",
-      "teacherName": "غزلان جادور",
-      "classCode": "1BACSEF-2",
-      "dayOfWeek": 4,
-      "slotIndex": 1,
-      "room": "04",
-      "subject": "فرنسية"
-    },
-    {
-      "slotId": "T06_4_2",
-      "teacherId": "T06",
-      "teacherName": "غزلان جادور",
-      "classCode": "1BACSEF-2",
-      "dayOfWeek": 4,
-      "slotIndex": 2,
-      "room": "04",
-      "subject": "فرنسية"
-    },
-    {
-      "slotId": "T06_5_1",
-      "teacherId": "T06",
-      "teacherName": "غزلان جادور",
-      "classCode": "1BACSEF-1",
-      "dayOfWeek": 5,
-      "slotIndex": 1,
-      "room": "04",
-      "subject": "فرنسية"
-    },
-    {
-      "slotId": "T06_5_2",
-      "teacherId": "T06",
-      "teacherName": "غزلان جادور",
-      "classCode": "1BACSEF-1",
-      "dayOfWeek": 5,
-      "slotIndex": 2,
-      "room": "04",
-      "subject": "فرنسية"
-    },
-    {
-      "slotId": "T06_5_3",
-      "teacherId": "T06",
-      "teacherName": "غزلان جادور",
-      "classCode": "2BACSHF-1",
-      "dayOfWeek": 5,
-      "slotIndex": 3,
-      "room": "03",
-      "subject": "فرنسية"
-    },
-    {
-      "slotId": "T06_5_4",
-      "teacherId": "T06",
-      "teacherName": "غزلان جادور",
-      "classCode": "2BACSHF-1",
-      "dayOfWeek": 5,
-      "slotIndex": 4,
-      "room": "03",
-      "subject": "فرنسية"
+      "room": "09",
+      "subject": "عربية"
     },
     {
       "slotId": "T06_1_2",
@@ -5518,7 +6703,7 @@ window.INITIAL_SCHOOL_DATA = {
       "classCode": "1BACSEF-2",
       "dayOfWeek": 1,
       "slotIndex": 2,
-      "room": "04",
+      "room": "04، 03",
       "subject": "فرنسية"
     },
     {
@@ -5528,7 +6713,7 @@ window.INITIAL_SCHOOL_DATA = {
       "classCode": "2BACSHF-1",
       "dayOfWeek": 1,
       "slotIndex": 3,
-      "room": "04",
+      "room": "04، 03",
       "subject": "فرنسية"
     },
     {
@@ -5538,8 +6723,178 @@ window.INITIAL_SCHOOL_DATA = {
       "classCode": "2BACSHF-1",
       "dayOfWeek": 1,
       "slotIndex": 4,
-      "room": "04",
+      "room": "04، 03",
       "subject": "فرنسية"
+    },
+    {
+      "slotId": "T06_2_5",
+      "teacherId": "T06",
+      "teacherName": "غزلان جادور",
+      "classCode": "1BACSEF-1",
+      "dayOfWeek": 2,
+      "slotIndex": 5,
+      "room": "04، 03",
+      "subject": "فرنسية"
+    },
+    {
+      "slotId": "T06_2_6",
+      "teacherId": "T06",
+      "teacherName": "غزلان جادور",
+      "classCode": "1BACSEF-2",
+      "dayOfWeek": 2,
+      "slotIndex": 6,
+      "room": "04، 03",
+      "subject": "فرنسية"
+    },
+    {
+      "slotId": "T06_2_7",
+      "teacherId": "T06",
+      "teacherName": "غزلان جادور",
+      "classCode": "2BACSHF-1",
+      "dayOfWeek": 2,
+      "slotIndex": 7,
+      "room": "04، 03",
+      "subject": "فرنسية"
+    },
+    {
+      "slotId": "T06_2_8",
+      "teacherId": "T06",
+      "teacherName": "غزلان جادور",
+      "classCode": "2BACSHF-1",
+      "dayOfWeek": 2,
+      "slotIndex": 8,
+      "room": "04، 03",
+      "subject": "فرنسية"
+    },
+    {
+      "slotId": "T06_3_5",
+      "teacherId": "T06",
+      "teacherName": "غزلان جادور",
+      "classCode": "1BACSEF-1",
+      "dayOfWeek": 3,
+      "slotIndex": 5,
+      "room": "04، 03",
+      "subject": "فرنسية"
+    },
+    {
+      "slotId": "T06_3_6",
+      "teacherId": "T06",
+      "teacherName": "غزلان جادور",
+      "classCode": "2BACSHF-1",
+      "dayOfWeek": 3,
+      "slotIndex": 6,
+      "room": "04، 03",
+      "subject": "فرنسية"
+    },
+    {
+      "slotId": "T06_3_7",
+      "teacherId": "T06",
+      "teacherName": "غزلان جادور",
+      "classCode": "1BACSEF-2",
+      "dayOfWeek": 3,
+      "slotIndex": 7,
+      "room": "04، 03",
+      "subject": "فرنسية"
+    },
+    {
+      "slotId": "T06_3_8",
+      "teacherId": "T06",
+      "teacherName": "غزلان جادور",
+      "classCode": "1BACSEF-2",
+      "dayOfWeek": 3,
+      "slotIndex": 8,
+      "room": "04، 03",
+      "subject": "فرنسية"
+    },
+    {
+      "slotId": "T06_4_1",
+      "teacherId": "T06",
+      "teacherName": "غزلان جادور",
+      "classCode": "1BACSEF-2",
+      "dayOfWeek": 4,
+      "slotIndex": 1,
+      "room": "04، 03",
+      "subject": "فرنسية"
+    },
+    {
+      "slotId": "T06_4_2",
+      "teacherId": "T06",
+      "teacherName": "غزلان جادور",
+      "classCode": "1BACSEF-2",
+      "dayOfWeek": 4,
+      "slotIndex": 2,
+      "room": "04، 03",
+      "subject": "فرنسية"
+    },
+    {
+      "slotId": "T06_4_3",
+      "teacherId": "T06",
+      "teacherName": "غزلان جادور",
+      "classCode": "1BACSEF-1",
+      "dayOfWeek": 4,
+      "slotIndex": 3,
+      "room": "04، 03",
+      "subject": "فرنسية"
+    },
+    {
+      "slotId": "T06_4_4",
+      "teacherId": "T06",
+      "teacherName": "غزلان جادور",
+      "classCode": "1BACSEF-1",
+      "dayOfWeek": 4,
+      "slotIndex": 4,
+      "room": "04، 03",
+      "subject": "فرنسية"
+    },
+    {
+      "slotId": "T06_5_1",
+      "teacherId": "T06",
+      "teacherName": "غزلان جادور",
+      "classCode": "1BACSEF-1",
+      "dayOfWeek": 5,
+      "slotIndex": 1,
+      "room": "04، 03",
+      "subject": "فرنسية"
+    },
+    {
+      "slotId": "T06_5_2",
+      "teacherId": "T06",
+      "teacherName": "غزلان جادور",
+      "classCode": "1BACSEF-1",
+      "dayOfWeek": 5,
+      "slotIndex": 2,
+      "room": "04، 03",
+      "subject": "فرنسية"
+    },
+    {
+      "slotId": "T06_5_3",
+      "teacherId": "T06",
+      "teacherName": "غزلان جادور",
+      "classCode": "2BACSHF-1",
+      "dayOfWeek": 5,
+      "slotIndex": 3,
+      "room": "04، 03",
+      "subject": "فرنسية"
+    },
+    {
+      "slotId": "T06_5_4",
+      "teacherId": "T06",
+      "teacherName": "غزلان جادور",
+      "classCode": "2BACSHF-1",
+      "dayOfWeek": 5,
+      "slotIndex": 4,
+      "room": "04، 03",
+      "subject": "فرنسية"
+    },
+    {
+      "slotId": "T12_3_3",
+      "teacherId": "T12",
+      "teacherName": "عبد المغيث البوزيدي",
+      "classCode": "1BACSEF-2",
+      "dayOfWeek": 3,
+      "slotIndex": 3,
+      "room": "07",
+      "subject": "رياضيات"
     },
     {
       "slotId": "T12_3_4",
@@ -5552,12 +6907,22 @@ window.INITIAL_SCHOOL_DATA = {
       "subject": "رياضيات"
     },
     {
-      "slotId": "T12_3_3",
+      "slotId": "T12_4_5",
+      "teacherId": "T12",
+      "teacherName": "عبد المغيث البوزيدي",
+      "classCode": "2BACSHF-1",
+      "dayOfWeek": 4,
+      "slotIndex": 5,
+      "room": "07",
+      "subject": "رياضيات"
+    },
+    {
+      "slotId": "T12_4_6",
       "teacherId": "T12",
       "teacherName": "عبد المغيث البوزيدي",
       "classCode": "1BACSEF-2",
-      "dayOfWeek": 3,
-      "slotIndex": 3,
+      "dayOfWeek": 4,
+      "slotIndex": 6,
       "room": "07",
       "subject": "رياضيات"
     },
@@ -5578,36 +6943,6 @@ window.INITIAL_SCHOOL_DATA = {
       "classCode": "1BACSEF-1",
       "dayOfWeek": 4,
       "slotIndex": 8,
-      "room": "07",
-      "subject": "رياضيات"
-    },
-    {
-      "slotId": "T12_4_6",
-      "teacherId": "T12",
-      "teacherName": "عبد المغيث البوزيدي",
-      "classCode": "1BACSEF-2",
-      "dayOfWeek": 4,
-      "slotIndex": 6,
-      "room": "07",
-      "subject": "رياضيات"
-    },
-    {
-      "slotId": "T12_4_5",
-      "teacherId": "T12",
-      "teacherName": "عبد المغيث البوزيدي",
-      "classCode": "2BACSHF-1",
-      "dayOfWeek": 4,
-      "slotIndex": 5,
-      "room": "07",
-      "subject": "رياضيات"
-    },
-    {
-      "slotId": "T12_5_4",
-      "teacherId": "T12",
-      "teacherName": "عبد المغيث البوزيدي",
-      "classCode": "1BACSEF-1",
-      "dayOfWeek": 5,
-      "slotIndex": 4,
       "room": "07",
       "subject": "رياضيات"
     },
@@ -5642,12 +6977,32 @@ window.INITIAL_SCHOOL_DATA = {
       "subject": "رياضيات"
     },
     {
+      "slotId": "T12_5_4",
+      "teacherId": "T12",
+      "teacherName": "عبد المغيث البوزيدي",
+      "classCode": "1BACSEF-1",
+      "dayOfWeek": 5,
+      "slotIndex": 4,
+      "room": "07",
+      "subject": "رياضيات"
+    },
+    {
       "slotId": "T12_6_1",
       "teacherId": "T12",
       "teacherName": "عبد المغيث البوزيدي",
       "classCode": "1BACSEF-1",
       "dayOfWeek": 6,
       "slotIndex": 1,
+      "room": "07",
+      "subject": "رياضيات"
+    },
+    {
+      "slotId": "T12_6_2",
+      "teacherId": "T12",
+      "teacherName": "عبد المغيث البوزيدي",
+      "classCode": "2BACLF-1",
+      "dayOfWeek": 6,
+      "slotIndex": 2,
       "room": "07",
       "subject": "رياضيات"
     },
@@ -5668,16 +7023,6 @@ window.INITIAL_SCHOOL_DATA = {
       "classCode": "2BACSHF-1",
       "dayOfWeek": 6,
       "slotIndex": 4,
-      "room": "07",
-      "subject": "رياضيات"
-    },
-    {
-      "slotId": "T12_6_2",
-      "teacherId": "T12",
-      "teacherName": "عبد المغيث البوزيدي",
-      "classCode": "2BACLF-1",
-      "dayOfWeek": 6,
-      "slotIndex": 2,
       "room": "07",
       "subject": "رياضيات"
     },
@@ -5722,32 +7067,12 @@ window.INITIAL_SCHOOL_DATA = {
       "subject": "رياضيات"
     },
     {
-      "slotId": "T11_3_5",
-      "teacherId": "T11",
-      "teacherName": "مصطفى أكواس",
-      "classCode": "1BACSHF-1",
-      "dayOfWeek": 3,
-      "slotIndex": 5,
-      "room": "07",
-      "subject": "رياضيات"
-    },
-    {
-      "slotId": "T11_3_7",
-      "teacherId": "T11",
-      "teacherName": "مصطفى أكواس",
-      "classCode": "2BACSPF-1",
-      "dayOfWeek": 3,
-      "slotIndex": 7,
-      "room": "07",
-      "subject": "رياضيات"
-    },
-    {
-      "slotId": "T11_3_6",
+      "slotId": "T11_2_2",
       "teacherId": "T11",
       "teacherName": "مصطفى أكواس",
       "classCode": "2BACSVTF-1",
-      "dayOfWeek": 3,
-      "slotIndex": 6,
+      "dayOfWeek": 2,
+      "slotIndex": 2,
       "room": "07",
       "subject": "رياضيات"
     },
@@ -5772,12 +7097,32 @@ window.INITIAL_SCHOOL_DATA = {
       "subject": "رياضيات"
     },
     {
-      "slotId": "T11_2_2",
+      "slotId": "T11_3_5",
+      "teacherId": "T11",
+      "teacherName": "مصطفى أكواس",
+      "classCode": "1BACSHF-1",
+      "dayOfWeek": 3,
+      "slotIndex": 5,
+      "room": "07",
+      "subject": "رياضيات"
+    },
+    {
+      "slotId": "T11_3_6",
       "teacherId": "T11",
       "teacherName": "مصطفى أكواس",
       "classCode": "2BACSVTF-1",
-      "dayOfWeek": 2,
-      "slotIndex": 2,
+      "dayOfWeek": 3,
+      "slotIndex": 6,
+      "room": "07",
+      "subject": "رياضيات"
+    },
+    {
+      "slotId": "T11_3_7",
+      "teacherId": "T11",
+      "teacherName": "مصطفى أكواس",
+      "classCode": "2BACSPF-1",
+      "dayOfWeek": 3,
+      "slotIndex": 7,
       "room": "07",
       "subject": "رياضيات"
     },
@@ -5802,26 +7147,6 @@ window.INITIAL_SCHOOL_DATA = {
       "subject": "رياضيات"
     },
     {
-      "slotId": "T07_1_3",
-      "teacherId": "T07",
-      "teacherName": "فاطمة فهمي",
-      "classCode": "1BACSHF-1",
-      "dayOfWeek": 1,
-      "slotIndex": 3,
-      "room": "06",
-      "subject": "فرنسية"
-    },
-    {
-      "slotId": "T07_1_4",
-      "teacherId": "T07",
-      "teacherName": "فاطمة فهمي",
-      "classCode": "1BACSHF-1",
-      "dayOfWeek": 1,
-      "slotIndex": 4,
-      "room": "06",
-      "subject": "فرنسية"
-    },
-    {
       "slotId": "T07_1_1",
       "teacherId": "T07",
       "teacherName": "فاطمة فهمي",
@@ -5838,6 +7163,26 @@ window.INITIAL_SCHOOL_DATA = {
       "classCode": "1BACSHF-2",
       "dayOfWeek": 1,
       "slotIndex": 2,
+      "room": "06",
+      "subject": "فرنسية"
+    },
+    {
+      "slotId": "T07_1_3",
+      "teacherId": "T07",
+      "teacherName": "فاطمة فهمي",
+      "classCode": "1BACSHF-1",
+      "dayOfWeek": 1,
+      "slotIndex": 3,
+      "room": "06",
+      "subject": "فرنسية"
+    },
+    {
+      "slotId": "T07_1_4",
+      "teacherId": "T07",
+      "teacherName": "فاطمة فهمي",
+      "classCode": "1BACSHF-1",
+      "dayOfWeek": 1,
+      "slotIndex": 4,
       "room": "06",
       "subject": "فرنسية"
     },
@@ -5862,6 +7207,16 @@ window.INITIAL_SCHOOL_DATA = {
       "subject": "فرنسية"
     },
     {
+      "slotId": "T07_3_6",
+      "teacherId": "T07",
+      "teacherName": "فاطمة فهمي",
+      "classCode": "1BACSHF-2",
+      "dayOfWeek": 3,
+      "slotIndex": 6,
+      "room": "06",
+      "subject": "فرنسية"
+    },
+    {
       "slotId": "T07_3_7",
       "teacherId": "T07",
       "teacherName": "فاطمة فهمي",
@@ -5878,16 +7233,6 @@ window.INITIAL_SCHOOL_DATA = {
       "classCode": "1BACSHF-1",
       "dayOfWeek": 3,
       "slotIndex": 8,
-      "room": "06",
-      "subject": "فرنسية"
-    },
-    {
-      "slotId": "T07_3_6",
-      "teacherId": "T07",
-      "teacherName": "فاطمة فهمي",
-      "classCode": "1BACSHF-2",
-      "dayOfWeek": 3,
-      "slotIndex": 6,
       "room": "06",
       "subject": "فرنسية"
     },
@@ -5922,26 +7267,6 @@ window.INITIAL_SCHOOL_DATA = {
       "subject": "فرنسية"
     },
     {
-      "slotId": "T07_5_3",
-      "teacherId": "T07",
-      "teacherName": "فاطمة فهمي",
-      "classCode": "1BACSHF-1",
-      "dayOfWeek": 5,
-      "slotIndex": 3,
-      "room": "06",
-      "subject": "فرنسية"
-    },
-    {
-      "slotId": "T07_5_4",
-      "teacherId": "T07",
-      "teacherName": "فاطمة فهمي",
-      "classCode": "1BACSHF-1",
-      "dayOfWeek": 5,
-      "slotIndex": 4,
-      "room": "06",
-      "subject": "فرنسية"
-    },
-    {
       "slotId": "T07_5_1",
       "teacherId": "T07",
       "teacherName": "فاطمة فهمي",
@@ -5962,43 +7287,33 @@ window.INITIAL_SCHOOL_DATA = {
       "subject": "فرنسية"
     },
     {
-      "slotId": "T23_3_2",
-      "teacherId": "T23",
-      "teacherName": "بكر السادي",
-      "classCode": "1BACSHF-2",
-      "dayOfWeek": 3,
-      "slotIndex": 2,
-      "room": "",
-      "subject": "تربية بدنية"
-    },
-    {
-      "slotId": "T23_3_3",
-      "teacherId": "T23",
-      "teacherName": "بكر السادي",
-      "classCode": "2BACSHF-1",
-      "dayOfWeek": 3,
+      "slotId": "T07_5_3",
+      "teacherId": "T07",
+      "teacherName": "فاطمة فهمي",
+      "classCode": "1BACSHF-1",
+      "dayOfWeek": 5,
       "slotIndex": 3,
-      "room": "",
-      "subject": "تربية بدنية"
+      "room": "06",
+      "subject": "فرنسية"
     },
     {
-      "slotId": "T23_6_4",
-      "teacherId": "T23",
-      "teacherName": "بكر السادي",
-      "classCode": "1BACSHF-2",
-      "dayOfWeek": 6,
+      "slotId": "T07_5_4",
+      "teacherId": "T07",
+      "teacherName": "فاطمة فهمي",
+      "classCode": "1BACSHF-1",
+      "dayOfWeek": 5,
       "slotIndex": 4,
-      "room": "",
-      "subject": "تربية بدنية"
+      "room": "06",
+      "subject": "فرنسية"
     },
     {
-      "slotId": "T23_6_3",
+      "slotId": "T23_2_6",
       "teacherId": "T23",
       "teacherName": "بكر السادي",
-      "classCode": "2BACSHF-1",
-      "dayOfWeek": 6,
-      "slotIndex": 3,
-      "room": "",
+      "classCode": "2BACSVTF-1",
+      "dayOfWeek": 2,
+      "slotIndex": 6,
+      "room": "غير محددة",
       "subject": "تربية بدنية"
     },
     {
@@ -6008,17 +7323,7 @@ window.INITIAL_SCHOOL_DATA = {
       "classCode": "2BACSPF-1",
       "dayOfWeek": 2,
       "slotIndex": 7,
-      "room": "",
-      "subject": "تربية بدنية"
-    },
-    {
-      "slotId": "T23_2_6",
-      "teacherId": "T23",
-      "teacherName": "بكر السادي",
-      "classCode": "2BACSVTF-1",
-      "dayOfWeek": 2,
-      "slotIndex": 6,
-      "room": "",
+      "room": "غير محددة",
       "subject": "تربية بدنية"
     },
     {
@@ -6028,17 +7333,27 @@ window.INITIAL_SCHOOL_DATA = {
       "classCode": "2BACLF-1",
       "dayOfWeek": 2,
       "slotIndex": 8,
-      "room": "",
+      "room": "غير محددة",
       "subject": "تربية بدنية"
     },
     {
-      "slotId": "T23_4_2",
+      "slotId": "T23_3_2",
       "teacherId": "T23",
       "teacherName": "بكر السادي",
-      "classCode": "2BACSPF-1",
-      "dayOfWeek": 4,
+      "classCode": "1BACSHF-2",
+      "dayOfWeek": 3,
       "slotIndex": 2,
-      "room": "",
+      "room": "غير محددة",
+      "subject": "تربية بدنية"
+    },
+    {
+      "slotId": "T23_3_3",
+      "teacherId": "T23",
+      "teacherName": "بكر السادي",
+      "classCode": "2BACSHF-1",
+      "dayOfWeek": 3,
+      "slotIndex": 3,
+      "room": "غير محددة",
       "subject": "تربية بدنية"
     },
     {
@@ -6048,7 +7363,17 @@ window.INITIAL_SCHOOL_DATA = {
       "classCode": "2BACSVTF-1",
       "dayOfWeek": 4,
       "slotIndex": 1,
-      "room": "",
+      "room": "غير محددة",
+      "subject": "تربية بدنية"
+    },
+    {
+      "slotId": "T23_4_2",
+      "teacherId": "T23",
+      "teacherName": "بكر السادي",
+      "classCode": "2BACSPF-1",
+      "dayOfWeek": 4,
+      "slotIndex": 2,
+      "room": "غير محددة",
       "subject": "تربية بدنية"
     },
     {
@@ -6058,7 +7383,27 @@ window.INITIAL_SCHOOL_DATA = {
       "classCode": "2BACLF-1",
       "dayOfWeek": 4,
       "slotIndex": 3,
-      "room": "",
+      "room": "غير محددة",
+      "subject": "تربية بدنية"
+    },
+    {
+      "slotId": "T23_6_3",
+      "teacherId": "T23",
+      "teacherName": "بكر السادي",
+      "classCode": "2BACSHF-1",
+      "dayOfWeek": 6,
+      "slotIndex": 3,
+      "room": "غير محددة",
+      "subject": "تربية بدنية"
+    },
+    {
+      "slotId": "T23_6_4",
+      "teacherId": "T23",
+      "teacherName": "بكر السادي",
+      "classCode": "1BACSHF-2",
+      "dayOfWeek": 6,
+      "slotIndex": 4,
+      "room": "غير محددة",
       "subject": "تربية بدنية"
     },
     {
@@ -6102,42 +7447,12 @@ window.INITIAL_SCHOOL_DATA = {
       "subject": "عربية"
     },
     {
-      "slotId": "T03_5_2",
-      "teacherId": "T03",
-      "teacherName": "فتحية أزكي",
-      "classCode": "2BACSPF-1",
-      "dayOfWeek": 5,
-      "slotIndex": 2,
-      "room": "09",
-      "subject": "عربية"
-    },
-    {
-      "slotId": "T03_5_1",
-      "teacherId": "T03",
-      "teacherName": "فتحية أزكي",
-      "classCode": "2BACLF-1",
-      "dayOfWeek": 5,
-      "slotIndex": 1,
-      "room": "09",
-      "subject": "عربية"
-    },
-    {
       "slotId": "T03_2_1",
       "teacherId": "T03",
       "teacherName": "فتحية أزكي",
       "classCode": "2BACSVTF-1",
       "dayOfWeek": 2,
       "slotIndex": 1,
-      "room": "09",
-      "subject": "عربية"
-    },
-    {
-      "slotId": "T03_2_3",
-      "teacherId": "T03",
-      "teacherName": "فتحية أزكي",
-      "classCode": "2BACSHF-1",
-      "dayOfWeek": 2,
-      "slotIndex": 3,
       "room": "09",
       "subject": "عربية"
     },
@@ -6152,11 +7467,11 @@ window.INITIAL_SCHOOL_DATA = {
       "subject": "عربية"
     },
     {
-      "slotId": "T03_4_3",
+      "slotId": "T03_2_3",
       "teacherId": "T03",
       "teacherName": "فتحية أزكي",
-      "classCode": "2BACSVTF-1",
-      "dayOfWeek": 4,
+      "classCode": "2BACSHF-1",
+      "dayOfWeek": 2,
       "slotIndex": 3,
       "room": "09",
       "subject": "عربية"
@@ -6182,6 +7497,16 @@ window.INITIAL_SCHOOL_DATA = {
       "subject": "عربية"
     },
     {
+      "slotId": "T03_4_3",
+      "teacherId": "T03",
+      "teacherName": "فتحية أزكي",
+      "classCode": "2BACSVTF-1",
+      "dayOfWeek": 4,
+      "slotIndex": 3,
+      "room": "09",
+      "subject": "عربية"
+    },
+    {
       "slotId": "T03_4_4",
       "teacherId": "T03",
       "teacherName": "فتحية أزكي",
@@ -6192,14 +7517,24 @@ window.INITIAL_SCHOOL_DATA = {
       "subject": "عربية"
     },
     {
-      "slotId": "T09_1_3",
-      "teacherId": "T09",
-      "teacherName": "الصديق بوعلي",
+      "slotId": "T03_5_1",
+      "teacherId": "T03",
+      "teacherName": "فتحية أزكي",
+      "classCode": "2BACLF-1",
+      "dayOfWeek": 5,
+      "slotIndex": 1,
+      "room": "09",
+      "subject": "عربية"
+    },
+    {
+      "slotId": "T03_5_2",
+      "teacherId": "T03",
+      "teacherName": "فتحية أزكي",
       "classCode": "2BACSPF-1",
-      "dayOfWeek": 1,
-      "slotIndex": 3,
-      "room": "01",
-      "subject": "إنجليزية"
+      "dayOfWeek": 5,
+      "slotIndex": 2,
+      "room": "09",
+      "subject": "عربية"
     },
     {
       "slotId": "T09_1_1",
@@ -6222,52 +7557,12 @@ window.INITIAL_SCHOOL_DATA = {
       "subject": "إنجليزية"
     },
     {
-      "slotId": "T09_3_6",
+      "slotId": "T09_1_3",
       "teacherId": "T09",
       "teacherName": "الصديق بوعلي",
       "classCode": "2BACSPF-1",
-      "dayOfWeek": 3,
-      "slotIndex": 6,
-      "room": "01",
-      "subject": "إنجليزية"
-    },
-    {
-      "slotId": "T09_3_5",
-      "teacherId": "T09",
-      "teacherName": "الصديق بوعلي",
-      "classCode": "2BACSHF-1",
-      "dayOfWeek": 3,
-      "slotIndex": 5,
-      "room": "01",
-      "subject": "إنجليزية"
-    },
-    {
-      "slotId": "T09_3_7",
-      "teacherId": "T09",
-      "teacherName": "الصديق بوعلي",
-      "classCode": "2BACLF-1",
-      "dayOfWeek": 3,
-      "slotIndex": 7,
-      "room": "01",
-      "subject": "إنجليزية"
-    },
-    {
-      "slotId": "T09_5_1",
-      "teacherId": "T09",
-      "teacherName": "الصديق بوعلي",
-      "classCode": "2BACSPF-1",
-      "dayOfWeek": 5,
-      "slotIndex": 1,
-      "room": "01",
-      "subject": "إنجليزية"
-    },
-    {
-      "slotId": "T09_5_2",
-      "teacherId": "T09",
-      "teacherName": "الصديق بوعلي",
-      "classCode": "2BACLF-1",
-      "dayOfWeek": 5,
-      "slotIndex": 2,
+      "dayOfWeek": 1,
+      "slotIndex": 3,
       "room": "01",
       "subject": "إنجليزية"
     },
@@ -6292,6 +7587,46 @@ window.INITIAL_SCHOOL_DATA = {
       "subject": "إنجليزية"
     },
     {
+      "slotId": "T09_3_5",
+      "teacherId": "T09",
+      "teacherName": "الصديق بوعلي",
+      "classCode": "2BACSHF-1",
+      "dayOfWeek": 3,
+      "slotIndex": 5,
+      "room": "01",
+      "subject": "إنجليزية"
+    },
+    {
+      "slotId": "T09_3_6",
+      "teacherId": "T09",
+      "teacherName": "الصديق بوعلي",
+      "classCode": "2BACSPF-1",
+      "dayOfWeek": 3,
+      "slotIndex": 6,
+      "room": "01",
+      "subject": "إنجليزية"
+    },
+    {
+      "slotId": "T09_3_7",
+      "teacherId": "T09",
+      "teacherName": "الصديق بوعلي",
+      "classCode": "2BACLF-1",
+      "dayOfWeek": 3,
+      "slotIndex": 7,
+      "room": "01",
+      "subject": "إنجليزية"
+    },
+    {
+      "slotId": "T09_4_2",
+      "teacherId": "T09",
+      "teacherName": "الصديق بوعلي",
+      "classCode": "2BACLF-1",
+      "dayOfWeek": 4,
+      "slotIndex": 2,
+      "room": "01",
+      "subject": "إنجليزية"
+    },
+    {
       "slotId": "T09_4_3",
       "teacherId": "T09",
       "teacherName": "الصديق بوعلي",
@@ -6302,11 +7637,21 @@ window.INITIAL_SCHOOL_DATA = {
       "subject": "إنجليزية"
     },
     {
-      "slotId": "T09_4_2",
+      "slotId": "T09_5_1",
+      "teacherId": "T09",
+      "teacherName": "الصديق بوعلي",
+      "classCode": "2BACSPF-1",
+      "dayOfWeek": 5,
+      "slotIndex": 1,
+      "room": "01",
+      "subject": "إنجليزية"
+    },
+    {
+      "slotId": "T09_5_2",
       "teacherId": "T09",
       "teacherName": "الصديق بوعلي",
       "classCode": "2BACLF-1",
-      "dayOfWeek": 4,
+      "dayOfWeek": 5,
       "slotIndex": 2,
       "room": "01",
       "subject": "إنجليزية"
@@ -6412,6 +7757,26 @@ window.INITIAL_SCHOOL_DATA = {
       "subject": "فيزياء"
     },
     {
+      "slotId": "T05_1_5",
+      "teacherId": "T05",
+      "teacherName": "إبراهيم ادبي",
+      "classCode": "2BACLF-1",
+      "dayOfWeek": 1,
+      "slotIndex": 5,
+      "room": "06",
+      "subject": "فرنسية"
+    },
+    {
+      "slotId": "T05_1_6",
+      "teacherId": "T05",
+      "teacherName": "إبراهيم ادبي",
+      "classCode": "2BACSVTF-1",
+      "dayOfWeek": 1,
+      "slotIndex": 6,
+      "room": "06",
+      "subject": "فرنسية"
+    },
+    {
       "slotId": "T05_1_7",
       "teacherId": "T05",
       "teacherName": "إبراهيم ادبي",
@@ -6428,46 +7793,6 @@ window.INITIAL_SCHOOL_DATA = {
       "classCode": "2BACSPF-1",
       "dayOfWeek": 1,
       "slotIndex": 8,
-      "room": "06",
-      "subject": "فرنسية"
-    },
-    {
-      "slotId": "T05_1_6",
-      "teacherId": "T05",
-      "teacherName": "إبراهيم ادبي",
-      "classCode": "2BACSVTF-1",
-      "dayOfWeek": 1,
-      "slotIndex": 6,
-      "room": "06",
-      "subject": "فرنسية"
-    },
-    {
-      "slotId": "T05_1_5",
-      "teacherId": "T05",
-      "teacherName": "إبراهيم ادبي",
-      "classCode": "2BACLF-1",
-      "dayOfWeek": 1,
-      "slotIndex": 5,
-      "room": "06",
-      "subject": "فرنسية"
-    },
-    {
-      "slotId": "T05_2_8",
-      "teacherId": "T05",
-      "teacherName": "إبراهيم ادبي",
-      "classCode": "2BACSPF-1",
-      "dayOfWeek": 2,
-      "slotIndex": 8,
-      "room": "06",
-      "subject": "فرنسية"
-    },
-    {
-      "slotId": "T05_2_7",
-      "teacherId": "T05",
-      "teacherName": "إبراهيم ادبي",
-      "classCode": "2BACSVTF-1",
-      "dayOfWeek": 2,
-      "slotIndex": 7,
       "room": "06",
       "subject": "فرنسية"
     },
@@ -6492,22 +7817,22 @@ window.INITIAL_SCHOOL_DATA = {
       "subject": "فرنسية"
     },
     {
-      "slotId": "T05_3_3",
+      "slotId": "T05_2_7",
       "teacherId": "T05",
       "teacherName": "إبراهيم ادبي",
-      "classCode": "2BACSPF-1",
-      "dayOfWeek": 3,
-      "slotIndex": 3,
+      "classCode": "2BACSVTF-1",
+      "dayOfWeek": 2,
+      "slotIndex": 7,
       "room": "06",
       "subject": "فرنسية"
     },
     {
-      "slotId": "T05_3_4",
+      "slotId": "T05_2_8",
       "teacherId": "T05",
       "teacherName": "إبراهيم ادبي",
       "classCode": "2BACSPF-1",
-      "dayOfWeek": 3,
-      "slotIndex": 4,
+      "dayOfWeek": 2,
+      "slotIndex": 8,
       "room": "06",
       "subject": "فرنسية"
     },
@@ -6532,41 +7857,21 @@ window.INITIAL_SCHOOL_DATA = {
       "subject": "فرنسية"
     },
     {
-      "slotId": "T05_6_3",
+      "slotId": "T05_3_3",
       "teacherId": "T05",
       "teacherName": "إبراهيم ادبي",
       "classCode": "2BACSPF-1",
-      "dayOfWeek": 6,
+      "dayOfWeek": 3,
       "slotIndex": 3,
       "room": "06",
       "subject": "فرنسية"
     },
     {
-      "slotId": "T05_6_1",
+      "slotId": "T05_3_4",
       "teacherId": "T05",
       "teacherName": "إبراهيم ادبي",
-      "classCode": "2BACSVTF-1",
-      "dayOfWeek": 6,
-      "slotIndex": 1,
-      "room": "06",
-      "subject": "فرنسية"
-    },
-    {
-      "slotId": "T05_6_2",
-      "teacherId": "T05",
-      "teacherName": "إبراهيم ادبي",
-      "classCode": "2BACSVTF-1",
-      "dayOfWeek": 6,
-      "slotIndex": 2,
-      "room": "06",
-      "subject": "فرنسية"
-    },
-    {
-      "slotId": "T05_6_4",
-      "teacherId": "T05",
-      "teacherName": "إبراهيم ادبي",
-      "classCode": "2BACLF-1",
-      "dayOfWeek": 6,
+      "classCode": "2BACSPF-1",
+      "dayOfWeek": 3,
       "slotIndex": 4,
       "room": "06",
       "subject": "فرنسية"
@@ -6610,60 +7915,953 @@ window.INITIAL_SCHOOL_DATA = {
       "slotIndex": 8,
       "room": "06",
       "subject": "فرنسية"
+    },
+    {
+      "slotId": "T05_6_1",
+      "teacherId": "T05",
+      "teacherName": "إبراهيم ادبي",
+      "classCode": "2BACSVTF-1",
+      "dayOfWeek": 6,
+      "slotIndex": 1,
+      "room": "06",
+      "subject": "فرنسية"
+    },
+    {
+      "slotId": "T05_6_2",
+      "teacherId": "T05",
+      "teacherName": "إبراهيم ادبي",
+      "classCode": "2BACSVTF-1",
+      "dayOfWeek": 6,
+      "slotIndex": 2,
+      "room": "06",
+      "subject": "فرنسية"
+    },
+    {
+      "slotId": "T05_6_3",
+      "teacherId": "T05",
+      "teacherName": "إبراهيم ادبي",
+      "classCode": "2BACSPF-1",
+      "dayOfWeek": 6,
+      "slotIndex": 3,
+      "room": "06",
+      "subject": "فرنسية"
+    },
+    {
+      "slotId": "T05_6_4",
+      "teacherId": "T05",
+      "teacherName": "إبراهيم ادبي",
+      "classCode": "2BACLF-1",
+      "dayOfWeek": 6,
+      "slotIndex": 4,
+      "room": "06",
+      "subject": "فرنسية"
     }
   ],
-  "schoolDocId": "H12657",
-  "schoolId": "H12657",
-  "parentPledges": {
-    "PL_1793627813609": {
-      "pledgeId": "PL_1793627813609",
-      "studentName": "اكشار هشام",
-      "massarCode": "J168006422",
-      "classCode": "TCLSHF-1",
-      "parentName": "",
-      "startDate": "2026-10-30",
-      "endDate": "2026-11-02",
-      "issuedDate": "02 / 11 / 2026",
-      "timestamp": 1793627813609
+  "schoolDocId": "K29082",
+  "schoolId": "K29082",
+  "resetToken": 1794097335057,
+  "examsPlanning": [
+    {
+      "correction_date": "2026-11-10",
+      "subject": "التاريخ والجغرافيا",
+      "updated_at": "2026-11-09T15:04:30.215575",
+      "source": "MOBILE_TEACHER",
+      "slot_index": 1,
+      "subject_name": "التاريخ والجغرافيا",
+      "semester": 1,
+      "class_code": "TCSEF-1",
+      "exam_time_str": "08:00 - 09:00",
+      "academic_year": "2026/2027",
+      "class_name": "TCSEF-1",
+      "exam_date": "2026-11-02",
+      "room_name": "03",
+      "is_compensatory": false,
+      "exam_number": 1,
+      "id": "EXAM_1794147547616_yt9m6",
+      "status": "SCHEDULED",
+      "notes": "",
+      "teacher_id": "T19",
+      "day_of_week": 1,
+      "teacher_name": "علي ازري",
+      "submission_deadline": "2026-11-17",
+      "exam_room": "03",
+      "grades_submission_date": "2026-11-17",
+      "exam_day_name": "الإثنين",
+      "days_to_submission": 15,
+      "is_compliant_15_days": true,
+      "compliance_info": {
+        "is_compliant": true,
+        "days": 15,
+        "max_allowed": 15,
+        "status_label": "متقيد بالنظام (15 يوماً) ✓",
+        "badge_color": "green",
+        "warning_message": ""
+      }
     },
-    "PL_1793811365175": {
-      "pledgeId": "PL_1793811365175",
+    {
+      "slot_index": 6,
+      "updated_at": "2026-11-09T15:04:30.250711",
+      "exam_number": 1,
+      "teacher_name": "علي ازري",
+      "correction_date": "2026-11-11",
+      "notes": "",
+      "class_code": "1BACSHF-1",
+      "source": "MOBILE_TEACHER",
+      "day_of_week": 2,
+      "submission_deadline": "2026-11-18",
+      "status": "SCHEDULED",
+      "exam_time_str": "15:00 - 16:00",
+      "subject_name": "التاريخ والجغرافيا",
+      "class_name": "1BACSHF-1",
+      "academic_year": "2026/2027",
+      "id": "EXAM_1794147561291_mioml",
+      "semester": 1,
+      "is_compensatory": false,
+      "teacher_id": "T19",
+      "subject": "التاريخ والجغرافيا",
+      "exam_date": "2026-11-03",
+      "room_name": "03",
+      "exam_room": "03",
+      "grades_submission_date": "2026-11-18",
+      "exam_day_name": "الثلاثاء",
+      "days_to_submission": 15,
+      "is_compliant_15_days": true,
+      "compliance_info": {
+        "is_compliant": true,
+        "days": 15,
+        "max_allowed": 15,
+        "status_label": "متقيد بالنظام (15 يوماً) ✓",
+        "badge_color": "green",
+        "warning_message": ""
+      }
+    },
+    {
+      "day_of_week": 1,
+      "source": "MOBILE_TEACHER",
+      "semester": 1,
+      "class_code": "1BACSEF-2",
+      "is_compensatory": false,
+      "submission_deadline": "2026-11-17",
+      "updated_at": "2026-11-09T15:04:30.282820",
+      "slot_index": 4,
+      "exam_number": 1,
+      "teacher_name": "علي ازري",
+      "subject": "التاريخ والجغرافيا",
+      "subject_name": "التاريخ والجغرافيا",
+      "correction_date": "2026-11-10",
+      "id": "EXAM_1794147586533_wr5zx",
+      "notes": "",
+      "teacher_id": "T19",
+      "exam_time_str": "11:00 - 12:00",
+      "exam_date": "2026-11-02",
+      "room_name": "03",
+      "academic_year": "2026/2027",
+      "class_name": "1BACSEF-2",
+      "status": "SCHEDULED",
+      "exam_room": "03",
+      "grades_submission_date": "2026-11-17",
+      "exam_day_name": "الإثنين",
+      "days_to_submission": 15,
+      "is_compliant_15_days": true,
+      "compliance_info": {
+        "is_compliant": true,
+        "days": 15,
+        "max_allowed": 15,
+        "status_label": "متقيد بالنظام (15 يوماً) ✓",
+        "badge_color": "green",
+        "warning_message": ""
+      }
+    },
+    {
+      "academic_year": "2026/2027",
+      "source": "MOBILE_TEACHER",
+      "notes": "",
+      "correction_date": "2026-11-11",
+      "class_code": "1BACSHF-2",
+      "teacher_name": "علي ازري",
+      "exam_time_str": "16:00 - 17:00",
+      "semester": 1,
+      "id": "EXAM_1794147595685_a1ym0",
+      "slot_index": 7,
+      "exam_date": "2026-11-03",
+      "room_name": "03",
+      "updated_at": "2026-11-09T15:04:30.309490",
+      "is_compensatory": false,
+      "teacher_id": "T19",
+      "exam_number": 1,
+      "subject": "التاريخ والجغرافيا",
+      "class_name": "1BACSHF-2",
+      "status": "SCHEDULED",
+      "submission_deadline": "2026-11-18",
+      "day_of_week": 2,
+      "subject_name": "التاريخ والجغرافيا",
+      "exam_room": "03",
+      "grades_submission_date": "2026-11-18",
+      "exam_day_name": "الثلاثاء",
+      "days_to_submission": 15,
+      "is_compliant_15_days": true,
+      "compliance_info": {
+        "is_compliant": true,
+        "days": 15,
+        "max_allowed": 15,
+        "status_label": "متقيد بالنظام (15 يوماً) ✓",
+        "badge_color": "green",
+        "warning_message": ""
+      }
+    },
+    {
+      "room_name": "03",
+      "exam_date": "2026-11-04",
+      "teacher_name": "علي ازري",
+      "updated_at": "2026-11-09T15:04:30.345068",
+      "slot_index": 6,
+      "semester": 1,
+      "subject": "التاريخ والجغرافيا",
+      "exam_number": 1,
+      "class_code": "1BACSEF-1",
+      "notes": "",
+      "submission_deadline": "2026-11-19",
+      "day_of_week": 3,
+      "correction_date": "2026-11-12",
+      "source": "MOBILE_TEACHER",
+      "class_name": "1BACSEF-1",
+      "status": "SCHEDULED",
+      "id": "EXAM_1794147603956_w6glc",
+      "teacher_id": "T19",
+      "subject_name": "التاريخ والجغرافيا",
+      "academic_year": "2026/2027",
+      "exam_time_str": "15:00 - 16:00",
+      "is_compensatory": false,
+      "exam_room": "03",
+      "grades_submission_date": "2026-11-19",
+      "exam_day_name": "الأربعاء",
+      "days_to_submission": 15,
+      "is_compliant_15_days": true,
+      "compliance_info": {
+        "is_compliant": true,
+        "days": 15,
+        "max_allowed": 15,
+        "status_label": "متقيد بالنظام (15 يوماً) ✓",
+        "badge_color": "green",
+        "warning_message": ""
+      }
+    },
+    {
+      "day_of_week": 1,
+      "status": "SCHEDULED",
+      "slot_index": 5,
+      "academic_year": "2026/2027",
+      "updated_at": "2026-11-09T15:04:30.382254",
+      "exam_time_str": "14:00 - 15:00",
+      "exam_date": "2026-11-02",
+      "room_name": "02",
+      "is_compensatory": false,
+      "teacher_name": "مليكة أمين",
+      "exam_number": 1,
+      "subject": "التربية الإسلامية",
+      "id": "EXAM_1794167648104_86m5v",
+      "class_code": "1BACSEF-2",
+      "semester": 1,
+      "subject_name": "التربية الإسلامية",
+      "submission_deadline": "2026-11-17",
+      "class_name": "1BACSEF-2",
+      "notes": "",
+      "correction_date": "2026-11-10",
+      "source": "MOBILE_TEACHER",
+      "teacher_id": "T21",
+      "exam_room": "02",
+      "grades_submission_date": "2026-11-17",
+      "exam_day_name": "الإثنين",
+      "days_to_submission": 15,
+      "is_compliant_15_days": true,
+      "compliance_info": {
+        "is_compliant": true,
+        "days": 15,
+        "max_allowed": 15,
+        "status_label": "متقيد بالنظام (15 يوماً) ✓",
+        "badge_color": "green",
+        "warning_message": ""
+      }
+    },
+    {
+      "semester": 1,
+      "status": "SCHEDULED",
+      "subject": "التربية الإسلامية",
+      "teacher_id": "T21",
+      "id": "EXAM_1794167656353_awb0x",
+      "teacher_name": "مليكة أمين",
+      "is_compensatory": false,
+      "room_name": "02",
+      "exam_date": "2026-11-02",
+      "class_name": "TCLSHF-1",
+      "subject_name": "التربية الإسلامية",
+      "day_of_week": 1,
+      "notes": "",
+      "class_code": "TCLSHF-1",
+      "source": "MOBILE_TEACHER",
+      "updated_at": "2026-11-09T15:04:30.410022",
+      "exam_time_str": "15:00 - 16:00",
+      "slot_index": 6,
+      "submission_deadline": "2026-11-17",
+      "exam_number": 1,
+      "correction_date": "2026-11-10",
+      "academic_year": "2026/2027",
+      "exam_room": "02",
+      "grades_submission_date": "2026-11-17",
+      "exam_day_name": "الإثنين",
+      "days_to_submission": 15,
+      "is_compliant_15_days": true,
+      "compliance_info": {
+        "is_compliant": true,
+        "days": 15,
+        "max_allowed": 15,
+        "status_label": "متقيد بالنظام (15 يوماً) ✓",
+        "badge_color": "green",
+        "warning_message": ""
+      }
+    },
+    {
+      "subject_name": "التربية الإسلامية",
+      "submission_deadline": "2026-11-17",
+      "class_code": "TCLSHF-2",
+      "is_compensatory": false,
+      "notes": "",
+      "slot_index": 7,
+      "status": "SCHEDULED",
+      "updated_at": "2026-11-09T15:04:30.430891",
+      "day_of_week": 1,
+      "teacher_id": "T21",
+      "source": "MOBILE_TEACHER",
+      "exam_date": "2026-11-02",
+      "correction_date": "2026-11-10",
+      "room_name": "02",
+      "id": "EXAM_1794167658760_80ka8",
+      "exam_time_str": "16:00 - 17:00",
+      "subject": "التربية الإسلامية",
+      "teacher_name": "مليكة أمين",
+      "semester": 1,
+      "exam_number": 1,
+      "class_name": "TCLSHF-2",
+      "academic_year": "2026/2027",
+      "exam_room": "02",
+      "grades_submission_date": "2026-11-17",
+      "exam_day_name": "الإثنين",
+      "days_to_submission": 15,
+      "is_compliant_15_days": true,
+      "compliance_info": {
+        "is_compliant": true,
+        "days": 15,
+        "max_allowed": 15,
+        "status_label": "متقيد بالنظام (15 يوماً) ✓",
+        "badge_color": "green",
+        "warning_message": ""
+      }
+    },
+    {
+      "status": "SCHEDULED",
+      "exam_number": 1,
+      "id": "EXAM_1794167660874_hxz6x",
+      "teacher_id": "T21",
+      "correction_date": "2026-11-11",
+      "notes": "",
+      "submission_deadline": "2026-11-18",
+      "teacher_name": "مليكة أمين",
+      "day_of_week": 2,
+      "class_name": "2BACLF-1",
+      "subject_name": "التربية الإسلامية",
+      "class_code": "2BACLF-1",
+      "exam_time_str": "08:00 - 09:00",
+      "semester": 1,
+      "is_compensatory": false,
+      "slot_index": 1,
+      "updated_at": "2026-11-09T15:04:30.452052",
+      "academic_year": "2026/2027",
+      "source": "MOBILE_TEACHER",
+      "subject": "التربية الإسلامية",
+      "exam_date": "2026-11-03",
+      "room_name": "02",
+      "exam_room": "02",
+      "grades_submission_date": "2026-11-18",
+      "exam_day_name": "الثلاثاء",
+      "days_to_submission": 15,
+      "is_compliant_15_days": true,
+      "compliance_info": {
+        "is_compliant": true,
+        "days": 15,
+        "max_allowed": 15,
+        "status_label": "متقيد بالنظام (15 يوماً) ✓",
+        "badge_color": "green",
+        "warning_message": ""
+      }
+    },
+    {
+      "submission_deadline": "2026-11-18",
+      "academic_year": "2026/2027",
+      "notes": "",
+      "status": "SCHEDULED",
+      "exam_time_str": "09:00 - 10:00",
+      "exam_date": "2026-11-03",
+      "room_name": "02",
+      "updated_at": "2026-11-09T15:04:30.457106",
+      "teacher_name": "مليكة أمين",
+      "slot_index": 2,
+      "id": "EXAM_1794167662770_1zwrk",
+      "class_code": "1BACSHF-1",
+      "is_compensatory": false,
+      "day_of_week": 2,
+      "class_name": "1BACSHF-1",
+      "subject": "التربية الإسلامية",
+      "source": "MOBILE_TEACHER",
+      "teacher_id": "T21",
+      "semester": 1,
+      "subject_name": "التربية الإسلامية",
+      "exam_number": 1,
+      "correction_date": "2026-11-11",
+      "exam_room": "02",
+      "grades_submission_date": "2026-11-18",
+      "exam_day_name": "الثلاثاء",
+      "days_to_submission": 15,
+      "is_compliant_15_days": true,
+      "compliance_info": {
+        "is_compliant": true,
+        "days": 15,
+        "max_allowed": 15,
+        "status_label": "متقيد بالنظام (15 يوماً) ✓",
+        "badge_color": "green",
+        "warning_message": ""
+      }
+    },
+    {
+      "id": "EXAM_1794167664570_wenm4",
+      "exam_number": 1,
+      "updated_at": "2026-11-09T15:04:30.469542",
+      "slot_index": 3,
+      "correction_date": "2026-11-11",
+      "subject_name": "التربية الإسلامية",
+      "subject": "التربية الإسلامية",
+      "notes": "",
+      "source": "MOBILE_TEACHER",
+      "day_of_week": 2,
+      "class_code": "1BACSHF-2",
+      "is_compensatory": false,
+      "status": "SCHEDULED",
+      "exam_date": "2026-11-03",
+      "room_name": "02",
+      "semester": 1,
+      "submission_deadline": "2026-11-18",
+      "class_name": "1BACSHF-2",
+      "exam_time_str": "10:00 - 11:00",
+      "academic_year": "2026/2027",
+      "teacher_name": "مليكة أمين",
+      "teacher_id": "T21",
+      "exam_room": "02",
+      "grades_submission_date": "2026-11-18",
+      "exam_day_name": "الثلاثاء",
+      "days_to_submission": 15,
+      "is_compliant_15_days": true,
+      "compliance_info": {
+        "is_compliant": true,
+        "days": 15,
+        "max_allowed": 15,
+        "status_label": "متقيد بالنظام (15 يوماً) ✓",
+        "badge_color": "green",
+        "warning_message": ""
+      }
+    },
+    {
+      "status": "SCHEDULED",
+      "teacher_name": "مليكة أمين",
+      "updated_at": "2026-11-09T15:04:30.485358",
+      "slot_index": 4,
+      "semester": 1,
+      "class_code": "2BACSHF-1",
+      "exam_date": "2026-11-03",
+      "room_name": "02",
+      "is_compensatory": false,
+      "id": "EXAM_1794167667090_g9b0d",
+      "class_name": "2BACSHF-1",
+      "academic_year": "2026/2027",
+      "exam_number": 1,
+      "exam_time_str": "11:00 - 12:00",
+      "subject": "التربية الإسلامية",
+      "subject_name": "التربية الإسلامية",
+      "teacher_id": "T21",
+      "submission_deadline": "2026-11-18",
+      "day_of_week": 2,
+      "correction_date": "2026-11-11",
+      "notes": "",
+      "source": "MOBILE_TEACHER",
+      "exam_room": "02",
+      "grades_submission_date": "2026-11-18",
+      "exam_day_name": "الثلاثاء",
+      "days_to_submission": 15,
+      "is_compliant_15_days": true,
+      "compliance_info": {
+        "is_compliant": true,
+        "days": 15,
+        "max_allowed": 15,
+        "status_label": "متقيد بالنظام (15 يوماً) ✓",
+        "badge_color": "green",
+        "warning_message": ""
+      }
+    },
+    {
+      "slot_index": 1,
+      "day_of_week": 3,
+      "updated_at": "2026-11-09T15:04:30.505811",
+      "id": "EXAM_1794167670772_ftmxx",
+      "teacher_name": "مليكة أمين",
+      "correction_date": "2026-11-12",
+      "submission_deadline": "2026-11-19",
+      "status": "SCHEDULED",
+      "subject": "التربية الإسلامية",
+      "exam_number": 1,
+      "class_code": "TCSEF-1",
+      "semester": 1,
+      "source": "MOBILE_TEACHER",
+      "is_compensatory": false,
+      "class_name": "TCSEF-1",
+      "subject_name": "التربية الإسلامية",
+      "notes": "",
+      "academic_year": "2026/2027",
+      "exam_date": "2026-11-11",
+      "room_name": "02",
+      "teacher_id": "T21",
+      "exam_time_str": "08:00 - 09:00",
+      "exam_room": "02",
+      "grades_submission_date": "2026-11-19",
+      "exam_day_name": "الأربعاء",
+      "days_to_submission": 8,
+      "is_compliant_15_days": true,
+      "compliance_info": {
+        "is_compliant": true,
+        "days": 8,
+        "max_allowed": 15,
+        "status_label": "متقيد بالنظام (8 يوماً) ✓",
+        "badge_color": "green",
+        "warning_message": ""
+      }
+    },
+    {
+      "source": "MOBILE_TEACHER",
+      "room_name": "02",
+      "exam_date": "2026-11-07",
+      "slot_index": 2,
+      "submission_deadline": "2026-11-22",
+      "updated_at": "2026-11-09T15:04:30.525153",
+      "class_code": "1BACSEF-1",
+      "subject": "التربية الإسلامية",
+      "subject_name": "التربية الإسلامية",
+      "is_compensatory": false,
+      "teacher_name": "مليكة أمين",
+      "class_name": "1BACSEF-1",
+      "id": "EXAM_1794167674352_u09jt",
+      "day_of_week": 6,
+      "notes": "",
+      "teacher_id": "T21",
+      "semester": 1,
+      "exam_number": 1,
+      "exam_time_str": "09:00 - 10:00",
+      "correction_date": "2026-11-15",
+      "academic_year": "2026/2027",
+      "status": "SCHEDULED",
+      "exam_room": "02",
+      "grades_submission_date": "2026-11-22",
+      "exam_day_name": "السبت",
+      "days_to_submission": 15,
+      "is_compliant_15_days": true,
+      "compliance_info": {
+        "is_compliant": true,
+        "days": 15,
+        "max_allowed": 15,
+        "status_label": "متقيد بالنظام (15 يوماً) ✓",
+        "badge_color": "green",
+        "warning_message": ""
+      }
+    },
+    {
+      "subject_name": "التربية الإسلامية",
+      "class_code": "2BACSPF-1",
+      "semester": 1,
+      "source": "MOBILE_TEACHER",
+      "day_of_week": 6,
+      "id": "EXAM_1794167676338_361y0",
+      "is_compensatory": false,
+      "room_name": "02",
+      "exam_date": "2026-11-07",
+      "updated_at": "2026-11-09T15:04:30.541075",
+      "slot_index": 4,
+      "exam_number": 1,
+      "exam_time_str": "11:00 - 12:00",
+      "teacher_id": "T21",
+      "academic_year": "2026/2027",
+      "notes": "",
+      "correction_date": "2026-11-15",
+      "subject": "التربية الإسلامية",
+      "class_name": "2BACSPF-1",
+      "submission_deadline": "2026-11-22",
+      "teacher_name": "مليكة أمين",
+      "status": "SCHEDULED",
+      "exam_room": "02",
+      "grades_submission_date": "2026-11-22",
+      "exam_day_name": "السبت",
+      "days_to_submission": 15,
+      "is_compliant_15_days": true,
+      "compliance_info": {
+        "is_compliant": true,
+        "days": 15,
+        "max_allowed": 15,
+        "status_label": "متقيد بالنظام (15 يوماً) ✓",
+        "badge_color": "green",
+        "warning_message": ""
+      }
+    },
+    {
+      "is_compensatory": false,
+      "semester": 1,
+      "academic_year": "2026/2027",
+      "id": "EXAM_1794167687866_x5sxn",
+      "exam_number": 1,
+      "exam_time_str": "10:00 - 11:00",
+      "teacher_id": "T21",
+      "subject_name": "التربية الإسلامية",
+      "day_of_week": 5,
+      "subject": "التربية الإسلامية",
+      "status": "SCHEDULED",
+      "submission_deadline": "2026-11-21",
+      "class_name": "2BACSVTF-1",
+      "source": "MOBILE_TEACHER",
+      "notes": "",
+      "correction_date": "2026-11-14",
+      "teacher_name": "مليكة أمين",
+      "class_code": "2BACSVTF-1",
+      "slot_index": 3,
+      "room_name": "02",
+      "exam_date": "2026-11-06",
+      "updated_at": "2026-11-09T15:04:30.549188",
+      "exam_room": "02",
+      "grades_submission_date": "2026-11-21",
+      "exam_day_name": "الجمعة",
+      "days_to_submission": 15,
+      "is_compliant_15_days": true,
+      "compliance_info": {
+        "is_compliant": true,
+        "days": 15,
+        "max_allowed": 15,
+        "status_label": "متقيد بالنظام (15 يوماً) ✓",
+        "badge_color": "green",
+        "warning_message": ""
+      }
+    },
+    {
+      "updated_at": "2026-11-09T15:04:30.565241",
+      "academic_year": "2026/2027",
+      "slot_index": 3,
+      "exam_time_str": "10:00 - 11:00",
+      "exam_number": 1,
+      "source": "MOBILE_TEACHER",
+      "day_of_week": 1,
+      "exam_date": "2026-11-02",
+      "room_name": "06",
+      "subject_name": "اللغة الفرنسية",
+      "class_code": "1BACSHF-1",
+      "is_compensatory": false,
+      "subject": "اللغة الفرنسية",
+      "id": "EXAM_1794224378870_5i1b0",
+      "class_name": "1BACSHF-1",
+      "teacher_name": "فاطمة فهمي",
+      "notes": "",
+      "status": "SCHEDULED",
+      "submission_deadline": "2026-11-13",
+      "teacher_id": "T07",
+      "correction_date": "2026-11-09",
+      "semester": 1,
+      "exam_room": "06",
+      "grades_submission_date": "2026-11-13",
+      "exam_day_name": "الإثنين",
+      "days_to_submission": 11,
+      "is_compliant_15_days": true,
+      "compliance_info": {
+        "is_compliant": true,
+        "days": 11,
+        "max_allowed": 15,
+        "status_label": "متقيد بالنظام (11 يوماً) ✓",
+        "badge_color": "green",
+        "warning_message": ""
+      }
+    },
+    {
+      "status": "SCHEDULED",
+      "submission_deadline": "2026-11-13",
+      "is_compensatory": false,
+      "subject_name": "اللغة الفرنسية",
+      "teacher_id": "T07",
+      "exam_date": "2026-11-02",
+      "room_name": "06",
+      "subject": "اللغة الفرنسية",
+      "class_name": "1BACSHF-2",
+      "exam_time_str": "08:00 - 09:00",
+      "semester": 1,
+      "exam_number": 1,
+      "academic_year": "2026/2027",
+      "correction_date": "2026-11-09",
+      "class_code": "1BACSHF-2",
+      "notes": "",
+      "id": "EXAM_1794224399259_vqa3v",
+      "day_of_week": 1,
+      "slot_index": 1,
+      "updated_at": "2026-11-09T15:04:30.581862",
+      "source": "MOBILE_TEACHER",
+      "teacher_name": "فاطمة فهمي",
+      "exam_room": "06",
+      "grades_submission_date": "2026-11-13",
+      "exam_day_name": "الإثنين",
+      "days_to_submission": 11,
+      "is_compliant_15_days": true,
+      "compliance_info": {
+        "is_compliant": true,
+        "days": 11,
+        "max_allowed": 15,
+        "status_label": "متقيد بالنظام (11 يوماً) ✓",
+        "badge_color": "green",
+        "warning_message": ""
+      }
+    },
+    {
+      "academic_year": "2026/2027",
+      "teacher_id": "T07",
+      "exam_number": 2,
+      "exam_date": "2026-11-04",
+      "room_name": "06",
+      "semester": 1,
+      "teacher_name": "فاطمة فهمي",
+      "exam_time_str": "16:00 - 17:00",
+      "source": "MOBILE_TEACHER",
+      "correction_date": "2026-11-10",
+      "class_name": "1BACSHF-1",
+      "subject": "اللغة الفرنسية",
+      "day_of_week": 3,
+      "class_code": "1BACSHF-1",
+      "id": "EXAM_1794224524410_qi623",
+      "is_compensatory": false,
+      "status": "SCHEDULED",
+      "notes": "",
+      "slot_index": 7,
+      "updated_at": "2026-11-09T15:04:30.594196",
+      "submission_deadline": "2026-11-13",
+      "subject_name": "اللغة الفرنسية",
+      "exam_room": "06",
+      "grades_submission_date": "2026-11-13",
+      "exam_day_name": "الأربعاء",
+      "days_to_submission": 9,
+      "is_compliant_15_days": true,
+      "compliance_info": {
+        "is_compliant": true,
+        "days": 9,
+        "max_allowed": 15,
+        "status_label": "متقيد بالنظام (9 يوماً) ✓",
+        "badge_color": "green",
+        "warning_message": ""
+      }
+    },
+    {
+      "class_code": "1BACSHF-2",
+      "room_name": "06",
+      "exam_date": "2026-11-05",
+      "semester": 1,
+      "teacher_name": "فاطمة فهمي",
+      "day_of_week": 4,
+      "academic_year": "2026/2027",
+      "notes": "",
+      "status": "SCHEDULED",
+      "subject": "اللغة الفرنسية",
+      "exam_number": 2,
+      "submission_deadline": "2026-11-13",
+      "slot_index": 3,
+      "exam_time_str": "10:00 - 11:00",
+      "updated_at": "2026-11-09T15:04:30.605268",
+      "id": "EXAM_1794224552126_xslzz",
+      "is_compensatory": false,
+      "teacher_id": "T07",
+      "source": "MOBILE_TEACHER",
+      "class_name": "1BACSHF-2",
+      "correction_date": "2026-11-10",
+      "subject_name": "اللغة الفرنسية",
+      "exam_room": "06",
+      "grades_submission_date": "2026-11-13",
+      "exam_day_name": "الخميس",
+      "days_to_submission": 8,
+      "is_compliant_15_days": true,
+      "compliance_info": {
+        "is_compliant": true,
+        "days": 8,
+        "max_allowed": 15,
+        "status_label": "متقيد بالنظام (8 يوماً) ✓",
+        "badge_color": "green",
+        "warning_message": ""
+      }
+    },
+    {
+      "submission_deadline": "2027-01-12",
+      "correction_date": "2027-01-07",
+      "id": "EXAM_1794224664620_gyq0k",
+      "notes": "",
+      "class_code": "1BACSHF-1",
+      "status": "SCHEDULED",
+      "room_name": "06",
+      "exam_date": "2027-01-04",
+      "updated_at": "2026-11-09T15:04:30.613063",
+      "slot_index": 3,
+      "subject_name": "اللغة الفرنسية",
+      "semester": 1,
+      "is_compensatory": false,
+      "exam_number": 3,
+      "teacher_name": "فاطمة فهمي",
+      "teacher_id": "T07",
+      "exam_time_str": "10:00 - 11:00",
+      "day_of_week": 1,
+      "source": "MOBILE_TEACHER",
+      "subject": "اللغة الفرنسية",
+      "academic_year": "2026/2027",
+      "class_name": "1BACSHF-1",
+      "exam_room": "06",
+      "grades_submission_date": "2027-01-12",
+      "exam_day_name": "الإثنين",
+      "days_to_submission": 8,
+      "is_compliant_15_days": true,
+      "compliance_info": {
+        "is_compliant": true,
+        "days": 8,
+        "max_allowed": 15,
+        "status_label": "متقيد بالنظام (8 يوماً) ✓",
+        "badge_color": "green",
+        "warning_message": ""
+      }
+    },
+    {
+      "status": "SCHEDULED",
+      "is_compensatory": false,
+      "subject": "اللغة الفرنسية",
+      "teacher_id": "T07",
+      "teacher_name": "فاطمة فهمي",
+      "class_name": "1BACSHF-2",
+      "subject_name": "اللغة الفرنسية",
+      "day_of_week": 1,
+      "academic_year": "2026/2027",
+      "class_code": "1BACSHF-2",
+      "correction_date": "2027-01-07",
+      "exam_time_str": "08:00 - 09:00",
+      "submission_deadline": "2027-01-12",
+      "updated_at": "2026-11-09T15:04:30.629249",
+      "id": "EXAM_1794224690828_dlsx3",
+      "slot_index": 1,
+      "exam_date": "2027-01-04",
+      "room_name": "06",
+      "exam_number": 3,
+      "semester": 1,
+      "notes": "",
+      "source": "MOBILE_TEACHER",
+      "exam_room": "06",
+      "grades_submission_date": "2027-01-12",
+      "exam_day_name": "الإثنين",
+      "days_to_submission": 8,
+      "is_compliant_15_days": true,
+      "compliance_info": {
+        "is_compliant": true,
+        "days": 8,
+        "max_allowed": 15,
+        "status_label": "متقيد بالنظام (8 يوماً) ✓",
+        "badge_color": "green",
+        "warning_message": ""
+      }
+    },
+    {
+      "source": "MOBILE_TEACHER",
+      "day_of_week": 3,
+      "notes": "",
+      "semester": 1,
+      "class_name": "1BACSHF-1",
+      "correction_date": "2027-01-07",
+      "room_name": "06",
+      "exam_date": "2027-01-06",
+      "subject_name": "اللغة الفرنسية",
+      "exam_number": 4,
+      "teacher_id": "T07",
+      "teacher_name": "فاطمة فهمي",
+      "subject": "اللغة الفرنسية",
+      "updated_at": "2026-11-09T15:04:30.629249",
+      "exam_time_str": "17:00 - 18:00",
+      "slot_index": 8,
+      "is_compensatory": false,
+      "academic_year": "2026/2027",
+      "submission_deadline": "2027-01-12",
+      "class_code": "1BACSHF-1",
+      "id": "EXAM_1794224752723_8ox6h",
+      "status": "SCHEDULED",
+      "exam_room": "06",
+      "grades_submission_date": "2027-01-12",
+      "exam_day_name": "الأربعاء",
+      "days_to_submission": 6,
+      "is_compliant_15_days": true,
+      "compliance_info": {
+        "is_compliant": true,
+        "days": 6,
+        "max_allowed": 15,
+        "status_label": "متقيد بالنظام (6 يوماً) ✓",
+        "badge_color": "green",
+        "warning_message": ""
+      }
+    },
+    {
+      "teacher_name": "فاطمة فهمي",
+      "class_name": "1BACSHF-2",
+      "submission_deadline": "2027-01-12",
+      "correction_date": "2027-01-07",
+      "day_of_week": 4,
+      "teacher_id": "T07",
+      "exam_number": 4,
+      "id": "EXAM_1794224778861_l7dmo",
+      "source": "MOBILE_TEACHER",
+      "status": "SCHEDULED",
+      "slot_index": 4,
+      "updated_at": "2026-11-09T15:04:30.647147",
+      "semester": 1,
+      "is_compensatory": false,
+      "subject": "اللغة الفرنسية",
+      "room_name": "06",
+      "exam_date": "2027-01-07",
+      "exam_time_str": "11:00 - 12:00",
+      "class_code": "1BACSHF-2",
+      "subject_name": "اللغة الفرنسية",
+      "notes": "",
+      "academic_year": "2026/2027",
+      "exam_room": "06",
+      "grades_submission_date": "2027-01-12",
+      "exam_day_name": "الخميس",
+      "days_to_submission": 5,
+      "is_compliant_15_days": true,
+      "compliance_info": {
+        "is_compliant": true,
+        "days": 5,
+        "max_allowed": 15,
+        "status_label": "متقيد بالنظام (5 يوماً) ✓",
+        "badge_color": "green",
+        "warning_message": ""
+      }
+    }
+  ],
+  "parentPledges": {
+    "PL_1794232652839": {
+      "pledgeId": "PL_1794232652839",
       "studentName": "الليون عبد الله",
       "massarCode": "J172005213",
       "classCode": "TCLSHF-1",
       "parentName": "",
       "startDate": "2026-10-30",
       "endDate": "2026-11-04",
-      "issuedDate": "04 / 11 / 2026",
-      "timestamp": 1793811365175
-    },
-    "PL_1793873675836": {
-      "pledgeId": "PL_1793873675836",
-      "studentName": "سلام محمد",
-      "massarCode": "J176005194",
-      "classCode": "TCLSHF-1",
-      "parentName": "",
-      "startDate": "2026-10-29",
-      "endDate": "2026-11-05",
-      "issuedDate": "05 / 11 / 2026",
-      "timestamp": 1793873675836
+      "issuedDate": "09 / 11 / 2026",
+      "timestamp": 1794232652839
     }
-  },
-  "doctorVisits": {
-    "DV_1793649701613": {
-      "visitId": "DV_1793649701613",
-      "studentName": "بن داود مونة",
-      "massarCode": "D146114195",
-      "classCode": "1BACSEF-1",
-      "parentPhone": "",
-      "adminName": "الحارس العام للخارجية",
-      "adminRole": "الحارس العام للخارجية",
-      "exitDate": "2026-11-02",
-      "exitTime": "20:01",
-      "issuedDate": "02 / 11 / 2026",
-      "timestamp": 1793649701613
-    }
-  },
-  "resetToken": 1793991810322
+  }
 };
 window.ANFG_SCHOOL_DATA = window.INITIAL_SCHOOL_DATA;
