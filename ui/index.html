@@ -1823,6 +1823,12 @@
             <span class="nav-icon text-sm">📅</span>
             <span class="nav-label truncate">برمجة الفروض المحروسة</span>
           </button>
+
+          <button id="nav-tab-absence-card" onclick="switchTab('tab-absence-card')" class="w-full text-right px-3 py-2 rounded-xl text-xs font-bold text-rose-300 hover:bg-slate-800/70 hover:text-white transition flex items-center gap-2" title="البطاقة الشخصية للغياب - الواجهة 18">
+            <span class="w-5 h-5 rounded-md bg-rose-950/80 text-rose-300 border border-rose-800/60 flex items-center justify-center text-[10px] font-mono font-bold shrink-0 nav-num-badge">18</span>
+            <span class="nav-icon text-sm">📇</span>
+            <span class="nav-label truncate">البطاقة الشخصية للغياب</span>
+          </button>
         </div>
       </div>
 
@@ -2687,26 +2693,26 @@
                   <span class="font-bold text-xs text-amber-400">الفترة الصباحية (4 حصص)</span>
                   <div class="flex items-center gap-1.5">
                     <span class="text-[11px] text-slate-400">انطلاق الحصة 1:</span>
-                    <input type="text" id="inst-m-start" value="08:30" oninput="autoCalculatePeriodTimes()" onchange="autoCalculatePeriodTimes()" class="w-16 bg-slate-900 border border-slate-700 rounded-lg px-2 py-0.5 text-center font-bold text-amber-300 font-mono text-xs focus:border-amber-500 focus:outline-none" placeholder="08:30">
+                    <input type="text" id="inst-m-start" value="08:00" oninput="autoCalculatePeriodTimes()" onchange="autoCalculatePeriodTimes()" class="w-16 bg-slate-900 border border-slate-700 rounded-lg px-2 py-0.5 text-center font-bold text-amber-300 font-mono text-xs focus:border-amber-500 focus:outline-none" placeholder="08:30">
                   </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-2 text-xs">
                   <div>
                     <label class="block text-slate-400 mb-0.5 text-[11px]">الحصة 1 ص:</label>
-                    <input type="text" id="inst-m1" value="08:30 - 09:30" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white font-mono text-xs focus:border-blue-500 focus:outline-none">
+                    <input type="text" id="inst-m1" value="08:00 - 09:00" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white font-mono text-xs focus:border-blue-500 focus:outline-none">
                   </div>
                   <div>
                     <label class="block text-slate-400 mb-0.5 text-[11px]">الحصة 2 ص:</label>
-                    <input type="text" id="inst-m2" value="09:30 - 10:30" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white font-mono text-xs focus:border-blue-500 focus:outline-none">
+                    <input type="text" id="inst-m2" value="09:00 - 10:00" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white font-mono text-xs focus:border-blue-500 focus:outline-none">
                   </div>
                   <div>
                     <label class="block text-slate-400 mb-0.5 text-[11px]">الحصة 3 ص:</label>
-                    <input type="text" id="inst-m3" value="10:30 - 11:30" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white font-mono text-xs focus:border-blue-500 focus:outline-none">
+                    <input type="text" id="inst-m3" value="10:00 - 11:00" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white font-mono text-xs focus:border-blue-500 focus:outline-none">
                   </div>
                   <div>
                     <label class="block text-slate-400 mb-0.5 text-[11px]">الحصة 4 ص:</label>
-                    <input type="text" id="inst-m4" value="11:30 - 12:30" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white font-mono text-xs focus:border-blue-500 focus:outline-none">
+                    <input type="text" id="inst-m4" value="11:00 - 12:00" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white font-mono text-xs focus:border-blue-500 focus:outline-none">
                   </div>
                 </div>
               </div>
@@ -2728,15 +2734,15 @@
                   </div>
                   <div>
                     <label class="block text-slate-400 mb-0.5 text-[11px]">الحصة 2 م:</label>
-                    <input type="text" id="inst-e2" value="15:30 - 16:30" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white font-mono text-xs focus:border-blue-500 focus:outline-none">
+                    <input type="text" id="inst-e2" value="15:00 - 16:00" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white font-mono text-xs focus:border-blue-500 focus:outline-none">
                   </div>
                   <div>
                     <label class="block text-slate-400 mb-0.5 text-[11px]">الحصة 3 م:</label>
-                    <input type="text" id="inst-e3" value="16:30 - 17:30" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white font-mono text-xs focus:border-blue-500 focus:outline-none">
+                    <input type="text" id="inst-e3" value="16:00 - 17:00" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white font-mono text-xs focus:border-blue-500 focus:outline-none">
                   </div>
                   <div>
                     <label class="block text-slate-400 mb-0.5 text-[11px]">الحصة 4 م:</label>
-                    <input type="text" id="inst-e4" value="17:30 - 18:30" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white font-mono text-xs focus:border-blue-500 focus:outline-none">
+                    <input type="text" id="inst-e4" value="17:00 - 18:00" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white font-mono text-xs focus:border-blue-500 focus:outline-none">
                   </div>
                 </div>
               </div>
@@ -3709,14 +3715,14 @@
                 <thead>
                   <tr class="bg-slate-200 text-slate-900 font-black border-b-2 border-slate-900 text-[10.5px]">
                     <th class="p-1.5 border border-slate-700 w-[11%] bg-slate-300 text-black">اليوم</th>
-                    <th class="p-1.5 border border-slate-700 w-[11%]">09:30-08:30</th>
-                    <th class="p-1.5 border border-slate-700 w-[11%]">10:30-09:30</th>
-                    <th class="p-1.5 border border-slate-700 w-[11%]">11:30-10:30</th>
-                    <th class="p-1.5 border border-slate-700 w-[11%]">12:30-11:30</th>
-                    <th class="p-1.5 border border-slate-700 w-[11%] bg-slate-300/60">15:30-14:30</th>
-                    <th class="p-1.5 border border-slate-700 w-[11%] bg-slate-300/60">16:30-15:30</th>
-                    <th class="p-1.5 border border-slate-700 w-[11%] bg-slate-300/60">17:30-16:30</th>
-                    <th class="p-1.5 border border-slate-700 w-[11%] bg-slate-300/60">18:30-17:30</th>
+                    <th class="p-1.5 border border-slate-700 w-[11%]">09:00-08:00</th>
+                    <th class="p-1.5 border border-slate-700 w-[11%]">10:00-09:00</th>
+                    <th class="p-1.5 border border-slate-700 w-[11%]">11:00-10:00</th>
+                    <th class="p-1.5 border border-slate-700 w-[11%]">12:00-11:00</th>
+                    <th class="p-1.5 border border-slate-700 w-[11%] bg-slate-300/60">15:00-14:00</th>
+                    <th class="p-1.5 border border-slate-700 w-[11%] bg-slate-300/60">16:00-15:00</th>
+                    <th class="p-1.5 border border-slate-700 w-[11%] bg-slate-300/60">17:00-16:00</th>
+                    <th class="p-1.5 border border-slate-700 w-[11%] bg-slate-300/60">18:00-17:00</th>
                   </tr>
                 </thead>
                 <tbody id="tt-grid-table-body" class="divide-y divide-slate-800 font-bold">
@@ -4813,6 +4819,15 @@
             </div>
 
             <div class="flex flex-wrap items-center gap-3">
+              <!-- زر البطاقة الشخصية للغياب -->
+              <button type="button" onclick="openStudentAbsenceCardModal()" class="bg-gradient-to-br from-rose-950/90 to-slate-900 border-2 border-rose-600/80 hover:border-rose-400 rounded-2xl px-4 py-2.5 shadow-lg cursor-pointer transition transform hover:-translate-y-0.5 group flex items-center gap-2.5">
+                <span class="text-xl">📇</span>
+                <div class="text-right">
+                  <div class="text-[11px] font-black text-rose-300">البطاقة الشخصية للغياب</div>
+                  <div class="text-[9px] text-slate-400">السجل السنوي والشهري للتلميذ 🖨️</div>
+                </div>
+              </button>
+
               <!-- زر وأيقونة التلاميذ المتغيبين اليوم المحاطة بالأخضر في الصورة -->
               <div onclick="toggleTodayAbsenteesModal()" class="bg-gradient-to-br from-rose-950/80 to-slate-900 border-2 border-rose-600/80 hover:border-rose-500 rounded-2xl px-4 py-2.5 shadow-lg cursor-pointer transition transform hover:-translate-y-0.5 group flex items-center gap-3">
                 <div>
@@ -5883,6 +5898,111 @@
         </div>
       </div>
     </div>
+
+    
+      <!-- =========================================================================
+           TAB 18: INDIVIDUAL ABSENCE CARD (البطاقة الشخصية للغياب)
+           ========================================================================= -->
+      <div id="tab-absence-card" class="tab-content space-y-4" style="display: none;">
+
+        <!-- 1. Header Hero Card -->
+        <div class="bg-gradient-to-l from-slate-900 via-rose-950/40 to-slate-900 border border-rose-700/50 rounded-2xl p-5 shadow-xl">
+          <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div class="flex items-center gap-3.5">
+              <div class="w-12 h-12 rounded-2xl bg-rose-950 border border-rose-500/60 flex items-center justify-center text-2xl text-rose-400 shadow-inner">
+                📇
+              </div>
+              <div>
+                <div class="flex items-center gap-2">
+                  <h3 class="text-base sm:text-lg font-black text-white">البطاقة الشخصية للغياب — الواجهة 18</h3>
+                  <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-rose-950 text-rose-300 border border-rose-600/80 font-mono">النموذج الوزاري المعتمد</span>
+                </div>
+                <p class="text-xs text-slate-400 mt-1">السجل السنوي الشامل لغياب المتعلمين موزعاً حسب الشهور (شتنبر إلى يونيو) والفترات (صباح / مساء)، مع إمكانية التعبئة التلقائية للغيابات أو استخراج نماذج بيضاء للتدوين اليدوي، والطباعة الفردية أو الجماعية للقسم كاملاً.</p>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-2">
+              <button type="button" onclick="printTab18CurrentStudentCard()" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 rounded-xl font-bold text-xs shadow transition flex items-center gap-2 cursor-pointer" title="طباعة بطاقة التلميذ المحدد حالياً (بطاقتين في ورقة A4: نسخة الإدارة + نسخة الحراسة)">
+                <span>🖨️</span>
+                <span>طباعة بطاقة التلميذ</span>
+              </button>
+              <button type="button" id="tab18-batch-print-btn" onclick="printTab18BatchClassCards()" class="px-4 py-2 bg-gradient-to-r from-rose-700 via-rose-600 to-amber-600 hover:from-rose-600 hover:to-amber-500 text-white rounded-xl font-black text-xs shadow-lg shadow-rose-950/50 flex items-center gap-2 transition cursor-pointer" title="طباعة بطاقتين في كل ورقة A4 وفق الخيار المحدد">
+                <span>📑</span>
+                <span id="tab18-batch-btn-label">طباعة بطاقات القسم (بطاقتين في ورقة A4)</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Controls & Filter Bar -->
+        <div class="bg-slate-900/90 border border-slate-800 p-4 rounded-2xl shadow-lg flex flex-wrap items-center justify-between gap-4 text-xs">
+          <div class="flex flex-wrap items-center gap-3">
+            <!-- Class Selector -->
+            <div class="flex items-center gap-1.5">
+              <label class="text-slate-300 font-bold flex items-center gap-1">
+                <span>🏫</span> <span>القسم:</span>
+              </label>
+              <select id="tab18-class-select" onchange="onTab18ClassChange(this.value)" class="bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white font-bold text-xs focus:border-rose-500 focus:outline-none cursor-pointer">
+                <!-- Dynamically populated -->
+              </select>
+            </div>
+
+            <!-- Student Selector -->
+            <div class="flex items-center gap-1.5">
+              <label class="text-slate-300 font-bold flex items-center gap-1">
+                <span>👤</span> <span>التلميذ(ة):</span>
+              </label>
+              <select id="tab18-student-select" onchange="onTab18StudentChange(this.value)" class="bg-slate-950 border border-rose-700/80 rounded-xl px-3 py-2 text-rose-300 font-bold text-xs focus:border-rose-400 focus:outline-none min-w-[220px] max-w-[320px] cursor-pointer">
+                <!-- Dynamically populated -->
+              </select>
+            </div>
+
+            <!-- Fast Search -->
+            <div class="relative min-w-[200px]">
+              <input type="text" id="tab18-search-input" oninput="onTab18SearchInput(this.value)" placeholder="🔍 بحث سريع باسم التلميذ أو رقم مسار..." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white text-xs placeholder:text-slate-500 focus:border-rose-500 focus:outline-none">
+            </div>
+          </div>
+
+          <!-- 3-Way Fill & Print Mode Selector -->
+          <div class="flex flex-wrap items-center gap-2 bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800 text-xs">
+            <span class="text-slate-400 font-bold flex items-center gap-1">
+              <span>⚙️</span> <span>الخيارات:</span>
+            </span>
+
+            <!-- Option 1: تعبئة الغياب المسجل لكافة القسم -->
+            <label class="flex items-center gap-1.5 cursor-pointer text-rose-300 font-bold px-2 py-1 rounded-lg hover:bg-slate-900 transition">
+              <input type="radio" name="tab18-fill-mode" value="filled_all" checked onchange="onTab18FillModeChange(this.value)" class="accent-rose-500 cursor-pointer">
+              <span>تعبئة الغياب المسجل لكافة القسم</span>
+            </label>
+
+            <span class="text-slate-700">|</span>
+
+            <!-- Option 2: المتغيبون فقط (الذين لديهم غياب مسجل) -->
+            <label class="flex items-center gap-1.5 cursor-pointer text-amber-300 font-bold px-2 py-1 rounded-lg hover:bg-slate-900 transition" title="طباعة وعرض بطاقات التلاميذ الذين سُجل لهم غياب فقط، مع طباعة بطاقتين في كل ورقة A4">
+              <input type="radio" name="tab18-fill-mode" value="filled_absent_only" onchange="onTab18FillModeChange(this.value)" class="accent-amber-500 cursor-pointer">
+              <span class="flex items-center gap-1">
+                <span>المتغيبون فقط (الذين لديهم غياب مسجل)</span>
+                <span id="tab18-absent-count-badge" class="px-1.5 py-0.2 rounded-full text-[10px] bg-amber-950 text-amber-300 border border-amber-600 font-mono">0</span>
+              </span>
+            </label>
+
+            <span class="text-slate-700">|</span>
+
+            <!-- Option 3: نموذج فارغ للتدوين اليدوي -->
+            <label class="flex items-center gap-1.5 cursor-pointer text-slate-300 font-medium px-2 py-1 rounded-lg hover:bg-slate-900 transition">
+              <input type="radio" name="tab18-fill-mode" value="blank" onchange="onTab18FillModeChange(this.value)" class="accent-slate-400 cursor-pointer">
+              <span>نموذج فارغ للتدوين اليدوي</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- 3. Live Card Sheet Paper View -->
+        <div id="tab18-card-preview-container" class="bg-slate-950/80 border border-slate-800 rounded-2xl p-4 sm:p-6 overflow-x-auto flex justify-center shadow-2xl">
+          <!-- Live rendered card HTML -->
+        </div>
+
+      </div>
+
 
     </main>
   </div>
@@ -7798,6 +7918,8 @@
         if (typeof window.initExamsPlanning === 'function') {
           window.initExamsPlanning();
         }
+      } else if (tabId === 'tab-absence-card') {
+        initTab18AbsenceCard();
       } else if (tabId === 'tab-attendance') {
         if (!window._inStandaloneTrackingMode) {
           const fullHeader = document.getElementById('att-director-full-header');
@@ -16575,6 +16697,9 @@
           document.getElementById('surv-kpi-scheduled').innerText = json.data.total_sessions_scheduled;
           document.getElementById('surv-kpi-classes').innerText = json.data.active_classes_count;
           document.getElementById('surv-kpi-teachers').innerText = json.data.active_teachers_count;
+          document.querySelectorAll('.surv-absent-row[data-entry-type="class"] .abs-class-name').forEach(sel => {
+            onUnbenefitedClassChanged(sel);
+          });
           recalculateSurveillanceMetrics();
         }
       } catch (e) {
@@ -16816,6 +16941,13 @@
           if (lateInp && json.total_late_students !== undefined) {
             lateInp.value = json.total_late_students;
           }
+          const ticketsInp = document.getElementById('surv-stud-tickets');
+          if (ticketsInp) {
+            const deliveredTickets = (json.total_entry_passes !== undefined)
+              ? json.total_entry_passes
+              : (json.entry_tickets_count !== undefined ? json.entry_tickets_count : 0);
+            ticketsInp.value = deliveredTickets;
+          }
           try {
             renderSurveillanceStudentsTable();
           } catch (rErr) {
@@ -16877,11 +17009,25 @@
           lateBadge = `<span class="inline-block px-2 py-0.5 rounded bg-amber-950/80 text-amber-300 border border-amber-800/80 font-bold text-[11px]">${s.late_sessions_count} تأخر</span>${periods}`;
         }
 
-        const justBadge = s.justified
-          ? `<span class="inline-block px-1.5 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800 text-[10px] ml-1">مبرر</span>`
-          : (s.absent_sessions_count > 0 ? `<span class="inline-block px-1.5 py-0.5 rounded bg-rose-950 text-rose-400 border border-rose-800 text-[10px] ml-1">غير مبرر</span>` : '');
-
-        const reasonsText = s.reasons && s.reasons.length ? `<span class="text-slate-400 text-[11px]">${s.reasons.join(' | ')}</span>` : '<span class="text-slate-500 text-[10px]">-</span>';
+        let natureBadges = [];
+        if (s.absent_sessions_count > 0) {
+          if (s.justified) {
+            natureBadges.push(`<span class="inline-block px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-700 font-bold text-[10px] ml-1 shadow-sm">مبرر ✓</span>`);
+          } else if (s.justified_count > 0) {
+            natureBadges.push(`<span class="inline-block px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-700 font-bold text-[10px] ml-1">${s.status_nature}</span>`);
+          } else {
+            natureBadges.push(`<span class="inline-block px-2 py-0.5 rounded bg-rose-950 text-rose-300 border border-rose-800 font-bold text-[10px] ml-1 shadow-sm">غير مبرر</span>`);
+          }
+        }
+        if (s.late_sessions_count > 0) {
+          if (s.late_justified) {
+            natureBadges.push(`<span class="inline-block px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-700 font-bold text-[10px] ml-1 shadow-sm">تأخر مبرر ✓</span>`);
+          } else {
+            natureBadges.push(`<span class="inline-block px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-800 font-bold text-[10px] ml-1 shadow-sm">تأخر غير مبرر</span>`);
+          }
+        }
+        const justBadge = natureBadges.join(' ');
+        const reasonsText = s.reasons && s.reasons.length ? `<span class="text-slate-300 font-semibold text-[11px] block mt-0.5">${s.reasons.join(' • ')}</span>` : '';
 
         const dInput = document.getElementById('surv-date-input');
         const rowDate = dInput ? dInput.value : (typeof currentDirectorDate !== 'undefined' ? currentDirectorDate : new Date().toISOString().split('T')[0]);
@@ -17076,51 +17222,69 @@
       renderSurveillanceStudentsTable(val);
     }
 
+    
+    function getInstitutionTimes() {
+      const inst = (typeof appData !== 'undefined' && appData.institution) ? appData.institution : (typeof directorDb !== 'undefined' ? (directorDb.settings || {}) : {});
+      let mTimes = inst.morning_period_times;
+      let eTimes = inst.afternoon_period_times;
+      if (!mTimes || mTimes.length < 4) {
+        mTimes = ['08:00 - 09:00', '09:00 - 10:00', '10:00 - 11:00', '11:00 - 12:00'];
+      }
+      if (!eTimes || eTimes.length < 4) {
+        eTimes = ['14:00 - 15:00', '15:00 - 16:00', '16:00 - 17:00', '17:00 - 18:00'];
+      }
+      const pr = (s, d1, d2) => {
+        const parts = (s && s.includes('-')) ? s.split('-') : [d1, d2];
+        return [parts[0].trim(), parts[1].trim()];
+      };
+      const m1 = pr(mTimes[0], '08:00', '09:00');
+      const m2 = pr(mTimes[1], '09:00', '10:00');
+      const m3 = pr(mTimes[2], '10:00', '11:00');
+      const m4 = pr(mTimes[3], '11:00', '12:00');
+      const a1 = pr(eTimes[0], '14:00', '15:00');
+      const a2 = pr(eTimes[1], '15:00', '16:00');
+      const a3 = pr(eTimes[2], '16:00', '17:00');
+      const a4 = pr(eTimes[3], '17:00', '18:00');
+
+      return {
+        mTimes, eTimes,
+        m_start: m1[0], m_end: m4[1],
+        a_start: a1[0], a_end: a4[1],
+        m1, m2, m3, m4,
+        a1, a2, a3, a4,
+        m_1_2: `${m1[0]} - ${m2[1]}`,
+        m_3_4: `${m3[0]} - ${m4[1]}`,
+        a_1_2: `${a1[0]} - ${a2[1]}`,
+        a_2_3: `${a2[0]} - ${a3[1]}`,
+        a_3_4: `${a3[0]} - ${a4[1]}`,
+        m_half: `${m1[0]} - ${m4[1]}`,
+        a_half: `${a1[0]} - ${a4[1]}`,
+        full_day: `${m1[0]} - ${a4[1]}`
+      };
+    }
+    
     function getAvailableClassesForSurveillance() {
-      // 1. الأولوية للأقسام المسجلة في منظومة مسك الغياب التي تحتوي على لوائح اسمية حقيقية
+      // 1. Direct from directorDb.classes (registered real classes with students)
+      if (typeof directorDb !== 'undefined' && Array.isArray(directorDb.classes) && directorDb.classes.length > 0) {
+        const list = directorDb.classes.map(c => c.classCode || c.displayName || c.class_name).filter(c => c && !c.includes('undefined'));
+        if (list.length > 0) return Array.from(new Set(list));
+      }
+      // 2. From attClassesList
       if (typeof attClassesList !== 'undefined' && Array.isArray(attClassesList) && attClassesList.length > 0) {
-        const realClasses = attClassesList.filter(c => (c.total_students || 0) > 0);
-        if (realClasses.length > 0) {
-          return realClasses.map(c => c.class_name);
-        }
+        const list = attClassesList.map(c => c.classCode || c.class_name || c.displayName).filter(c => c && !c.includes('undefined'));
+        if (list.length > 0) return Array.from(new Set(list));
       }
+      // 3. From scheduled today classes
       if (currentSurveillanceScheduled && currentSurveillanceScheduled.all_classes_today && currentSurveillanceScheduled.all_classes_today.length > 0) {
-        return currentSurveillanceScheduled.all_classes_today;
+        const list = currentSurveillanceScheduled.all_classes_today.filter(c => c && !c.includes('undefined'));
+        if (list.length > 0) return list;
       }
-      const classes = [];
-      const dataObj = (typeof appData !== 'undefined' && appData) ? appData : (window.appData || null);
-      if (dataObj && dataObj.structure) {
-        const isQual = (dataObj.institution && (dataObj.institution.cycle === 'qualifying' || dataObj.institution.institution_cycle === 'qualifying')) || (dataObj.structure && dataObj.structure.cycle === 'qualifying');
-        if (isQual && dataObj.structure.high_school_streams) {
-          const hsStreams = dataObj.structure.high_school_streams;
-          const streams = (dataObj.structure && Array.isArray(dataObj.structure.all_high_school_streams)) ? dataObj.structure.all_high_school_streams : [];
-          if (streams.length > 0) {
-            streams.forEach(s => {
-              const count = parseInt(hsStreams[s.id]) || 0;
-              for (let i = 1; i <= count; i++) {
-                classes.push(`${s.code}-${i}`);
-              }
-            });
-          } else {
-            for (const [sId, cnt] of Object.entries(hsStreams)) {
-              const count = parseInt(cnt) || 0;
-              const code = sId.toUpperCase().replace(/_/g, '-').replace('-BIOF', '-F');
-              for (let i = 1; i <= count; i++) {
-                classes.push(`${code}-${i}`);
-              }
-            }
-          }
-        }
-        if (classes.length === 0) {
-          const c1 = parseInt(dataObj.structure.c1 || dataObj.structure.classes_1_apic) || 0;
-          const c2 = parseInt(dataObj.structure.c2 || dataObj.structure.classes_2_apic) || 0;
-          const c3 = parseInt(dataObj.structure.c3 || dataObj.structure.classes_3_apic) || 0;
-          for (let i = 1; i <= c1; i++) classes.push(isQual ? `TC-${i}` : `1/${i}`);
-          for (let i = 1; i <= c2; i++) classes.push(isQual ? `1BAC-${i}` : `2/${i}`);
-          for (let i = 1; i <= c3; i++) classes.push(isQual ? `2BAC-${i}` : `3/${i}`);
-        }
-      }
-      return classes.length > 0 ? classes : ['1/1', '1/2', '1/3', '2/1', '2/2', '2/3', '3/1', '3/2', '3/3'];
+      // 4. Default authentic classes of the institution
+      return [
+        'TCSF-1', 'TCLSHF-1', 'TCLSHF-2',
+        '1BACSEF-1', '1BACSEF-2', '1BACSHF-1', '1BACSHF-2',
+        '2BACLF-1', '2BACSPF-1', '2BACSHF-1', '2BACSVTF-1'
+      ];
     }
 
     function addAbsentTeacherRow() {
@@ -17193,6 +17357,7 @@
 
       const container = document.getElementById('surv-absent-container');
       const classOptions = getAvailableClassesForSurveillance();
+      const it = getInstitutionTimes();
 
       const rowDiv = document.createElement('div');
       rowDiv.className = "surv-absent-row bg-slate-900 border border-amber-900/60 p-2.5 rounded-xl space-y-2 text-xs shadow-md transition hover:border-amber-700/80";
@@ -17204,50 +17369,43 @@
             <span class="bg-amber-950 text-amber-300 border border-amber-800/80 text-[10.5px] font-bold px-2 py-0.5 rounded flex items-center gap-1">
               <span>👥</span> <span>عدم استفادة قسم من حصة</span>
             </span>
-            <span class="text-[10px] text-slate-400 font-sans">تحديد القسم والحصة مع الإشارة التلقائية للأستاذ المبرمج</span>
+            <span class="text-[10px] text-slate-400 font-sans">تحديد القسم والحصة وفق جدول حصص المؤسسة المعتمد</span>
           </div>
           <button onclick="removeAbsentTeacherRow(this)" class="bg-rose-950 hover:bg-rose-900 text-rose-300 border border-rose-800 px-2 py-0.5 rounded text-[10.5px] font-bold cursor-pointer">✕ حذف</button>
         </div>
 
-        <div class="grid grid-cols-12 gap-2 items-center">
-          <!-- 1. Class Name (Col 3) -->
-          <div class="col-span-3">
+        <div class="grid grid-cols-12 gap-2.5 items-center">
+          <!-- 1. Class Name (Col 5) -->
+          <div class="col-span-5">
             <label class="block text-[10px] font-bold text-slate-300 mb-0.5">القسم غير المستفيد:</label>
             <select class="abs-class-name w-full bg-slate-950 border border-slate-700 rounded-lg p-1.5 text-white font-bold text-[11px] focus:border-amber-500 focus:outline-none" onchange="onUnbenefitedClassChanged(this)">
               ${classOptions.map(c => `<option value="${c}">${c}</option>`).join('')}
             </select>
           </div>
 
-          <!-- 2. Session / Hour (Col 3) -->
-          <div class="col-span-3">
-            <label class="block text-[10px] font-bold text-slate-300 mb-0.5">الحصة أو الفترة:</label>
+          <!-- 2. Session / Hour (Col 4) -->
+          <div class="col-span-4">
+            <label class="block text-[10px] font-bold text-slate-300 mb-0.5">الحصة أو الفترة (استعمال زمن القسم):</label>
             <select class="abs-session-hour w-full bg-slate-950 border border-slate-700 rounded-lg p-1.5 text-white text-[11px] focus:border-amber-500 focus:outline-none" onchange="onUnbenefitedClassChanged(this)">
-              <option value="ح 1 ص (08:30-09:30)">ح 1 ص (08:30 - 09:30)</option>
-              <option value="ح 2 ص (09:30-10:30)">ح 2 ص (09:30 - 10:30)</option>
-              <option value="ح 3 ص (10:30-11:30)">ح 3 ص (10:30 - 11:30)</option>
-              <option value="ح 4 ص (11:30-12:30)">ح 4 ص (11:30 - 12:30)</option>
-              <option value="ح 1 م (14:30-15:30)">ح 1 م (14:30 - 15:30)</option>
-              <option value="ح 2 م (15:30-16:30)">ح 2 م (15:30 - 16:30)</option>
-              <option value="ح 3 م (16:30-17:30)">ح 3 م (16:30 - 17:30)</option>
-              <option value="ح 4 م (17:30-18:30)">ح 4 م (17:30 - 18:30)</option>
-              <option value="نصف يوم صباحي (4س)">نصف يوم صباحي (4 ساعات)</option>
-              <option value="نصف يوم مسائي (4س)">نصف يوم مسائي (4 ساعات)</option>
-              <option value="يوم كامل (8س)">يوم كامل (8 ساعات)</option>
+              <option value="ح 1 و 2 ص (${it.m_1_2})">ح 1 و 2 ص (${it.m_1_2}) — ساعتان</option>
+              <option value="ح 3 و 4 ص (${it.m_3_4})">ح 3 و 4 ص (${it.m_3_4}) — ساعتان</option>
+              <option value="ح 1 ص (${it.m1[0]} - ${it.m1[1]})">ح 1 ص (${it.m1[0]} - ${it.m1[1]})</option>
+              <option value="ح 2 ص (${it.m2[0]} - ${it.m2[1]})">ح 2 ص (${it.m2[0]} - ${it.m2[1]})</option>
+              <option value="ح 3 ص (${it.m3[0]} - ${it.m3[1]})">ح 3 ص (${it.m3[0]} - ${it.m3[1]})</option>
+              <option value="ح 4 ص (${it.m4[0]} - ${it.m4[1]})">ح 4 ص (${it.m4[0]} - ${it.m4[1]})</option>
+              <option value="ح 1 و 2 م (${it.a_1_2})">ح 1 و 2 م (${it.a_1_2}) — ساعتان</option>
+              <option value="ح 3 و 4 م (${it.a_3_4})">ح 3 و 4 م (${it.a_3_4}) — ساعتان</option>
+              <option value="ح 1 م (${it.a1[0]} - ${it.a1[1]})">ح 1 م (${it.a1[0]} - ${it.a1[1]})</option>
+              <option value="ح 2 م (${it.a2[0]} - ${it.a2[1]})">ح 2 م (${it.a2[0]} - ${it.a2[1]})</option>
+              <option value="ح 3 م (${it.a3[0]} - ${it.a3[1]})">ح 3 م (${it.a3[0]} - ${it.a3[1]})</option>
+              <option value="ح 4 م (${it.a4[0]} - ${it.a4[1]})">ح 4 م (${it.a4[0]} - ${it.a4[1]})</option>
+              <option value="نصف يوم صباحي (4س)">نصف يوم صباحي (${it.m_half}) — 4 ساعات</option>
+              <option value="نصف يوم مسائي (4س)">نصف يوم مسائي (${it.a_half}) — 4 ساعات</option>
+              <option value="يوم كامل (8س)">يوم كامل (${it.full_day}) — 8 ساعات</option>
             </select>
           </div>
 
-          <!-- 3. Inferred Teacher & Subject (Col 3) -->
-          <div class="col-span-3">
-            <label class="block text-[10px] font-bold text-slate-300 mb-0.5">الأستاذ والمادة (إشارة غير مباشرة):</label>
-            <div class="bg-slate-950 border border-amber-900/50 rounded-lg px-2 py-1 text-[11px] min-h-[30px] flex items-center justify-between">
-              <span class="abs-inferred-text font-bold text-amber-300 truncate font-sans">جاري التحديد...</span>
-              <span class="text-[9px] text-amber-400 font-mono">مبرمج ⚡</span>
-            </div>
-            <input type="hidden" class="abs-inferred-teacher" value="">
-            <input type="hidden" class="abs-inferred-subject" value="">
-          </div>
-
-          <!-- 4. Hours Count (Col 3) -->
+          <!-- 3. Hours Count (Col 3) -->
           <div class="col-span-3">
             <label class="block text-[10px] font-bold text-slate-300 mb-0.5">عدد الحصص الضائعة:</label>
             <select class="abs-hours-count w-full bg-slate-950 border border-slate-700 rounded-lg p-1.5 text-white font-mono font-bold text-[11px] focus:border-amber-500 focus:outline-none" onchange="recalculateSurveillanceMetrics()">
@@ -17258,33 +17416,10 @@
               <option value="8">يوم كامل (8)</option>
             </select>
           </div>
-        </div>
 
-        <div class="grid grid-cols-12 gap-2 pt-1 border-t border-slate-800/80 items-center">
-          <!-- Reason (Col 6) -->
-          <div class="col-span-6">
-            <label class="block text-[10px] text-slate-400 mb-0.5">سبب عدم الاستفادة:</label>
-            <select class="abs-reason w-full bg-slate-950 border border-slate-700 rounded-lg p-1 text-white text-[11px] focus:border-amber-500 focus:outline-none">
-              <option value="عدم التحاق الأستاذ بالحصة المبرمجة">عدم التحاق الأستاذ بالحصة المبرمجة</option>
-              <option value="غياب الأستاذ المبرمج للمادة">غياب الأستاذ المبرمج للمادة</option>
-              <option value="تأخر الأستاذ عن انطلاق الحصة">تأخر الأستاذ عن انطلاق الحصة</option>
-              <option value="نشاط تربوي خارجي للقسم">نشاط تربوي خارجي للقسم</option>
-              <option value="إغلاق أو عطل بالقاعة المخصصة">إغلاق أو عطل بالقاعة المخصصة</option>
-              <option value="سبب إداري أو طارئ">سبب إداري أو طارئ</option>
-            </select>
-          </div>
-
-          <!-- Action Taken (Col 6) -->
-          <div class="col-span-6">
-            <label class="block text-[10px] text-slate-400 mb-0.5">الإجراء المتخذ بشأن تلاميذ القسم:</label>
-            <select class="abs-action w-full bg-slate-950 border border-slate-700 rounded-lg p-1 text-white text-[11px] focus:border-amber-500 focus:outline-none">
-              <option value="توجيه التلاميذ لقاعة المداومة">توجيه التلاميذ لقاعة المداومة</option>
-              <option value="توجيه التلاميذ للمكتبة المدرسية">توجيه التلاميذ للمكتبة المدرسية</option>
-              <option value="مغادرة المؤسسة بترخيص إداري">مغادرة المؤسسة بترخيص إداري</option>
-              <option value="تكليف بالدعم التربوي التعويضي">تكليف بالدعم التربوي التعويضي</option>
-              <option value="تأطير من طرف الإدارة التربوية">تأطير من طرف الإدارة التربوية</option>
-            </select>
-          </div>
+          <!-- Hidden inferred values -->
+          <input type="hidden" class="abs-inferred-teacher" value="">
+          <input type="hidden" class="abs-inferred-subject" value="">
         </div>
       `;
 
@@ -17305,53 +17440,100 @@
       const hiddenSubject = row.querySelector('.abs-inferred-subject');
 
       const selectedClass = clsSelect ? clsSelect.value : '';
+
+      // If this call came from class selection, dynamically reload the sessions dropdown
+      const isClassChanged = !el || el.classList.contains('abs-class-name');
+      if (isClassChanged && hourSelect) {
+        let blocks = [];
+        if (currentSurveillanceScheduled && currentSurveillanceScheduled.class_sessions_map) {
+          const cMap = currentSurveillanceScheduled.class_sessions_map;
+          blocks = cMap[selectedClass] ||
+                   cMap[selectedClass.replace('TCSF', 'TCSEF')] ||
+                   cMap[selectedClass.replace('TCSEF', 'TCSF')] ||
+                   [];
+        }
+
+        if (blocks.length > 0) {
+          hourSelect.innerHTML = blocks.map(b => {
+            const dataAttr = `data-hours="${b.hours}" data-teacher="${escapeHtml(b.teacher || '')}" data-subject="${escapeHtml(b.subject || '')}"`;
+            return `<option value="${escapeHtml(b.value)}" ${dataAttr}>${escapeHtml(b.label || b.value)}</option>`;
+          }).join('');
+        } else {
+          // Standard default options using institution times
+          const it = getInstitutionTimes();
+          hourSelect.innerHTML = `
+            <option value="ح 1 و 2 ص (${it.m_1_2})" data-hours="2">ح 1 و 2 ص (${it.m_1_2}) — ساعتان</option>
+            <option value="ح 3 و 4 ص (${it.m_3_4})" data-hours="2">ح 3 و 4 ص (${it.m_3_4}) — ساعتان</option>
+            <option value="ح 1 ص (${it.m1[0]} - ${it.m1[1]})" data-hours="1">ح 1 ص (${it.m1[0]} - ${it.m1[1]})</option>
+            <option value="ح 2 ص (${it.m2[0]} - ${it.m2[1]})" data-hours="1">ح 2 ص (${it.m2[0]} - ${it.m2[1]})</option>
+            <option value="ح 3 ص (${it.m3[0]} - ${it.m3[1]})" data-hours="1">ح 3 ص (${it.m3[0]} - ${it.m3[1]})</option>
+            <option value="ح 4 ص (${it.m4[0]} - ${it.m4[1]})" data-hours="1">ح 4 ص (${it.m4[0]} - ${it.m4[1]})</option>
+            <option value="ح 1 و 2 م (${it.a_1_2})" data-hours="2">ح 1 و 2 م (${it.a_1_2}) — ساعتان</option>
+            <option value="ح 3 و 4 م (${it.a_3_4})" data-hours="2">ح 3 و 4 م (${it.a_3_4}) — ساعتان</option>
+            <option value="ح 1 م (${it.a1[0]} - ${it.a1[1]})" data-hours="1">ح 1 م (${it.a1[0]} - ${it.a1[1]})</option>
+            <option value="ح 2 م (${it.a2[0]} - ${it.a2[1]})" data-hours="1">ح 2 م (${it.a2[0]} - ${it.a2[1]})</option>
+            <option value="ح 3 م (${it.a3[0]} - ${it.a3[1]})" data-hours="1">ح 3 م (${it.a3[0]} - ${it.a3[1]})</option>
+            <option value="ح 4 م (${it.a4[0]} - ${it.a4[1]})" data-hours="1">ح 4 م (${it.a4[0]} - ${it.a4[1]})</option>
+            <option value="نصف يوم صباحي (4س)" data-hours="4">نصف يوم صباحي (${it.m_half}) — 4 ساعات</option>
+            <option value="نصف يوم مسائي (4س)" data-hours="4">نصف يوم مسائي (${it.a_half}) — 4 ساعات</option>
+            <option value="يوم كامل (8س)" data-hours="8">يوم كامل (${it.full_day}) — 8 ساعات</option>
+          `;
+        }
+      }
+
+      const selectedOpt = hourSelect ? hourSelect.options[hourSelect.selectedIndex] : null;
+      const optHours = selectedOpt ? selectedOpt.getAttribute('data-hours') : null;
+      const optTeacher = selectedOpt ? selectedOpt.getAttribute('data-teacher') : null;
+      const optSubject = selectedOpt ? selectedOpt.getAttribute('data-subject') : null;
       const selectedHour = hourSelect ? hourSelect.value : '';
 
-      // Auto update hours count if half day or full day chosen
-      if (selectedHour.includes('4س')) {
+      // 1. Update hours count
+      if (optHours && hoursCountSelect) {
+        hoursCountSelect.value = optHours;
+      } else if (selectedHour.includes('ساعتان') || selectedHour.includes('و 2') || selectedHour.includes('و 4')) {
+        if (hoursCountSelect) hoursCountSelect.value = '2';
+      } else if (selectedHour.includes('4س')) {
         if (hoursCountSelect) hoursCountSelect.value = '4';
       } else if (selectedHour.includes('8س')) {
         if (hoursCountSelect) hoursCountSelect.value = '8';
       }
 
-      // Search scheduled sessions in currentSurveillanceScheduled
-      let matchedSession = null;
-      if (currentSurveillanceScheduled) {
-        const allSessions = [
-          ...(currentSurveillanceScheduled.morning_sessions || []),
-          ...(currentSurveillanceScheduled.afternoon_sessions || [])
-        ];
-
-        // 1. Try to match both class and hour
-        matchedSession = allSessions.find(s => {
-          if (s.class !== selectedClass) return false;
-          if (selectedHour.startsWith('ح 1 ص') && (s.period === 'صباحية' && (s.hour === 'ح 1' || s.hour === '1'))) return true;
-          if (selectedHour.startsWith('ح 2 ص') && (s.period === 'صباحية' && (s.hour === 'ح 2' || s.hour === '2'))) return true;
-          if (selectedHour.startsWith('ح 3 ص') && (s.period === 'صباحية' && (s.hour === 'ح 3' || s.hour === '3'))) return true;
-          if (selectedHour.startsWith('ح 4 ص') && (s.period === 'صباحية' && (s.hour === 'ح 4' || s.hour === '4'))) return true;
-          if (selectedHour.startsWith('ح 1 م') && (s.period === 'مسائية' && (s.hour === 'ح 1' || s.hour === '1'))) return true;
-          if (selectedHour.startsWith('ح 2 م') && (s.period === 'مسائية' && (s.hour === 'ح 2' || s.hour === '2'))) return true;
-          if (selectedHour.startsWith('ح 3 م') && (s.period === 'مسائية' && (s.hour === 'ح 3' || s.hour === '3'))) return true;
-          if (selectedHour.startsWith('ح 4 م') && (s.period === 'مسائية' && (s.hour === 'ح 4' || s.hour === '4'))) return true;
-          return false;
-        });
-
-        // 2. Fallback: match any session for this class today
-        if (!matchedSession) {
-          matchedSession = allSessions.find(s => s.class === selectedClass);
-        }
-      }
-
-      if (matchedSession && matchedSession.teacher) {
-        const t = matchedSession.teacher;
-        const subj = matchedSession.subject || 'المادة';
-        if (textSpan) textSpan.textContent = `ذ. ${t} (${subj})`;
-        if (hiddenTeacher) hiddenTeacher.value = t;
-        if (hiddenSubject) hiddenSubject.value = subj;
+      // 2. Update inferred teacher and subject
+      if (optTeacher && optTeacher.trim()) {
+        const subjStr = (optSubject && optSubject.trim()) ? optSubject.trim() : 'المادة';
+        if (textSpan) textSpan.textContent = `ذ. ${optTeacher.trim()} (${subjStr})`;
+        if (hiddenTeacher) hiddenTeacher.value = optTeacher.trim();
+        if (hiddenSubject) hiddenSubject.value = subjStr;
       } else {
-        if (textSpan) textSpan.textContent = `الأستاذ المبرمج لـ (${selectedClass})`;
-        if (hiddenTeacher) hiddenTeacher.value = `أستاذ(ة) قسم ${selectedClass}`;
-        if (hiddenSubject) hiddenSubject.value = '';
+        // Fallback: search scheduled sessions in currentSurveillanceScheduled
+        let matchedSession = null;
+        if (currentSurveillanceScheduled) {
+          const allSessions = [
+            ...(currentSurveillanceScheduled.morning_sessions || []),
+            ...(currentSurveillanceScheduled.afternoon_sessions || [])
+          ];
+          const normClass = (s) => (s || '').replace(/[-_\s]/g, '').toUpperCase().replace('TCSEF', 'TCSF');
+          matchedSession = allSessions.find(s => {
+            if (normClass(s.class) !== normClass(selectedClass)) return false;
+            if (selectedHour.startsWith('ح 1') && (s.hour === '1' || s.hour === 'ح 1')) return true;
+            if (selectedHour.startsWith('ح 2') && (s.hour === '2' || s.hour === 'ح 2')) return true;
+            if (selectedHour.startsWith('ح 3') && (s.hour === '3' || s.hour === 'ح 3')) return true;
+            if (selectedHour.startsWith('ح 4') && (s.hour === '4' || s.hour === 'ح 4')) return true;
+            return false;
+          }) || allSessions.find(s => normClass(s.class) === normClass(selectedClass));
+        }
+
+        if (matchedSession && matchedSession.teacher) {
+          const t = matchedSession.teacher;
+          const subj = matchedSession.subject || 'المادة';
+          if (textSpan) textSpan.textContent = `ذ. ${t} (${subj})`;
+          if (hiddenTeacher) hiddenTeacher.value = t;
+          if (hiddenSubject) hiddenSubject.value = subj;
+        } else {
+          if (textSpan) textSpan.textContent = `الأستاذ المبرمج لـ (${selectedClass})`;
+          if (hiddenTeacher) hiddenTeacher.value = `أستاذ(ة) قسم ${selectedClass}`;
+          if (hiddenSubject) hiddenSubject.value = '';
+        }
       }
 
       recalculateSurveillanceMetrics();
@@ -17470,7 +17652,7 @@
           absentTeachers.push({
             entry_type: 'class',
             class_name: className,
-            teacher_name: inferredTeacher ? `ذ. ${inferredTeacher}` : `أستاذ(ة) قسم ${className}`,
+            teacher_name: `قسم ${className}`,
             inferred_teacher: inferredTeacher,
             subject: inferredSubject,
             session_hour: sessionHour,
@@ -17494,7 +17676,14 @@
 
       const studentStats = {
         absent_students_count: parseInt(document.getElementById('surv-stud-absent')?.value) || 0,
-        entry_tickets_count: parseInt(document.getElementById('surv-stud-tickets')?.value) || 0,
+        entry_tickets_count: (() => {
+          let tc = parseInt(document.getElementById('surv-stud-tickets')?.value) || 0;
+          if (tc === 0 && typeof directorDb !== 'undefined' && directorDb.entryPasses) {
+            const count = Object.values(directorDb.entryPasses).filter(p => p && p.status !== 'REVOKED' && (p.validForDate === dateStr || p.issuedDate === dateStr || p.absentDate === dateStr)).length;
+            if (count > 0) tc = count;
+          }
+          return tc;
+        })(),
         late_students_count: parseInt(document.getElementById('surv-stud-late')?.value) || 0
       };
 
@@ -17592,17 +17781,15 @@
           return `
             <tr>
               <td style="border: 1px solid #cbd5e1; padding: 5px; text-align: center;">${i + 1}</td>
-              <td style="border: 1px solid #cbd5e1; padding: 5px;">
-                <b style="color: #0369a1; background: #f0f9ff; padding: 2px 6px; border-radius: 4px; border: 1px solid #bae6fd;">عدم استفادة قسم: ${ab.class_name}</b>
-                ${ab.inferred_teacher ? `<div style="font-size: 9.5px; color: #475569; margin-top: 2px;">الأستاذ المبرمج للحصة: <b>${ab.inferred_teacher}</b></div>` : ''}
+              <td style="border: 1px solid #cbd5e1; padding: 6px 8px;">
+                <b style="color: #0369a1; background: #f0f9ff; padding: 3px 8px; border-radius: 4px; border: 1px solid #bae6fd; font-size: 11px;">عدم استفادة قسم: ${ab.class_name}</b>
               </td>
               <td style="border: 1px solid #cbd5e1; padding: 5px; text-align: center;">
                 <b>${ab.subject || '-'}</b>
                 ${ab.session_hour ? `<div style="font-size: 9px; color: #64748b;">(${ab.session_hour})</div>` : ''}
               </td>
               <td style="border: 1px solid #cbd5e1; padding: 5px; text-align: center; font-weight: bold; color: #b91c1c;">${ab.hours_count}س</td>
-              <td style="border: 1px solid #cbd5e1; padding: 5px; text-align: center;">${ab.reason}</td>
-              <td style="border: 1px solid #cbd5e1; padding: 5px;">${ab.action_taken}</td>
+              <td style="border: 1px solid #cbd5e1; padding: 5px; min-width: 130px;"></td>
             </tr>
           `;
         } else {
@@ -17616,12 +17803,11 @@
                 ${ab.subject || 'الحصص المبرمجة'}
               </td>
               <td style="border: 1px solid #cbd5e1; padding: 5px; text-align: center; font-weight: bold; color: #b91c1c;">${ab.hours_count}س</td>
-              <td style="border: 1px solid #cbd5e1; padding: 5px; text-align: center;">${ab.reason}</td>
-              <td style="border: 1px solid #cbd5e1; padding: 5px;">${ab.action_taken}</td>
+              <td style="border: 1px solid #cbd5e1; padding: 5px; min-width: 130px;"></td>
             </tr>
           `;
         }
-      }).join('') : `<tr><td colspan="6" style="border: 1px solid #cbd5e1; padding: 10px; text-align: center; color: #059669; font-weight: bold;">لم تسجل أي غيابات أو عدم استفادة أقسام لهذا اليوم (سير عادي 100%) ✓</td></tr>`;
+      }).join('') : `<tr><td colspan="5" style="border: 1px solid #cbd5e1; padding: 10px; text-align: center; color: #059669; font-weight: bold;">لم تسجل أي غيابات أو عدم استفادة أقسام لهذا اليوم (سير عادي 100%) ✓</td></tr>`;
 
       const studList = report.students_attendance || [];
       const studRows = studList.length > 0 ? studList.map((st) => {
@@ -17631,10 +17817,25 @@
         const lateBadge = st.late_sessions_count > 0
           ? `<b style="color: #b45309;">${st.late_sessions_count} تأخر</b> ${st.late_periods && st.late_periods.length ? `<span style="font-size: 9px; color: #64748b;">(${st.late_periods.join('، ')})</span>` : ''}`
           : `<span style="color: #64748b;">-</span>`;
-        const justBadge = st.justified
-          ? `<span style="color: #15803d; font-weight: bold;">مبرر</span>`
-          : (st.absent_sessions_count > 0 ? `<span style="color: #b91c1c; font-weight: bold;">غير مبرر</span>` : `<span style="color: #64748b;">-</span>`);
-        const reasonsStr = st.reasons && st.reasons.length ? ` - ${st.reasons.join(' | ')}` : '';
+        let natureBadges = [];
+        if (st.absent_sessions_count > 0) {
+          if (st.justified) {
+            natureBadges.push(`<span style="display:inline-block; padding:1.5px 7px; border-radius:4px; background:#dcfce7; color:#15803d; border:1.5px solid #86efac; font-weight:900; font-size:10px;">مبرر ✓</span>`);
+          } else if (st.justified_count > 0) {
+            natureBadges.push(`<span style="display:inline-block; padding:1.5px 7px; border-radius:4px; background:#fef3c7; color:#b45309; border:1.5px solid #fde68a; font-weight:900; font-size:10px;">${st.status_nature}</span>`);
+          } else {
+            natureBadges.push(`<span style="display:inline-block; padding:1.5px 7px; border-radius:4px; background:#fee2e2; color:#b91c1c; border:1.5px solid #fca5a5; font-weight:900; font-size:10px;">غير مبرر</span>`);
+          }
+        }
+        if (st.late_sessions_count > 0) {
+          if (st.late_justified) {
+            natureBadges.push(`<span style="display:inline-block; padding:1.5px 7px; border-radius:4px; background:#dcfce7; color:#15803d; border:1.5px solid #86efac; font-weight:900; font-size:10px;">تأخر مبرر ✓</span>`);
+          } else {
+            natureBadges.push(`<span style="display:inline-block; padding:1.5px 7px; border-radius:4px; background:#fef3c7; color:#b45309; border:1.5px solid #fde68a; font-weight:900; font-size:10px;">تأخر غير مبرر</span>`);
+          }
+        }
+        const justBadge = natureBadges.join(' ');
+        const reasonsStr = st.reasons && st.reasons.length ? `<div style="font-size:9.5px; color:#334155; margin-top:2px; font-weight:700;">${st.reasons.join(' • ')}</div>` : '';
         return `
           <tr>
             <td style="border: 1px solid #cbd5e1; padding: 4px; text-align: center; font-family: monospace; font-weight: bold;">${st.order || '-'}</td>
@@ -17695,10 +17896,9 @@
       <tr>
         <th style="width: 35px;">ر.ت</th>
         <th>الأستاذ المتغيب أو القسم غير المستفيد</th>
-        <th style="width: 100px;">المادة / الحصة المبرمجة</th>
+        <th style="width: 110px;">المادة / الحصة المبرمجة</th>
         <th style="width: 60px;">الساعات</th>
-        <th>طبيعة الغياب أو سبب عدم الاستفادة</th>
-        <th>الإجراء المتخذ بشأن التلاميذ</th>
+        <th style="width: 150px;">ملاحظات المدير</th>
       </tr>
     </thead>
     <tbody>${absRows}</tbody>
@@ -17770,7 +17970,7 @@
           absentTeachers.push({
             entry_type: 'class',
             class_name: className,
-            teacher_name: inferredTeacher ? `ذ. ${inferredTeacher}` : `أستاذ(ة) قسم ${className}`,
+            teacher_name: `قسم ${className}`,
             inferred_teacher: inferredTeacher,
             subject: inferredSubject,
             session_hour: sessionHour,
@@ -17794,7 +17994,14 @@
 
       const studentStats = {
         absent_students_count: parseInt(document.getElementById('surv-stud-absent')?.value) || 0,
-        entry_tickets_count: parseInt(document.getElementById('surv-stud-tickets')?.value) || 0,
+        entry_tickets_count: (() => {
+          let tc = parseInt(document.getElementById('surv-stud-tickets')?.value) || 0;
+          if (tc === 0 && typeof directorDb !== 'undefined' && directorDb.entryPasses) {
+            const count = Object.values(directorDb.entryPasses).filter(p => p && p.status !== 'REVOKED' && (p.validForDate === dateStr || p.issuedDate === dateStr || p.absentDate === dateStr)).length;
+            if (count > 0) tc = count;
+          }
+          return tc;
+        })(),
         late_students_count: parseInt(document.getElementById('surv-stud-late')?.value) || 0
       };
 
@@ -17887,7 +18094,7 @@
     }
 
     function getClassScheduledHours(classCode, isMorning) {
-      if (!surv2CurrentReportData) return { start: isMorning ? '08:30' : '14:30', end: isMorning ? '12:30' : '18:30', found: false };
+      const it = (typeof getInstitutionTimes === 'function') ? getInstitutionTimes() : {m_start:'08:00', m_end:'12:00', a_start:'14:00', a_end:'18:00'}; if (!surv2CurrentReportData) return { start: isMorning ? it.m_start : it.a_start, end: isMorning ? it.m_end : it.a_end, found: false };
       const dayName = surv2CurrentReportData.header?.day_name || 'الاثنين';
       const dayOfWeek = getSurv2DayOfWeek(dayName);
 
@@ -17928,7 +18135,7 @@
     }
 
     function getTeacherScheduledHours(teacherId, isMorning) {
-      if (!surv2CurrentReportData) return { start: isMorning ? '08:30' : '14:30', end: isMorning ? '12:30' : '18:30', found: false };
+      const it = (typeof getInstitutionTimes === 'function') ? getInstitutionTimes() : {m_start:'08:00', m_end:'12:00', a_start:'14:00', a_end:'18:00'}; if (!surv2CurrentReportData) return { start: isMorning ? it.m_start : it.a_start, end: isMorning ? it.m_end : it.a_end, found: false };
       const cleanId = (teacherId || '').replace('TEACHER:', '');
       const dayName = surv2CurrentReportData.header?.day_name || 'الاثنين';
       const dayOfWeek = getSurv2DayOfWeek(dayName);
@@ -21245,6 +21452,13 @@
       } else if (currentDirectorTab === 'teachers') {
         renderDirectorTeachersTable();
       }
+
+      if (typeof updateTab18DropdownsAndCard === 'function') {
+        const tab18 = document.getElementById('tab-absence-card');
+        if (tab18 && (tab18.classList.contains('active') || tab18.style.display !== 'none')) {
+          updateTab18DropdownsAndCard();
+        }
+      }
     }
 
         function findDirectorAttendanceSession(sessions, dateStr, slotIndex, classCode) {
@@ -21385,23 +21599,28 @@
     }
 
     function getTodayAbsentStudentsList(targetDate) {
-      const dateStr = targetDate || currentDirectorDate;
-      const sessions = directorDb.attendanceSessions || {};
-      const teachers = directorDb.teachers || [];
-      const timeSlots = directorDb.timeSlots || [];
-      const justifiedMap = directorDb.justifiedAbsences || {};
+      const dateStr = targetDate || currentDirectorDate || new Date().toISOString().split('T')[0];
+      const sessions = (directorDb && directorDb.attendanceSessions) || {};
+      const teachers = (directorDb && directorDb.teachers) || [];
+      const timeSlots = (directorDb && directorDb.timeSlots) || [];
+      const justifiedMap = (directorDb && directorDb.justifiedAbsences) || {};
       const absentMap = new Map();
 
       Object.values(sessions).forEach(sess => {
         if (!sess || sess.date !== dateStr) return;
-        const absentIds = sess.absentStudentIds || [];
+        let absentIds = sess.absentStudentIds || [];
+        if ((!absentIds || !absentIds.length) && sess.attendanceMap) {
+          absentIds = Object.entries(sess.attendanceMap)
+            .filter(([_, status]) => status === 'A' || status === 'ABSENT' || status === 'غياب')
+            .map(([stId]) => stId);
+        }
         if (!absentIds.length) return;
 
         const teacher = teachers.find(t => t.teacherId === sess.teacherId) || {
-          fullName: sess.teacherId,
-          subject: '-'
+          fullName: sess.teacherName || sess.teacherId || 'الأستاذ المبرمج',
+          subject: sess.subject || '-'
         };
-        const slot = timeSlots.find(s => s.slotIndex === sess.slotIndex) || {
+        const slot = timeSlots.find(s => String(s.slotIndex) === String(sess.slotIndex)) || {
           startTime: '08:00',
           endTime: '09:00',
           label: `حصة ${sess.slotIndex}`
@@ -21891,6 +22110,10 @@
 
             <!-- Fast Action Buttons -->
             <div class="flex flex-wrap items-center gap-2">
+              <button type="button" onclick="openStudentAbsenceCardFromCard('${safeStudentId}', '${safeClassCode}')" class="px-3 py-1.5 bg-rose-950 hover:bg-rose-900 text-rose-200 border border-rose-700/80 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow cursor-pointer" title="عرض وطباعة البطاقة الشخصية للغياب (السجل السنوي)">
+                <span>📇</span>
+                <span>البطاقة الشخصية للغياب</span>
+              </button>
               <button type="button" onclick="openEntryPassModal('${safeStudentId}', '${safeClassCode}')" class="px-3 py-1.5 bg-blue-950 hover:bg-blue-900 text-blue-200 border border-blue-700/60 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow cursor-pointer">
                 <span>🎫</span>
                 <span>إذن دخول</span>
@@ -22149,6 +22372,9 @@
           inspectStudent(studentId);
           renderDirectorStudentsList();
           renderDirectorLiveTable();
+          if (typeof fetchScheduledDayData === 'function') {
+            fetchScheduledDayData();
+          }
         }
       } catch (err) {
         showToast(`خطأ أثناء تبرير الغياب: ${err.message}`, 'error');
@@ -24285,16 +24511,72 @@
       window.open(activeUrl, '_blank');
     }
 
-    function toggleTodayAbsenteesModal() {
+    let currentTodayAbsenteesList = [];
+
+    async function openTodayAbsenteesModal(dateOverride) {
       try {
         const modal = document.getElementById('modal-att-today-absentees');
-        if (!modal) return;
+        if (!modal) {
+          console.warn("modal-att-today-absentees element not found");
+          return;
+        }
+
+        if (dateOverride) {
+          currentDirectorDate = dateOverride;
+        } else if (!currentDirectorDate) {
+          currentDirectorDate = new Date().toISOString().split('T')[0];
+        }
+        const targetDate = currentDirectorDate;
+
+        // 1. Try fetching unified surveillance attendance (includes rollNumber/order, class, full_name, massar, absence hours, reasons)
+        try {
+          const res = await fetch(`/api/surveillance/daily_students_attendance?date=${encodeURIComponent(targetDate)}`);
+          if (res.ok) {
+            const json = await res.json();
+            if (json && json.success && Array.isArray(json.students)) {
+              // Strictly filter ONLY absent students (exclude pure lateness)
+              currentTodayAbsenteesList = json.students.filter(s => (s.absent_sessions_count || 0) > 0 || (s.absent_hours || 0) > 0);
+            }
+          }
+        } catch (fetchErr) {
+          console.warn("daily_students_attendance fetch error, using fallback:", fetchErr);
+        }
+
+        // 2. Fallback if empty or fetch failed: compute from directorDb
+        if (!currentTodayAbsenteesList || currentTodayAbsenteesList.length === 0) {
+          if (!directorDb || !directorDb.attendanceSessions || Object.keys(directorDb.attendanceSessions).length === 0) {
+            if (typeof fetchAttendanceDbFromServer === 'function') {
+              await fetchAttendanceDbFromServer();
+            }
+          }
+          const rawList = getTodayAbsentStudentsList(targetDate);
+          currentTodayAbsenteesList = (rawList || []).map((item, idx) => {
+            const st = item.student || {};
+            const sessList = item.sessions || [];
+            const isJustified = sessList.length > 0 && sessList.every(s => s.isJustified);
+            const reasons = sessList.map(s => s.reason).filter(Boolean);
+            return {
+              order: st.rollNumber || st.order || (idx + 1),
+              id: st.studentId || item.classCode,
+              class_name: item.classCode || st.classCode || '-',
+              full_name: st.fullName || '-',
+              massar_code: st.massarCode || '-',
+              absent_sessions_count: sessList.length,
+              absent_hours: sessList.length,
+              justified: isJustified,
+              reasons: Array.from(new Set(reasons))
+            };
+          }).filter(s => (s.absent_sessions_count || 0) > 0);
+        }
+
         renderTodayAbsenteesModalContent();
         openModal(modal);
-      } catch(err) {
-        console.error("toggleTodayAbsenteesModal error:", err);
+      } catch (err) {
+        console.error("openTodayAbsenteesModal error:", err);
       }
     }
+    window.openTodayAbsenteesModal = openTodayAbsenteesModal;
+    window.toggleTodayAbsenteesModal = openTodayAbsenteesModal;
 
     function renderTodayAbsenteesModalContent() {
       try {
@@ -24302,29 +24584,32 @@
         const title = document.getElementById('modal-att-today-absentees-title');
         if (!body) return;
 
-        const dow = getDayOfWeek(currentDirectorDate);
-        let list = getTodayAbsentStudentsList(currentDirectorDate);
-        const search = (document.getElementById('today-absentees-search')?.value || '').trim().toLowerCase();
+        const dateStr = currentDirectorDate || new Date().toISOString().split('T')[0];
+        const dow = typeof getDayOfWeek === 'function' ? getDayOfWeek(dateStr) : 1;
+        const dayName = (typeof DAYS_AR_MAP !== 'undefined' && DAYS_AR_MAP[dow]) ? DAYS_AR_MAP[dow] : '';
 
+        // Strictly filter ONLY absent students (exclude pure lateness)
+        let list = (currentTodayAbsenteesList || []).filter(s => (s.absent_sessions_count || 0) > 0 || (s.absent_hours || 0) > 0);
+
+        const search = (document.getElementById('today-absentees-search')?.value || '').trim().toLowerCase();
         if (search) {
-          list = list.filter(item => {
-            const st = item.student || {};
-            const nameMatch = (st.fullName || '').toLowerCase().includes(search);
-            const massarMatch = (st.massarCode || '').toLowerCase().includes(search);
-            const classMatch = (item.classCode || '').toLowerCase().includes(search);
+          list = list.filter(s => {
+            const nameMatch = (s.full_name || '').toLowerCase().includes(search);
+            const massarMatch = (s.massar_code || '').toLowerCase().includes(search);
+            const classMatch = (s.class_name || '').toLowerCase().includes(search);
             return nameMatch || massarMatch || classMatch;
           });
         }
 
         if (title) {
-          title.textContent = `🔴 لائحة المتعلمين الغائبين اليوم (${DAYS_AR_MAP[dow] || ''} ${currentDirectorDate}) — المجموع: ${list.length}`;
+          title.textContent = `🔴 لائحة المتعلمين الغائبين اليوم (${dayName} ${dateStr}) — المجموع: ${list.length}`;
         }
 
         if (list.length === 0) {
           body.innerHTML = `
             <div class="p-8 text-center bg-slate-950/60 rounded-2xl border border-slate-800 text-emerald-400 font-bold space-y-2">
               <div class="text-3xl">${search ? '🔍' : '🎉'}</div>
-              <div class="text-base">${search ? 'لا توجد نتائج تطابق البحث في غيابات اليوم' : `لا يوجد أي متعلم مسجل غائباً في حصص اليوم (${currentDirectorDate}) حتى الآن!`}</div>
+              <div class="text-base">${search ? 'لا توجد نتائج تطابق البحث في غيابات اليوم' : `لا يوجد أي متعلم مسجل غائباً في حصص اليوم (${dateStr}) حتى الآن!`}</div>
               <div class="text-xs text-slate-400">${search ? 'جرب البحث بكلمة أخرى أو اسم آخر' : 'جميع الحصص المسجلة تؤكد حضور التلاميذ بشكل كامل.'}</div>
             </div>
           `;
@@ -24332,59 +24617,75 @@
         }
 
         body.innerHTML = `
-          <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-950/80">
+          <div class="overflow-x-auto rounded-xl border border-slate-700/80 bg-slate-950/90 shadow-inner">
             <table class="w-full text-right text-xs">
-              <thead class="bg-slate-900 text-slate-400 font-bold border-b border-slate-800">
+              <thead class="bg-slate-800/90 text-slate-200 border-b border-slate-700 font-extrabold text-[11.5px]">
                 <tr>
-                  <th class="py-2.5 px-3 w-12 text-center">#</th>
-                  <th class="py-2.5 px-3">اسم المتعلم(ة)</th>
-                  <th class="py-2.5 px-3 text-center">رقم مسار</th>
-                  <th class="py-2.5 px-3 text-center">القسم</th>
-                  <th class="py-2.5 px-3 text-center">النوع</th>
-                  <th class="py-2.5 px-3">الحصص المتغيب فيها اليوم</th>
-                  <th class="py-2.5 px-3 text-center">إجراء</th>
+                  <th class="py-3 px-3 w-14 text-center font-mono">ر.ت</th>
+                  <th class="py-3 px-3 w-28 text-center">القسم</th>
+                  <th class="py-3 px-3">الاسم والنسب الكامل للمتعلم</th>
+                  <th class="py-3 px-3 w-32 text-center font-mono">رقم مسار</th>
+                  <th class="py-3 px-3 w-36 text-center">حصص وساعات الغياب</th>
+                  <th class="py-3 px-3 w-52 text-center">طبيعة الغياب / المبرر والملاحظات</th>
+                  <th class="py-3 px-3 w-36 text-center">الإجراءات</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-slate-800/60 text-slate-200">
-                ${list.map((item, idx) => {
-                  const st = item.student || {};
-                  const safeStudentId = escapeJsStr(st.studentId || '');
-                  const safeClassCode = escapeJsStr(item.classCode || st.classCode || '');
-                  const safeFullName = (st.fullName || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-                  const safeMassar = (st.massarCode || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+              <tbody class="divide-y divide-slate-800 text-slate-200 font-sans">
+                ${list.map((s, idx) => {
+                  const safeStudentId = escapeJsStr(s.id || '');
+                  const safeClassCode = escapeJsStr(s.class_name || '');
+                  const safeFullName = (s.full_name || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                  const safeMassar = (s.massar_code || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                  const orderNum = s.order || (idx + 1);
+                  const absCount = s.absent_sessions_count || 1;
+                  const absHours = s.absent_hours || absCount;
+
+                  let justBadge = '';
+                  if (s.justified) {
+                    justBadge = `<span class="inline-block px-2.5 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-600 font-bold text-[11px] shadow-sm">مبرر ✓</span>`;
+                  } else {
+                    justBadge = `<span class="inline-block px-2.5 py-0.5 rounded bg-rose-950 text-rose-300 border border-rose-800 font-bold text-[11px] shadow-sm">غير مبرر</span>`;
+                  }
+
+                  const reasonsList = Array.isArray(s.reasons) ? s.reasons.filter(Boolean) : (s.reasons ? [s.reasons] : []);
+                  const reasonsText = reasonsList.length 
+                    ? `<div class="text-[11px] text-slate-300 mt-1 font-semibold leading-tight">${reasonsList.map(r => String(r).replace(/</g, '&lt;')).join(' • ')}</div>` 
+                    : '';
 
                   return `
-                    <tr class="hover:bg-slate-900/60 transition">
-                      <td class="py-2.5 px-3 text-center text-slate-500 font-mono">${idx + 1}</td>
-                      <td class="py-2.5 px-3 font-bold text-white">${safeFullName}</td>
-                      <td class="py-2.5 px-3 text-center">
+                    <tr class="hover:bg-slate-800/50 transition">
+                      <td class="py-3 px-3 text-center">
+                        <span class="inline-block px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-mono font-bold text-xs">${orderNum}</span>
+                      </td>
+                      <td class="py-3 px-3 text-center">
+                        <span class="inline-block px-2 py-0.5 rounded bg-sky-950 text-sky-300 border border-sky-800/80 font-bold text-xs font-mono">${safeClassCode}</span>
+                      </td>
+                      <td class="py-3 px-3 font-bold text-white text-xs">${safeFullName}</td>
+                      <td class="py-3 px-3 text-center">
                         <div class="inline-flex items-center gap-1.5 bg-slate-900 px-2 py-0.5 rounded-lg border border-slate-800">
-                          <span class="font-mono text-teal-300 font-bold">${safeMassar || '-'}</span>
-                          ${st.massarCode ? `<button type="button" onclick="copyText('${safeMassar}')" class="text-slate-400 hover:text-white text-xs cursor-pointer" title="نسخ رقم مسار">📋</button>` : ''}
+                          <span class="font-mono text-teal-300 font-bold text-xs">${safeMassar || '-'}</span>
+                          ${s.massar_code ? `<button type="button" onclick="copyText('${safeMassar}'); showToast('تم نسخ مسار: ${safeMassar}', 'info')" class="text-slate-400 hover:text-white text-xs cursor-pointer" title="نسخ رقم مسار">📋</button>` : ''}
                         </div>
                       </td>
-                      <td class="py-2.5 px-3 text-center">
-                        <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-sky-950 text-sky-300 border border-sky-800 font-mono">${item.classCode}</span>
+                      <td class="py-3 px-3 text-center">
+                        <span class="inline-block px-2.5 py-1 rounded-lg bg-rose-950/80 text-rose-300 border border-rose-800/80 font-black text-xs font-mono">
+                          ${absCount} حصة (${absHours} س)
+                        </span>
                       </td>
-                      <td class="py-2.5 px-3 text-center text-slate-400">${st.gender || '-'}</td>
-                      <td class="py-2.5 px-3">
-                        <div class="flex flex-col gap-1">
-                          ${(item.sessions || []).map(s => `
-                            <div class="text-[11px] bg-rose-950/40 border border-rose-900/60 px-2 py-0.5 rounded flex items-center justify-between gap-2">
-                              <span>⏰ <strong>${s.slotLabel}</strong> • ${s.subject} (ذ. ${s.teacherName})</span>
-                              <span class="text-[10px] font-bold ${s.isJustified ? 'text-teal-400' : 'text-rose-400'}">${s.isJustified ? '✓ مبرر' : 'غير مبرر'}</span>
-                            </div>
-                          `).join('')}
+                      <td class="py-3 px-3 text-center">
+                        <div class="flex flex-col items-center justify-center">
+                          ${justBadge}
+                          ${reasonsText}
                         </div>
                       </td>
-                      <td class="py-2.5 px-3 text-center">
-                        <div class="inline-flex items-center gap-1.5">
-                          <button type="button" onclick="closeModal('modal-att-today-absentees'); openEntryPassModal('${safeStudentId}', '${safeClassCode}')" class="px-2.5 py-1 bg-blue-700 hover:bg-blue-600 text-white rounded-lg text-[11px] font-bold transition flex items-center gap-1 shadow cursor-pointer" title="إصدار ورقة السماح بالدخول">
+                      <td class="py-3 px-3 text-center">
+                        <div class="inline-flex items-center gap-1.5 justify-center">
+                          <button type="button" onclick="closeModal('modal-att-today-absentees'); openEntryPassModal('${safeStudentId}', '${safeClassCode}')" class="px-2.5 py-1 bg-blue-700 hover:bg-blue-600 text-white rounded-lg text-xs font-bold transition flex items-center gap-1 shadow cursor-pointer" title="إصدار ورقة السماح بالدخول">
                             <span>🎫</span>
                             <span>إذن دخول</span>
                           </button>
-                          <button type="button" onclick="closeModal('modal-att-today-absentees'); inspectStudentClass('${safeClassCode}'); inspectStudent('${safeStudentId}', '${safeClassCode}')" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-teal-300 rounded-lg text-[11px] font-bold transition cursor-pointer" title="معاينة بطاقة التلميذ والتبرير">
-                            🪪 بطاقة التلميذ
+                          <button type="button" onclick="closeModal('modal-att-today-absentees'); inspectStudent('${safeStudentId}', '${safeClassCode}')" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-teal-300 border border-slate-700 rounded-lg text-xs font-bold transition cursor-pointer" title="معاينة بطاقة التلميذ والتبرير">
+                            🪪 بطاقة
                           </button>
                         </div>
                       </td>
@@ -24395,10 +24696,81 @@
             </table>
           </div>
         `;
-      } catch(err) {
+      } catch (err) {
         console.error("renderTodayAbsenteesModalContent error:", err);
       }
     }
+
+    function printTodayAbsenteesList() {
+      const dateStr = currentDirectorDate || new Date().toISOString().split('T')[0];
+      const dow = typeof getDayOfWeek === 'function' ? getDayOfWeek(dateStr) : 1;
+      const dayName = (typeof DAYS_AR_MAP !== 'undefined' && DAYS_AR_MAP[dow]) ? DAYS_AR_MAP[dow] : '';
+      const list = (currentTodayAbsenteesList || []).filter(s => (s.absent_sessions_count || 0) > 0 || (s.absent_hours || 0) > 0);
+      const inst = (directorDb && directorDb.settings && directorDb.settings.schoolName) || 'الثانوية التأهيلية أنفك';
+
+      const rows = list.map((s, idx) => `
+        <tr>
+          <td style="text-align: center; font-weight: bold;">${s.order || (idx + 1)}</td>
+          <td style="text-align: center; font-weight: bold;">${s.class_name || '-'}</td>
+          <td style="font-weight: bold;">${s.full_name || '-'}</td>
+          <td style="text-align: center; font-family: monospace;">${s.massar_code || '-'}</td>
+          <td style="text-align: center; font-weight: bold; color: #b91c1c;">${s.absent_sessions_count || 1} حصة (${s.absent_hours || 1} س)</td>
+          <td style="text-align: center;">
+            <span style="font-weight: bold; color: ${s.justified ? '#047857' : '#b91c1c'};">${s.justified ? '✓ مبرر' : 'غير مبرر'}</span>
+            ${s.reasons && s.reasons.length ? `<div style="font-size: 10px; color: #475569;">${s.reasons.join(' • ')}</div>` : ''}
+          </td>
+        </tr>
+      `).join('');
+
+      const html = `
+        <!DOCTYPE html>
+        <html dir="rtl" lang="ar">
+        <head>
+          <meta charset="utf-8">
+          <title>لائحة المتعلمين الغائبين اليوم - ${dateStr}</title>
+          <style>
+            body { font-family: Cairo, Tahoma, Arial, sans-serif; padding: 20px; font-size: 12px; }
+            .header { text-align: center; border-bottom: 2px solid #0f172a; padding-bottom: 10px; margin-bottom: 15px; }
+            .header h2 { margin: 0 0 5px 0; font-size: 16px; color: #0f172a; }
+            .header p { margin: 0; font-size: 12px; color: #475569; }
+            table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+            th, td { border: 1px solid #cbd5e1; padding: 6px 8px; }
+            th { background: #f1f5f9; color: #0f172a; font-weight: bold; }
+            .footer { margin-top: 30px; display: flex; justify-content: space-between; font-weight: bold; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h2>${inst} — لائحة المتعلمين المتغيبين خلال اليوم</h2>
+            <p>تاريخ اليوم: <strong>${dayName} ${dateStr}</strong> — العدد الإجمالي للمتغيبين: <strong>${list.length} متعلم(ة)</strong></p>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 40px;">ر.ت</th>
+                <th style="width: 90px;">القسم</th>
+                <th>الاسم والنسب الكامل للمتعلم</th>
+                <th style="width: 100px;">رقم مسار</th>
+                <th style="width: 120px;">حصص وساعات الغياب</th>
+                <th style="width: 160px;">طبيعة الغياب / المبرر والملاحظات</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rows || '<tr><td colspan="6" style="text-align: center; padding: 15px;">لا يوجد أي متغيب مسجل لهذا اليوم.</td></tr>'}
+            </tbody>
+          </table>
+          <div class="footer">
+            <div>تأشيرة الحراسة العامة:<br><br>................................</div>
+            <div>تأشيرة رئيس المؤسسة (المدير):<br><br>................................</div>
+          </div>
+        </body>
+        </html>
+      `;
+      if (typeof printHtmlContent === 'function') {
+        printHtmlContent(html, `لائحة_المتغيبين_${dateStr}`);
+      }
+    }
+    window.printTodayAbsenteesList = printTodayAbsenteesList;
 
     function copyAllTodayMassarCodes() {
       const list = getTodayAbsentStudentsList(currentDirectorDate);
@@ -25102,6 +25474,95 @@
   </div>
 
 
+  
+  <!-- ================= MODAL: INDIVIDUAL ABSENCE CARD (البطاقة الشخصية للغياب) ================= -->
+  <div id="modal-student-absence-card" onclick="if(event.target===this) closeModal('modal-student-absence-card')" class="fixed inset-0 bg-slate-950/85 flex items-center justify-center p-2 sm:p-4 z-[99999] hidden backdrop-blur-md">
+    <div class="bg-slate-900 border border-rose-700/80 rounded-2xl w-full max-w-6xl shadow-2xl space-y-3 p-4 sm:p-5 max-h-[95vh] flex flex-col">
+      
+      <!-- Top Modal Header Bar -->
+      <div class="flex items-center justify-between border-b border-slate-800 pb-2.5 flex-shrink-0">
+        <div class="flex items-center gap-3">
+          <span class="text-2xl p-2 bg-rose-950 text-rose-300 rounded-xl border border-rose-800 shadow-inner">📇</span>
+          <div>
+            <h3 class="font-extrabold text-sm sm:text-base text-white flex items-center gap-2">
+              <span>البطاقة الشخصية للغياب</span>
+              <span class="text-[11px] bg-rose-950 text-rose-300 border border-rose-700 px-2 py-0.5 rounded-full font-bold">النموذج الوزاري المعتمد</span>
+            </h3>
+            <p class="text-[11px] text-slate-400">السجل السنوي لغياب التلميذ موزعاً حسب الشهور والأيام والفترات (صباح / مساء)</p>
+          </div>
+        </div>
+        <button type="button" onclick="closeModal('modal-student-absence-card')" class="text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold cursor-pointer transition">✕</button>
+      </div>
+
+      <!-- Controls & Filter Toolbar -->
+      <div class="bg-slate-950/80 p-3 rounded-xl border border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs flex-shrink-0">
+        <div class="flex flex-wrap items-center gap-3">
+          <!-- Class Selector -->
+          <div class="flex items-center gap-1.5">
+            <label class="text-slate-300 font-bold flex items-center gap-1">
+              <span>🏫</span> <span>القسم:</span>
+            </label>
+            <select id="absence-card-class-select" onchange="onAbsenceCardClassChange(this.value)" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white font-bold text-xs focus:border-rose-500 focus:outline-none cursor-pointer">
+              <!-- Populated dynamically -->
+            </select>
+          </div>
+
+          <!-- Student Selector -->
+          <div class="flex items-center gap-1.5">
+            <label class="text-slate-300 font-bold flex items-center gap-1">
+              <span>👤</span> <span>التلميذ(ة):</span>
+            </label>
+            <select id="absence-card-student-select" onchange="onAbsenceCardStudentChange(this.value)" class="bg-slate-900 border border-rose-700/80 rounded-lg px-2.5 py-1.5 text-rose-300 font-bold text-xs focus:border-rose-400 focus:outline-none max-w-[240px] cursor-pointer">
+              <!-- Populated dynamically -->
+            </select>
+          </div>
+
+          <!-- Mode Toggle: Filled vs Blank -->
+          <div class="flex items-center gap-3 bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-700">
+            <label class="flex items-center gap-1.5 cursor-pointer text-slate-200 font-bold">
+              <input type="radio" name="absence-card-fill-mode" value="filled" checked onchange="renderStudentAbsenceCardPreview()" class="accent-rose-500">
+              <span>تعبئة الغيابات تلقائياً</span>
+            </label>
+            <span class="text-slate-600">|</span>
+            <label class="flex items-center gap-1.5 cursor-pointer text-slate-400 hover:text-white font-medium">
+              <input type="radio" name="absence-card-fill-mode" value="blank" onchange="renderStudentAbsenceCardPreview()" class="accent-rose-500">
+              <span>نموذج فارغ للتدوين اليدوي</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex items-center gap-2">
+          <button type="button" onclick="printCurrentStudentAbsenceCard()" class="px-3.5 py-1.5 bg-rose-700 hover:bg-rose-600 text-white rounded-lg font-bold transition flex items-center gap-1.5 shadow cursor-pointer">
+            <span>🖨️</span>
+            <span>طباعة بطاقة التلميذ</span>
+          </button>
+          <button type="button" onclick="printBatchClassAbsenceCards()" class="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-rose-300 border border-slate-700 rounded-lg font-bold transition flex items-center gap-1.5 shadow cursor-pointer" title="طباعة البطاقات الفردية لجميع تلاميذ هذا القسم دفعة واحدة في ملف واحد">
+            <span>📑</span>
+            <span>طباعة لجميع تلاميذ القسم</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Scrollable Preview Area -->
+      <div id="modal-student-absence-card-preview" class="flex-1 overflow-y-auto overflow-x-auto p-3 bg-slate-950/70 rounded-xl border border-slate-800 flex justify-center">
+        <!-- Live HTML Card Rendered via JS -->
+      </div>
+
+      <!-- Footer Bar -->
+      <div class="flex items-center justify-between pt-2.5 border-t border-slate-800 flex-shrink-0 text-xs">
+        <div class="text-slate-400 text-[11px]">
+          💡 تتضمن البطاقة جميع فترات السنة الدراسية (من شتنبر إلى يونيو) مع رصد فترات الصباح والمساء وفق النموذج المعتمد.
+        </div>
+        <button type="button" onclick="closeModal('modal-student-absence-card')" class="px-4 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl font-bold transition cursor-pointer">
+          إغلاق
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+
   <!-- ================= MODAL: DASHBOARD PLEDGES LIST (سجل التزامات وتعهدات أولياء الأمور) ================= -->
   <div id="modal-dash-pledges" onclick="if(event.target===this) closeModal('modal-dash-pledges')" class="fixed inset-0 bg-slate-950/85 flex items-center justify-center p-3 md:p-6 z-[99999] hidden backdrop-blur-md">
     <div class="bg-slate-900 border border-amber-600/70 rounded-2xl w-full max-w-5xl shadow-2xl space-y-4 p-5 max-h-[92vh] flex flex-col">
@@ -25223,6 +25684,9 @@
           <button type="button" onclick="closeModal('modal-dash-absences'); openStudentsAttendanceTracking()" class="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-600 text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow cursor-pointer">
             <span>🎓</span> <span>واجهة التتبع الفردي والتبرير</span>
           </button>
+          <button type="button" onclick="closeModal('modal-dash-absences'); openTodayAbsenteesModal();" class="px-3 py-1.5 bg-rose-950 hover:bg-rose-900 text-rose-300 border border-rose-800 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer" title="عرض لائحة المتعلمين الغائبين اليوم">
+            <span>🔴</span> <span>غيابات اليوم</span>
+          </button>
           <button type="button" onclick="printDashboardAbsencesList()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-rose-300 border border-slate-700 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer" title="طباعة السجل">
             <span>🖨️</span> <span>طباعة السجل</span>
           </button>
@@ -25329,6 +25793,10 @@
           <button type="button" onclick="exportTodayAbsenteesExcel()" class="px-3 py-1.5 bg-rose-700 hover:bg-rose-600 text-white rounded-lg font-bold transition flex items-center gap-1.5 shadow">
             <span>📥</span>
             <span>تصدير Excel</span>
+          </button>
+          <button type="button" onclick="closeModal('modal-att-today-absentees'); if (typeof openDashboardAbsencesModal === 'function') openDashboardAbsencesModal();" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg font-bold transition flex items-center gap-1.5 border border-slate-700" title="عرض السجل العام التراكمي لجميع الأقسام">
+            <span>📊</span>
+            <span>السجل العام التراكمي</span>
           </button>
         </div>
       </div>
@@ -26943,5 +27411,1089 @@
 
   
   <script src="exams_planning.js"></script>
+
+  <script>
+    /* =========================================================================
+       INDIVIDUAL ABSENCE CARD (البطاقة الشخصية للغياب) CONTROLLER
+       ========================================================================= */
+    let currentAbsenceCardStudentId = null;
+    let currentAbsenceCardClassCode = null;
+
+    async function openStudentAbsenceCardModal(optStudentId = null, optClassCode = null) {
+      try {
+        const modal = document.getElementById('modal-student-absence-card');
+        if (!modal) return;
+
+        // Ensure directorDb is loaded
+        if (!directorDb || !directorDb.students || directorDb.students.length === 0) {
+          if (typeof fetchAttendanceDbFromServer === 'function') {
+            await fetchAttendanceDbFromServer();
+          }
+        }
+
+        const classes = directorDb.classes || [];
+        const allStudents = directorDb.students || [];
+
+        // Determine target class
+        let targetClass = optClassCode;
+        if (!targetClass && optStudentId) {
+          const st = allStudents.find(s => s && (s.studentId === optStudentId || s.massarCode === optStudentId));
+          if (st) targetClass = st.classCode;
+        }
+        if (!targetClass) {
+          targetClass = (classes.length > 0 ? classes[0].classCode : 'TCSF-1');
+        }
+        currentAbsenceCardClassCode = targetClass;
+
+        // Populate class selector
+        const classSel = document.getElementById('absence-card-class-select');
+        if (classSel) {
+          classSel.innerHTML = classes.map(c => 
+            `<option value="${escapeHtml(c.classCode)}" ${c.classCode === targetClass ? 'selected' : ''}>${escapeHtml(c.displayName || c.classCode)}</option>`
+          ).join('');
+        }
+
+        // Populate student selector
+        populateAbsenceCardStudentsDropdown(targetClass, optStudentId);
+
+        renderStudentAbsenceCardPreview();
+        openModal(modal);
+      } catch (err) {
+        console.error("openStudentAbsenceCardModal error:", err);
+      }
+    }
+    window.openStudentAbsenceCardModal = openStudentAbsenceCardModal;
+
+    function populateAbsenceCardStudentsDropdown(classCode, preselectedStudentId = null) {
+      const studentSel = document.getElementById('absence-card-student-select');
+      if (!studentSel) return;
+
+      const allStudents = directorDb.students || [];
+      const classStudents = allStudents.filter(s => s && s.classCode === classCode);
+
+      classStudents.sort((a, b) => {
+        const rA = Number(a.rollNumber) || 999;
+        const rB = Number(b.rollNumber) || 999;
+        return rA - rB;
+      });
+
+      if (classStudents.length === 0) {
+        studentSel.innerHTML = '<option value="">-- لا يوجد تلاميذ بهذا القسم --</option>';
+        currentAbsenceCardStudentId = null;
+        return;
+      }
+
+      studentSel.innerHTML = classStudents.map(st => {
+        const val = st.studentId || st.massarCode;
+        const rNum = st.rollNumber ? `[${st.rollNumber}] ` : '';
+        return `<option value="${escapeHtml(val)}">${rNum}${escapeHtml(st.fullName || val)} (${escapeHtml(st.massarCode || '-')})</option>`;
+      }).join('');
+
+      let selectedVal = classStudents[0].studentId || classStudents[0].massarCode;
+      if (preselectedStudentId) {
+        const found = classStudents.find(s => s.studentId === preselectedStudentId || s.massarCode === preselectedStudentId);
+        if (found) selectedVal = found.studentId || found.massarCode;
+      }
+
+      studentSel.value = selectedVal;
+      currentAbsenceCardStudentId = selectedVal;
+    }
+
+    function onAbsenceCardClassChange(newClassCode) {
+      currentAbsenceCardClassCode = newClassCode;
+      populateAbsenceCardStudentsDropdown(newClassCode);
+      renderStudentAbsenceCardPreview();
+    }
+    window.onAbsenceCardClassChange = onAbsenceCardClassChange;
+
+    function onAbsenceCardStudentChange(newStudentId) {
+      currentAbsenceCardStudentId = newStudentId;
+      renderStudentAbsenceCardPreview();
+    }
+    window.onAbsenceCardStudentChange = onAbsenceCardStudentChange;
+
+    function renderStudentAbsenceCardPreview() {
+      const container = document.getElementById('modal-student-absence-card-preview');
+      if (!container) return;
+
+      const studentId = currentAbsenceCardStudentId;
+      const classCode = currentAbsenceCardClassCode;
+
+      if (!studentId) {
+        container.innerHTML = `
+          <div class="p-8 text-center text-slate-400 font-bold">
+            يرجى اختيار القسم والتلميذ لعرض البطاقة الشخصية للغياب
+          </div>
+        `;
+        return;
+      }
+
+      const allStudents = directorDb.students || [];
+      let st = allStudents.find(s => s && (s.studentId === studentId || s.massarCode === studentId));
+      if (!st && typeof resolveStudentById === 'function') {
+        st = resolveStudentById(studentId, classCode);
+      }
+      if (!st) {
+        container.innerHTML = '<div class="p-8 text-center text-rose-400 font-bold">لم يتم العثور على بيانات التلميذ المحدد</div>';
+        return;
+      }
+
+      const modeRadio = document.querySelector('input[name="absence-card-fill-mode"]:checked');
+      const mode = modeRadio ? modeRadio.value : 'filled';
+
+      const cardHtml = generateSingleStudentAbsenceCardHtml(st, classCode, mode, true);
+      container.innerHTML = cardHtml;
+    }
+    window.renderStudentAbsenceCardPreview = renderStudentAbsenceCardPreview;
+
+    function generateSingleStudentAbsenceCardHtml(st, targetClass, mode = 'filled_all', isPreview = false, isCompactTwoPerSheet = false, copyBadgeText = '') {
+      const instData = (typeof appData !== 'undefined' && appData && appData.institution) 
+        ? appData.institution 
+        : ((window.appStateData && window.appStateData.institution) ? window.appStateData.institution : {});
+      
+      const settings = (directorDb && directorDb.settings) || {};
+      const schoolName = settings.schoolName || instData.name || 'الثانوية التأهيلية أنفك';
+      const town = instData.town || 'أنفك';
+      const academicYear = instData.academic_year || '2026/2027';
+      const academy = instData.academy || 'كلميم - واد نون';
+      const province = instData.province || 'سيدي إفني';
+
+      const sessions = (directorDb && directorDb.attendanceSessions) || {};
+      const justifiedMap = (directorDb && directorDb.justifiedAbsences) || {};
+      const timetable = (directorDb && directorDb.timetable) || [];
+      const stId = st.studentId || st.massarCode;
+      const massar = st.massarCode || '';
+      const fullName = (st.fullName || '').trim();
+      const currentClass = targetClass || st.classCode || '';
+
+      const isFilledMode = (mode === 'filled_all' || mode === 'filled_absent_only' || mode === 'filled');
+
+      // Pre-index scheduled class slots by dayOfWeek (1 to 6) and slotIndex (1 to 8)
+      const classScheduleMap = {};
+      if (Array.isArray(timetable)) {
+        timetable.forEach(slot => {
+          if (slot && slot.classCode === currentClass) {
+            const d = Number(slot.dayOfWeek);
+            const s = Number(slot.slotIndex);
+            if (!classScheduleMap[d]) classScheduleMap[d] = {};
+            classScheduleMap[d][s] = slot;
+          }
+        });
+      }
+
+      // Pre-index student absence records by date and slotIndex
+      const studentAbsenceMap = {};
+      const studentAbsenceDatesSet = new Set();
+      let totalHours = 0;
+      let justHours = 0;
+      let unjustHours = 0;
+
+      if (isFilledMode) {
+        Object.values(sessions).forEach(sess => {
+          if (!sess || !sess.date) return;
+          const abIds = sess.absentStudentIds || [];
+          const attMap = sess.attendanceMap || {};
+          const isAb = abIds.some(id => id === stId || id === massar || id === `${currentClass}_${massar}` || (fullName && id === fullName))
+            || attMap[stId] === 'A' || attMap[massar] === 'A';
+
+          if (isAb) {
+            const dateStr = sess.date;
+            studentAbsenceDatesSet.add(dateStr);
+            const slot = parseInt(sess.slotIndex, 10) || 1;
+            const jKey = `${sess.sessionId}_${stId}`;
+            const isJust = Boolean(justifiedMap[jKey] || justifiedMap[`${sess.sessionId}_${massar}`] || justifiedMap[`${sess.sessionId}_${fullName}`]);
+            
+            const key = `${dateStr}_${slot}`;
+            studentAbsenceMap[key] = { isJust, session: sess };
+
+            const h = Number(sess.hours) || 1;
+            totalHours += h;
+            if (isJust) justHours += h;
+            else unjustHours += h;
+          }
+        });
+      }
+
+      // Academic months configuration (Moroccan Qualifying High School Calendar)
+      // September to December: 2026, January to June: 2027
+      const monthsConfig = [
+        { name: 'شتنبر', num: 9, year: 2026, days: 30 },
+        { name: 'أكتوبر', num: 10, year: 2026, days: 31 },
+        { name: 'نونبر', num: 11, year: 2026, days: 30 },
+        { name: 'دجنبر', num: 12, year: 2026, days: 31 },
+        { name: 'يناير', num: 1, year: 2027, days: 31 },
+        { name: 'فبراير', num: 2, year: 2027, days: 28 },
+        { name: 'مارس', num: 3, year: 2027, days: 31 },
+        { name: 'أبريل', num: 4, year: 2027, days: 30 },
+        { name: 'ماي', num: 5, year: 2027, days: 31 },
+        { name: 'يونيو', num: 6, year: 2027, days: 30 }
+      ];
+
+      const symbolFontSize = isCompactTwoPerSheet ? '8px' : '9.5px';
+      const dashFontSize = isCompactTwoPerSheet ? '7px' : '8.5px';
+
+      // Helper function to render a single quadrant inside the 2x2 grid
+      function renderQuarterCell(status, tooltipText) {
+        if (!isFilledMode) {
+          return '';
+        }
+        if (status === 'unjustified') {
+          return `<span style="color: #dc2626; font-size: ${symbolFontSize}; line-height: 1; font-weight: bold; display: inline-block;" title="${escapeHtml(tooltipText)}">●</span>`;
+        } else if (status === 'justified') {
+          return `<span style="color: #059669; font-size: ${symbolFontSize}; line-height: 1; font-weight: 900; display: inline-block;" title="${escapeHtml(tooltipText)}">○</span>`;
+        } else if (status === 'unscheduled') {
+          return `<span style="color: #94a3b8; font-size: ${dashFontSize}; line-height: 1; font-weight: bold; display: inline-block; user-select: none;" title="${escapeHtml(tooltipText)}">—</span>`;
+        }
+        // Attended -> Empty space
+        return '';
+      }
+
+      // Helper to generate the 2x2 grid table inside daily cells
+      // Layout as specified by user:
+      // Row 1 (Top):    Top-Right = Slot 1 (ح1), Top-Left = Slot 2 (ح2)
+      // Row 2 (Bottom): Bottom-Right = Slot 4 (ح4), Bottom-Left = Slot 3 (ح3)
+      // Aesthetic rule: NO inner dividing lines (border: none), pure white background (#ffffff),
+      // activated ONLY on dates where student has an absence recorded.
+      function buildQuadrantCellHtml(year, monthNum, dayNum, isMorning) {
+        if (!isFilledMode) {
+          return '';
+        }
+
+        const mStr = String(monthNum).padStart(2, '0');
+        const dStr = String(dayNum).padStart(2, '0');
+        const dateStr = `${year}-${mStr}-${dStr}`;
+
+        // If no absence recorded on this date for this student:
+        // Return empty string to render completely clean, pure white cell
+        if (!studentAbsenceDatesSet.has(dateStr)) {
+          return '';
+        }
+
+        const dObj = new Date(year, monthNum - 1, dayNum);
+        const dow = dObj.getDay(); // 0: Sunday, 1..6: Mon..Sat
+
+        // Slot indices: Morning = [1, 2, 3, 4], Afternoon = [5, 6, 7, 8]
+        const slot1Idx = isMorning ? 1 : 5;
+        const slot2Idx = isMorning ? 2 : 6;
+        const slot3Idx = isMorning ? 3 : 7;
+        const slot4Idx = isMorning ? 4 : 8;
+
+        const getSlotStatus = (sIdx) => {
+          if (dow === 0) {
+            return { status: 'unscheduled', tooltip: `${dateStr}: الأحد عطلة أسبوعية` };
+          }
+          const isScheduled = Boolean(classScheduleMap[dow] && classScheduleMap[dow][sIdx]);
+          if (!isScheduled) {
+            return { status: 'unscheduled', tooltip: `${dateStr} (ح${sIdx}): غير مبرمجة في استعمال الزمن` };
+          }
+          const absRec = studentAbsenceMap[`${dateStr}_${sIdx}`];
+          if (absRec) {
+            return absRec.isJust 
+              ? { status: 'justified', tooltip: `${dateStr} (ح${sIdx}): غياب مبرر` }
+              : { status: 'unjustified', tooltip: `${dateStr} (ح${sIdx}): غياب غير مبرر` };
+          }
+          return { status: 'attended', tooltip: `${dateStr} (ح${sIdx}): حضور عادي` };
+        };
+
+        const q1 = getSlotStatus(slot1Idx);
+        const q2 = getSlotStatus(slot2Idx);
+        const q3 = getSlotStatus(slot3Idx);
+        const q4 = getSlotStatus(slot4Idx);
+
+        const hasAbsenceInCell = (
+          q1.status === 'unjustified' || q1.status === 'justified' ||
+          q2.status === 'unjustified' || q2.status === 'justified' ||
+          q3.status === 'unjustified' || q3.status === 'justified' ||
+          q4.status === 'unjustified' || q4.status === 'justified'
+        );
+
+        const hasAnyScheduled = (
+          q1.status !== 'unscheduled' || q2.status !== 'unscheduled' ||
+          q3.status !== 'unscheduled' || q4.status !== 'unscheduled'
+        );
+
+        // If this half-day has no absence and no scheduled classes, keep it pure white
+        if (!hasAbsenceInCell && !hasAnyScheduled) {
+          return '';
+        }
+
+        return `
+          <table style="width: 100%; height: 100%; border-collapse: collapse; border: none; margin: 0; padding: 0; background: #ffffff; direction: rtl;">
+            <tr style="height: 50%;">
+              <!-- Top-Right: Slot 1 (in RTL, first td is Right) -->
+              <td style="width: 50%; height: 50%; border: none; text-align: center; vertical-align: middle; padding: 0; line-height: 1;">
+                ${renderQuarterCell(q1.status, q1.tooltip)}
+              </td>
+              <!-- Top-Left: Slot 2 -->
+              <td style="width: 50%; height: 50%; border: none; text-align: center; vertical-align: middle; padding: 0; line-height: 1;">
+                ${renderQuarterCell(q2.status, q2.tooltip)}
+              </td>
+            </tr>
+            <tr style="height: 50%;">
+              <!-- Bottom-Right: Slot 4 (in RTL, first td is Right) -->
+              <td style="width: 50%; height: 50%; border: none; text-align: center; vertical-align: middle; padding: 0; line-height: 1;">
+                ${renderQuarterCell(q4.status, q4.tooltip)}
+              </td>
+              <!-- Bottom-Left: Slot 3 -->
+              <td style="width: 50%; height: 50%; border: none; text-align: center; vertical-align: middle; padding: 0; line-height: 1;">
+                ${renderQuarterCell(q3.status, q3.tooltip)}
+              </td>
+            </tr>
+          </table>
+        `;
+      }
+
+      // Dimensions based on compact 2-in-1 layout vs single preview
+      const rowHeight = isCompactTwoPerSheet ? '14px' : '18px';
+      const cellWidth = isCompactTwoPerSheet ? '20px' : '23px';
+      const monthWidth = isCompactTwoPerSheet ? '48px' : '60px';
+      const periodWidth = isCompactTwoPerSheet ? '34px' : '42px';
+
+            const rowsHtml = monthsConfig.map(m => {
+        // Morning cells (صباح)
+        const morningCells = Array.from({ length: 31 }, (_, idx) => {
+          const d = idx + 1;
+          if (d > m.days) {
+            return `<td style="border: 1px solid #000; background: #cbd5e1; width: ${cellWidth}; padding: 0;"></td>`;
+          }
+          const innerGrid = buildQuadrantCellHtml(m.year, m.num, d, true);
+          return `<td style="border: 1px solid #000; width: ${cellWidth}; height: ${rowHeight}; padding: 0; vertical-align: middle;">${innerGrid}</td>`;
+        }).join('');
+
+        // Afternoon cells (مساء)
+        const afternoonCells = Array.from({ length: 31 }, (_, idx) => {
+          const d = idx + 1;
+          if (d > m.days) {
+            return `<td style="border: 1px solid #000; background: #cbd5e1; width: ${cellWidth}; padding: 0;"></td>`;
+          }
+          const innerGrid = buildQuadrantCellHtml(m.year, m.num, d, false);
+          return `<td style="border: 1px solid #000; width: ${cellWidth}; height: ${rowHeight}; padding: 0; vertical-align: middle;">${innerGrid}</td>`;
+        }).join('');
+
+        return `
+          <tr style="height: ${rowHeight};">
+            <td rowspan="2" style="border: 1.5px solid #000; font-weight: bold; background: #f8fafc; font-size: ${isCompactTwoPerSheet ? '8.5px' : '10.5px'}; width: ${monthWidth}; text-align: center;">${m.name}</td>
+            <td style="border: 1px solid #000; font-weight: bold; background: #f8fafc; font-size: ${isCompactTwoPerSheet ? '8px' : '9.5px'}; width: ${periodWidth}; text-align: center;">صباح</td>
+            ${morningCells}
+          </tr>
+          <tr style="height: ${rowHeight};">
+            <td style="border: 1px solid #000; font-weight: bold; background: #f8fafc; font-size: ${isCompactTwoPerSheet ? '8px' : '9.5px'}; width: ${periodWidth}; text-align: center;">مساء</td>
+            ${afternoonCells}
+          </tr>
+        `;
+      }).join('');
+
+      let previewWrapperStyle = '';
+      if (isPreview) {
+        previewWrapperStyle = "background: #fff; color: #000; padding: 18px 24px; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); width: 100%; max-width: 1040px; margin: auto; font-family: Cairo, Tahoma, Arial, sans-serif; direction: rtl;";
+      } else if (isCompactTwoPerSheet) {
+        previewWrapperStyle = "background: #fff; color: #000; width: 100%; height: 133mm; max-height: 135mm; box-sizing: border-box; font-family: Cairo, Tahoma, Arial, sans-serif; direction: rtl; padding: 2mm 3mm; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between;";
+      } else {
+        previewWrapperStyle = "background: #fff; color: #000; width: 100%; box-sizing: border-box; font-family: Cairo, Tahoma, Arial, sans-serif; direction: rtl; padding: 5mm;";
+      }
+
+      const topBoxFontSize = isCompactTwoPerSheet ? '9px' : '11px';
+      const topBoxLineHeight = isCompactTwoPerSheet ? '1.3' : '1.6';
+      const titleBoxFontSize = isCompactTwoPerSheet ? '14px' : '18px';
+      const titleBoxPadding = isCompactTwoPerSheet ? '3px 10px' : '6px 16px';
+      const infoFontSize = isCompactTwoPerSheet ? '9.5px' : '11.5px';
+      const tableHeadFontSize = isCompactTwoPerSheet ? '8px' : '9.5px';
+
+      const copyBadgeHtml = copyBadgeText ? `<span style="display: inline-block; margin-right: 8px; padding: 1px 6px; font-size: 8px; border: 1px solid #047857; color: #047857; border-radius: 3px; font-weight: bold;">${escapeHtml(copyBadgeText)}</span>` : '';
+
+      return `
+        <div class="absence-card-sheet" style="${previewWrapperStyle}">
+          <!-- Top 3 Boxes Header -->
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: ${isCompactTwoPerSheet ? '2px' : '4px'};">
+            <tr>
+              <!-- Right Box in RTL (الوزارة) -->
+              <td style="width: 32%; text-align: right; vertical-align: top; border: 1.5px solid #000; padding: ${isCompactTwoPerSheet ? '2px 5px' : '5px 8px'}; font-size: ${topBoxFontSize}; line-height: ${topBoxLineHeight};">
+                <div style="font-weight: bold;">وزارة التربية الوطنية والتعليم الأولي و الرياضة</div>
+                <div>الأكاديمية الجهوية : <strong>${escapeHtml(academy)}</strong></div>
+                <div>المديرية الإقليمية : <strong>${escapeHtml(province)}</strong></div>
+              </td>
+              <!-- Center Title Box -->
+              <td style="width: 36%; text-align: center; vertical-align: middle; padding: 2px 4px;">
+                <div style="border: 1.5px dashed #000; padding: ${titleBoxPadding}; display: inline-block; font-size: ${titleBoxFontSize}; font-weight: 900; letter-spacing: 0.5px;">
+                  البطاقة الشخصية للغياب ${copyBadgeHtml}
+                </div>
+              </td>
+              <!-- Left Box in RTL (المؤسسة) -->
+              <td style="width: 32%; text-align: right; vertical-align: top; border: 1.5px solid #000; padding: ${isCompactTwoPerSheet ? '2px 5px' : '5px 8px'}; font-size: ${topBoxFontSize}; line-height: ${topBoxLineHeight};">
+                <div><strong>المؤسسة :</strong> ${escapeHtml(schoolName)}</div>
+                <div><strong>البلدة :</strong> ${escapeHtml(town)}</div>
+                <div><strong>السنة الدراسية :</strong> ${escapeHtml(academicYear)}</div>
+              </td>
+            </tr>
+          </table>
+
+          <!-- Student Info Banner -->
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: ${isCompactTwoPerSheet ? '2px' : '4px'}; border: 1.5px solid #000; font-size: ${infoFontSize};">
+            <tr>
+              <td style="padding: ${isCompactTwoPerSheet ? '2px 5px' : '4px 6px'}; border: 1px solid #000; width: 33%;">
+                <strong>إسم التلميذ :</strong> <span style="font-weight: bold; font-size: ${isCompactTwoPerSheet ? '11px' : '12.5px'};">${escapeHtml(st.fullName || '-')}</span>
+              </td>
+              <td style="padding: ${isCompactTwoPerSheet ? '2px 5px' : '4px 6px'}; border: 1px solid #000; width: 33%;">
+                <strong>القسم :</strong> <span style="font-weight: bold; font-family: monospace; font-size: ${isCompactTwoPerSheet ? '10.5px' : '12px'};">${escapeHtml(currentClass)}</span>
+              </td>
+              <td style="padding: ${isCompactTwoPerSheet ? '2px 5px' : '4px 6px'}; border: 1px solid #000; width: 34%;">
+                <strong>عنوان الولي :</strong> <span>${escapeHtml(st.guardianAddress || '................................................')}</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding: ${isCompactTwoPerSheet ? '2px 5px' : '4px 6px'}; border: 1px solid #000;">
+                <strong>ر - ت :</strong> <span style="font-weight: bold; font-family: monospace;">${escapeHtml(String(st.rollNumber || '-'))}</span>
+              </td>
+              <td style="padding: ${isCompactTwoPerSheet ? '2px 5px' : '4px 6px'}; border: 1px solid #000;">
+                <strong>رقم مسار :</strong> <span style="font-weight: bold; font-family: monospace;">${escapeHtml(st.massarCode || '-')}</span>
+                <span style="margin-right: 14px;"><strong>الجنس :</strong> <span>${escapeHtml(st.gender || '-')}</span></span>
+              </td>
+              <td style="padding: ${isCompactTwoPerSheet ? '2px 5px' : '4px 6px'}; border: 1px solid #000;">
+                <strong>الهاتف :</strong> <span>${escapeHtml(st.phone || st.guardianPhone || '................................................')}</span>
+              </td>
+            </tr>
+          </table>
+
+          <!-- Monthly Absence Grid (4-Quadrant Sub-cells) -->
+          <table style="width: 100%; border-collapse: collapse; border: 1.5px solid #000; text-align: center; font-size: ${tableHeadFontSize};">
+            <thead>
+              <tr style="background: #f1f5f9; font-weight: bold; height: ${isCompactTwoPerSheet ? '16px' : '21px'};">
+                <th style="border: 1px solid #000; width: ${monthWidth};">الشهور</th>
+                <th style="border: 1px solid #000; width: ${periodWidth};">الأيام</th>
+                ${Array.from({ length: 31 }, (_, i) => `<th style="border: 1px solid #000; width: ${cellWidth}; font-family: monospace; font-size: ${isCompactTwoPerSheet ? '7.5px' : '9px'};">${i + 1}</th>`).join('')}
+              </tr>
+            </thead>
+            <tbody>
+              ${rowsHtml}
+            </tbody>
+          </table>
+
+          <!-- Legend Bar (مفتاح الرموز) -->
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: ${isCompactTwoPerSheet ? '7.5px' : '9px'}; background: #f8fafc; border: 1px solid #cbd5e1; padding: 2px 8px; border-radius: 4px; margin-top: ${isCompactTwoPerSheet ? '2px' : '4px'};">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <strong style="color: #334155;">مفتاح الرموز:</strong>
+              <span style="display: inline-flex; align-items: center; gap: 3px;">
+                <span style="color: #dc2626; font-size: ${symbolFontSize}; font-weight: bold; line-height: 1;">●</span>
+                <span>غياب غير مبرر</span>
+              </span>
+              <span style="display: inline-flex; align-items: center; gap: 3px;">
+                <span style="color: #059669; font-size: ${symbolFontSize}; font-weight: 900; line-height: 1;">○</span>
+                <span>غياب مبرر</span>
+              </span>
+              <span style="display: inline-flex; align-items: center; gap: 3px;">
+                <span style="color: #94a3b8; font-size: ${dashFontSize}; font-weight: bold; line-height: 1;">—</span>
+                <span>حصة فارغة (غير مبرمجة)</span>
+              </span>
+              <span style="display: inline-flex; align-items: center; gap: 3px;">
+                <span style="display: inline-block; width: 9px; height: 9px; border: 1px solid #000; background: #fff;"></span>
+                <span>(خانة بيضاء / فارغة): حضور عادي</span>
+              </span>
+            </div>
+            <div style="color: #475569; font-size: ${isCompactTwoPerSheet ? '7px' : '8.5px'}; font-family: monospace;">
+              [توزيع الأرباع: أعلى يمين: ح1 | أعلى يسار: ح2 | أسفل يسار: ح3 | أسفل يمين: ح4]
+            </div>
+          </div>
+
+          <!-- Footer Summary & Official Signatures -->
+          <div style="margin-top: ${isCompactTwoPerSheet ? '2px' : '5px'}; display: flex; justify-content: space-between; align-items: flex-start; font-size: ${isCompactTwoPerSheet ? '8.5px' : '10.5px'};">
+            <div style="border: 1px solid #000; padding: ${isCompactTwoPerSheet ? '2px 6px' : '4px 10px'}; border-radius: 4px; background: #fafafa; min-width: ${isCompactTwoPerSheet ? '240px' : '280px'};">
+              <strong>ملخص مواظبة التلميذ(ة) السنوية:</strong>
+              <div style="display: flex; gap: 12px; margin-top: 1px;">
+                <span>إجمالي الغياب: <strong>${totalHours}</strong> س</span>
+                <span style="color: #059669;">المبرر: <strong>${justHours}</strong> س</span>
+                <span style="color: #dc2626;">غير المبرر: <strong>${unjustHours}</strong> س</span>
+              </div>
+            </div>
+            <div style="display: flex; gap: ${isCompactTwoPerSheet ? '35px' : '50px'}; font-weight: bold; margin-left: 15px;">
+              <div style="text-align: center;">
+                تأشيرة الحراسة العامة للخارجية:<br><br>........................................
+              </div>
+              <div style="text-align: center;">
+                خاتم وتأشيرة رئيس المؤسسة (المدير):<br><br>........................................
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function printCurrentStudentAbsenceCard() {
+      const studentId = currentAbsenceCardStudentId;
+      const classCode = currentAbsenceCardClassCode;
+      if (!studentId) {
+        showToast("يرجى اختيار التلميذ أولاً", "warning");
+        return;
+      }
+
+      const allStudents = directorDb.students || [];
+      let st = allStudents.find(s => s && (s.studentId === studentId || s.massarCode === studentId));
+      if (!st && typeof resolveStudentById === 'function') {
+        st = resolveStudentById(studentId, classCode);
+      }
+      if (!st) {
+        showToast("لم يتم العثور على التلميذ المحدد", "warning");
+        return;
+      }
+
+      const modeRadio = document.querySelector('input[name="absence-card-fill-mode"]:checked');
+      const mode = modeRadio ? modeRadio.value : 'filled';
+
+      const cardHtml = generateSingleStudentAbsenceCardHtml(st, classCode, mode, false);
+
+      const fullHtml = `<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <title>البطاقة الشخصية للغياب - ${escapeHtml(st.fullName || st.massarCode)}</title>
+  <style>
+    @page {
+      size: A4 landscape;
+      margin: 8mm;
+    }
+    @media print {
+      body { margin: 0; padding: 0; background: #fff !important; }
+      .absence-card-sheet { page-break-after: always; break-after: page; }
+      .no-print { display: none !important; }
+      * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    }
+    body {
+      margin: 0;
+      padding: 10px;
+      background: #f1f5f9;
+      font-family: Cairo, Tahoma, Arial, sans-serif;
+    }
+  </style>
+</head>
+<body>
+  ${cardHtml}
+</body>
+</html>`;
+
+      if (typeof printHtmlContent === 'function') {
+        printHtmlContent(fullHtml, `البطاقة_الشخصية_للغياب_${escapeHtml(st.fullName || st.massarCode)}`, 'landscape');
+      }
+    }
+    window.printCurrentStudentAbsenceCard = printCurrentStudentAbsenceCard;
+
+    function printBatchClassAbsenceCards() {
+      const classCode = currentAbsenceCardClassCode;
+      if (!classCode) {
+        showToast("يرجى تحديد القسم أولاً", "warning");
+        return;
+      }
+
+      const allStudents = directorDb.students || [];
+      const classStudents = allStudents.filter(s => s && s.classCode === classCode);
+      if (classStudents.length === 0) {
+        showToast("لا يوجد تلاميذ مسجلين في هذا القسم", "warning");
+        return;
+      }
+
+      classStudents.sort((a, b) => {
+        const rA = Number(a.rollNumber) || 999;
+        const rB = Number(b.rollNumber) || 999;
+        return rA - rB;
+      });
+
+      const modeRadio = document.querySelector('input[name="absence-card-fill-mode"]:checked');
+      const mode = modeRadio ? modeRadio.value : 'filled';
+
+      const allCardsHtml = classStudents.map(st => {
+        return `<div style="page-break-after: always; break-after: page; padding: 5px;">` +
+          generateSingleStudentAbsenceCardHtml(st, classCode, mode, false) +
+          `</div>`;
+      }).join('');
+
+      const fullHtml = `<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <title>البطاقة الشخصية للغياب - قسم ${escapeHtml(classCode)} (${classStudents.length} تلميذ)</title>
+  <style>
+    @page {
+      size: A4 landscape;
+      margin: 8mm;
+    }
+    @media print {
+      body { margin: 0; padding: 0; background: #fff !important; }
+      .absence-card-sheet { page-break-after: always; break-after: page; }
+      .no-print { display: none !important; }
+      * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    }
+    body {
+      margin: 0;
+      padding: 10px;
+      background: #f1f5f9;
+      font-family: Cairo, Tahoma, Arial, sans-serif;
+    }
+  </style>
+</head>
+<body>
+  ${allCardsHtml}
+</body>
+</html>`;
+
+      if (typeof printHtmlContent === 'function') {
+        printHtmlContent(fullHtml, `بطاقات_الغياب_قسم_${escapeHtml(classCode)}`, 'landscape');
+      }
+    }
+    window.printBatchClassAbsenceCards = printBatchClassAbsenceCards;
+
+
+  
+    /* =========================================================================
+       TAB 18: INDIVIDUAL ABSENCE CARD (البطاقة الشخصية للغياب) CONTROLLER
+       ========================================================================= */
+    let currentTab18ClassCode = null;
+    let currentTab18StudentId = null;
+
+    function getStudentAbsenceTotalHours(st, classCode) {
+      if (!st) return 0;
+      const sessions = (directorDb && directorDb.attendanceSessions) || {};
+      const stId = st.studentId || st.massarCode;
+      const massar = st.massarCode || '';
+      const fullName = (st.fullName || '').trim();
+      let total = 0;
+
+      Object.values(sessions).forEach(sess => {
+        if (!sess || !sess.date) return;
+        const abIds = sess.absentStudentIds || [];
+        const attMap = sess.attendanceMap || {};
+        const isAb = abIds.some(id => id === stId || id === massar || id === `${classCode}_${massar}` || (fullName && id === fullName))
+          || attMap[stId] === 'A' || attMap[massar] === 'A';
+        if (isAb) {
+          total += (Number(sess.hours) || 1);
+        }
+      });
+      return total;
+    }
+    window.getStudentAbsenceTotalHours = getStudentAbsenceTotalHours;
+
+    function getTab18AvailableClasses() {
+      if (typeof directorDb !== 'undefined' && Array.isArray(directorDb.classes) && directorDb.classes.length > 0) {
+        const list = directorDb.classes.map(c => c.classCode || c.displayName || c.class_name).filter(Boolean);
+        if (list.length > 0) return Array.from(new Set(list));
+      }
+      if (typeof directorDb !== 'undefined' && Array.isArray(directorDb.students) && directorDb.students.length > 0) {
+        const set = new Set();
+        directorDb.students.forEach(s => { if (s && s.classCode) set.add(s.classCode); });
+        if (set.size > 0) return Array.from(set).sort();
+      }
+      if (typeof appData !== 'undefined' && Array.isArray(appData.students) && appData.students.length > 0) {
+        const set = new Set();
+        appData.students.forEach(s => { if (s && s.classCode) set.add(s.classCode); });
+        if (set.size > 0) return Array.from(set).sort();
+      }
+      if (typeof getAvailableClassesForSurveillance === 'function') {
+        const list = getAvailableClassesForSurveillance();
+        if (list && list.length > 0) return list;
+      }
+      return [
+        'TCSF-1', 'TCLSHF-1', 'TCLSHF-2',
+        '1BACSEF-1', '1BACSEF-2', '1BACSHF-1', '1BACSHF-2',
+        '2BACLF-1', '2BACSPF-1', '2BACSHF-1', '2BACSVTF-1'
+      ];
+    }
+    window.getTab18AvailableClasses = getTab18AvailableClasses;
+
+    function getTab18AllStudents() {
+      if (typeof directorDb !== 'undefined' && Array.isArray(directorDb.students) && directorDb.students.length > 0) {
+        return directorDb.students;
+      }
+      if (typeof appData !== 'undefined' && Array.isArray(appData.students) && appData.students.length > 0) {
+        return appData.students;
+      }
+      if (typeof window.appStateData !== 'undefined' && Array.isArray(window.appStateData.students) && window.appStateData.students.length > 0) {
+        return window.appStateData.students;
+      }
+      return [];
+    }
+    window.getTab18AllStudents = getTab18AllStudents;
+
+    function updateTab18DropdownsAndCard() {
+      try {
+        const rawClasses = getTab18AvailableClasses();
+        const classes = rawClasses.map(c => ({ classCode: c, displayName: c }));
+        const classSel = document.getElementById('tab18-class-select');
+
+        if (!currentTab18ClassCode || !classes.some(c => c.classCode === currentTab18ClassCode)) {
+          currentTab18ClassCode = (classes.length > 0 ? classes[0].classCode : 'TCSF-1');
+        }
+
+        if (classSel) {
+          classSel.innerHTML = classes.map(c => 
+            `<option value="${escapeHtml(c.classCode)}" ${c.classCode === currentTab18ClassCode ? 'selected' : ''}>${escapeHtml(c.displayName || c.classCode)}</option>`
+          ).join('');
+        }
+
+        updateTab18AbsentBadge();
+        populateTab18StudentsDropdown(currentTab18ClassCode, currentTab18StudentId);
+        updateTab18BatchBtnLabel();
+        renderTab18Card();
+      } catch (e) {
+        console.error("updateTab18DropdownsAndCard error:", e);
+      }
+    }
+    window.updateTab18DropdownsAndCard = updateTab18DropdownsAndCard;
+
+    function updateTab18AbsentBadge() {
+      const badge = document.getElementById('tab18-absent-count-badge');
+      if (!badge) return;
+      const classCode = currentTab18ClassCode;
+      const allStudents = getTab18AllStudents();
+      const classStudents = allStudents.filter(s => s && s.classCode === classCode);
+      const absentCount = classStudents.filter(s => getStudentAbsenceTotalHours(s, classCode) > 0).length;
+      badge.textContent = `${absentCount}`;
+      badge.title = `${absentCount} تلميذ سُجل لهم غياب في قسم ${classCode}`;
+    }
+    window.updateTab18AbsentBadge = updateTab18AbsentBadge;
+
+    function updateTab18BatchBtnLabel() {
+      const labelEl = document.getElementById('tab18-batch-btn-label');
+      if (!labelEl) return;
+      const modeRadio = document.querySelector('input[name="tab18-fill-mode"]:checked');
+      const mode = modeRadio ? modeRadio.value : 'filled_all';
+
+      const classCode = currentTab18ClassCode || '';
+      const allStudents = getTab18AllStudents();
+      const classStudents = allStudents.filter(s => s && s.classCode === classCode);
+
+      if (mode === 'filled_absent_only') {
+        const absentCount = classStudents.filter(s => getStudentAbsenceTotalHours(s, classCode) > 0).length;
+        labelEl.textContent = `طباعة المتغيبين فقط (${absentCount} بطاقة - 2 في ورقة A4)`;
+      } else if (mode === 'blank') {
+        labelEl.textContent = `طباعة نماذج فارغة للقسم (${classStudents.length} بطاقة - 2 في ورقة A4)`;
+      } else {
+        labelEl.textContent = `طباعة كافة تلاميذ القسم (${classStudents.length} بطاقة - 2 في ورقة A4)`;
+      }
+    }
+    window.updateTab18BatchBtnLabel = updateTab18BatchBtnLabel;
+
+    function onTab18FillModeChange(newMode) {
+      updateTab18AbsentBadge();
+      updateTab18BatchBtnLabel();
+      populateTab18StudentsDropdown(currentTab18ClassCode, currentTab18StudentId);
+      renderTab18Card();
+    }
+    window.onTab18FillModeChange = onTab18FillModeChange;
+
+    async function initTab18AbsenceCard() {
+      try {
+        updateTab18DropdownsAndCard();
+        if (!directorDb || !directorDb.students || directorDb.students.length === 0) {
+          if (typeof fetchAttendanceDbFromServer === 'function') {
+            await fetchAttendanceDbFromServer();
+            updateTab18DropdownsAndCard();
+          }
+        }
+      } catch (err) {
+        console.error("initTab18AbsenceCard error:", err);
+      }
+    }
+    window.initTab18AbsenceCard = initTab18AbsenceCard;
+
+    function populateTab18StudentsDropdown(classCode, preselectedStudentId = null) {
+      const studentSel = document.getElementById('tab18-student-select');
+      if (!studentSel) return;
+
+      const modeRadio = document.querySelector('input[name="tab18-fill-mode"]:checked');
+      const mode = modeRadio ? modeRadio.value : 'filled_all';
+
+      const allStudents = getTab18AllStudents();
+      let classStudents = allStudents.filter(s => s && s.classCode === classCode);
+
+      classStudents.sort((a, b) => {
+        const rA = Number(a.rollNumber) || 999;
+        const rB = Number(b.rollNumber) || 999;
+        return rA - rB;
+      });
+
+      // If mode is filled_absent_only, filter to only students who have absences!
+      if (mode === 'filled_absent_only') {
+        classStudents = classStudents.filter(s => getStudentAbsenceTotalHours(s, classCode) > 0);
+      }
+
+      if (classStudents.length === 0) {
+        if (mode === 'filled_absent_only') {
+          studentSel.innerHTML = '<option value="">-- لم يسجل أي غياب بهذا القسم (حضور 100%) --</option>';
+        } else {
+          studentSel.innerHTML = '<option value="">-- لا يوجد تلاميذ بهذا القسم --</option>';
+        }
+        currentTab18StudentId = null;
+        return;
+      }
+
+      studentSel.innerHTML = classStudents.map(st => {
+        const val = st.studentId || st.massarCode;
+        const rNum = st.rollNumber ? `[${st.rollNumber}] ` : '';
+        const absH = getStudentAbsenceTotalHours(st, classCode);
+        const absNote = (absH > 0) ? ` — ${absH} س غياب` : '';
+        return `<option value="${escapeHtml(val)}">${rNum}${escapeHtml(st.fullName || val)} (${escapeHtml(st.massarCode || '-')})${absNote}</option>`;
+      }).join('');
+
+      let selectedVal = classStudents[0].studentId || classStudents[0].massarCode;
+      if (preselectedStudentId) {
+        const found = classStudents.find(s => s.studentId === preselectedStudentId || s.massarCode === preselectedStudentId || s.fullName === preselectedStudentId);
+        if (found) selectedVal = found.studentId || found.massarCode;
+      }
+
+      studentSel.value = selectedVal;
+      currentTab18StudentId = selectedVal;
+    }
+    window.populateTab18StudentsDropdown = populateTab18StudentsDropdown;
+
+    function onTab18ClassChange(newClassCode) {
+      currentTab18ClassCode = newClassCode;
+      updateTab18AbsentBadge();
+      updateTab18BatchBtnLabel();
+      populateTab18StudentsDropdown(newClassCode);
+      renderTab18Card();
+    }
+    window.onTab18ClassChange = onTab18ClassChange;
+
+    function onTab18StudentChange(newStudentId) {
+      currentTab18StudentId = newStudentId;
+      renderTab18Card();
+    }
+    window.onTab18StudentChange = onTab18StudentChange;
+
+    function onTab18SearchInput(val) {
+      const q = (val || '').trim().toLowerCase();
+      if (!q) return;
+
+      const allStudents = getTab18AllStudents();
+      const match = allStudents.find(s => 
+        (s.fullName && s.fullName.toLowerCase().includes(q)) ||
+        (s.massarCode && s.massarCode.toLowerCase().includes(q))
+      );
+
+      if (match) {
+        currentTab18ClassCode = match.classCode;
+        currentTab18StudentId = match.studentId || match.massarCode;
+
+        const classSel = document.getElementById('tab18-class-select');
+        if (classSel) classSel.value = match.classCode;
+
+        updateTab18AbsentBadge();
+        updateTab18BatchBtnLabel();
+        populateTab18StudentsDropdown(match.classCode, currentTab18StudentId);
+        renderTab18Card();
+      }
+    }
+    window.onTab18SearchInput = onTab18SearchInput;
+
+    function renderTab18Card() {
+      const container = document.getElementById('tab18-card-preview-container');
+      if (!container) return;
+
+      const modeRadio = document.querySelector('input[name="tab18-fill-mode"]:checked');
+      const mode = modeRadio ? modeRadio.value : 'filled_all';
+
+      const studentId = currentTab18StudentId;
+      const classCode = currentTab18ClassCode;
+
+      if (!studentId) {
+        if (mode === 'filled_absent_only') {
+          container.innerHTML = `
+            <div class="p-8 text-center bg-slate-900 border border-slate-800 rounded-2xl max-w-lg mx-auto">
+              <div class="text-3xl mb-2">🎉</div>
+              <div class="text-white font-black text-sm">سير عادي مستقر ومواظبة تامة (100%)</div>
+              <div class="text-xs text-slate-400 mt-1">لم يتم تسجيل أي غياب لتلاميذ قسم <strong class="text-amber-400 font-mono">${escapeHtml(classCode || '')}</strong>.</div>
+            </div>`;
+        } else {
+          container.innerHTML = '<div class="p-8 text-center text-slate-400 font-bold">يرجى اختيار القسم والتلميذ لعرض البطاقة الشخصية للغياب</div>';
+        }
+        return;
+      }
+
+      const allStudents = getTab18AllStudents();
+      let st = allStudents.find(s => s && (s.studentId === studentId || s.massarCode === studentId || s.fullName === studentId));
+      if (!st && typeof resolveStudentById === 'function') {
+        st = resolveStudentById(studentId, classCode);
+      }
+      if (!st) {
+        container.innerHTML = '<div class="p-8 text-center text-rose-400 font-bold">لم يتم العثور على بيانات التلميذ المحدد</div>';
+        return;
+      }
+
+      const cardHtml = generateSingleStudentAbsenceCardHtml(st, classCode, mode, true, false);
+      container.innerHTML = cardHtml;
+    }
+    window.renderTab18Card = renderTab18Card;
+
+    // Helper: Wrap pairs of cards into 2-in-1 A4 portrait sheets
+    function generateTwoCardsPerSheetPrintHtml(cardsList, pageTitle) {
+      let sheetsHtml = '';
+      for (let i = 0; i < cardsList.length; i += 2) {
+        const card1 = cardsList[i];
+        const card2 = cardsList[i + 1] || null;
+
+        sheetsHtml += `
+          <div class="two-cards-sheet" style="page-break-after: always; break-after: page; width: 100%; min-height: 275mm; max-height: 285mm; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box; margin: 0 auto; padding: 2mm 0;">
+            <div style="height: 133mm; max-height: 135mm; overflow: hidden; box-sizing: border-box;">
+              ${card1}
+            </div>
+            
+            <div class="cut-separator" style="border-top: 1px dashed #64748b; margin: 3mm 0; position: relative; text-align: center; height: 10px;">
+              <span style="position: absolute; top: -8px; right: 50%; transform: translateX(50%); background: #ffffff; padding: 0 14px; font-size: 8.5px; font-weight: bold; color: #475569; letter-spacing: 0.5px;">
+                ✂ خط القص والطي (بطاقتين في ورقة A4 واحدة)
+              </span>
+            </div>
+
+            <div style="height: 133mm; max-height: 135mm; overflow: hidden; box-sizing: border-box;">
+              ${card2 ? card2 : '<div style="height: 100%; border: 1.5px dashed #cbd5e1; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #94a3b8; font-size: 11px; font-weight: bold;">(نصف ورقة فارغ للقص والاستعمال)</div>'}
+            </div>
+          </div>
+        `;
+      }
+
+      return `<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <title>${escapeHtml(pageTitle)}</title>
+  <style>
+    @page {
+      size: A4 portrait;
+      margin: 6mm 8mm;
+    }
+    @media print {
+      body { margin: 0; padding: 0; background: #fff !important; }
+      .two-cards-sheet { page-break-after: always; break-after: page; }
+      .two-cards-sheet:last-child { page-break-after: avoid; break-after: avoid; }
+      .no-print { display: none !important; }
+      * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    }
+    body {
+      margin: 0;
+      padding: 10px;
+      background: #f1f5f9;
+      font-family: Cairo, Tahoma, Arial, sans-serif;
+    }
+  </style>
+</head>
+<body>
+  ${sheetsHtml}
+</body>
+</html>`;
+    }
+
+    function printTab18CurrentStudentCard() {
+      const studentId = currentTab18StudentId;
+      const classCode = currentTab18ClassCode;
+      if (!studentId) {
+        showToast("يرجى اختيار التلميذ أولاً", "warning");
+        return;
+      }
+
+      const allStudents = getTab18AllStudents();
+      let st = allStudents.find(s => s && (s.studentId === studentId || s.massarCode === studentId || s.fullName === studentId));
+      if (!st && typeof resolveStudentById === 'function') {
+        st = resolveStudentById(studentId, classCode);
+      }
+      if (!st) {
+        showToast("لم يتم العثور على التلميذ المحدد", "warning");
+        return;
+      }
+
+      const modeRadio = document.querySelector('input[name="tab18-fill-mode"]:checked');
+      const mode = modeRadio ? modeRadio.value : 'filled_all';
+
+      // 2-in-1 format: generates 2 identical copies on one A4 Portrait sheet (نسخة الحراسة العامة + نسخة الإدارة التربوية)
+      const cardCopy1 = generateSingleStudentAbsenceCardHtml(st, classCode, mode, false, true, "نسخة الحراسة العامة");
+      const cardCopy2 = generateSingleStudentAbsenceCardHtml(st, classCode, mode, false, true, "نسخة الإدارة التربوية / الولي");
+
+      const fullHtml = generateTwoCardsPerSheetPrintHtml([cardCopy1, cardCopy2], `البطاقة_الشخصية_للغياب_${st.fullName || st.massarCode}`);
+
+      if (typeof printHtmlContent === 'function') {
+        printHtmlContent(fullHtml, `بطاقة_غياب_${escapeHtml(st.fullName || st.massarCode)}`, 'portrait');
+      }
+    }
+    window.printTab18CurrentStudentCard = printTab18CurrentStudentCard;
+
+    function printTab18BatchClassCards() {
+      const classCode = currentTab18ClassCode;
+      if (!classCode) {
+        showToast("يرجى تحديد القسم أولاً", "warning");
+        return;
+      }
+
+      const modeRadio = document.querySelector('input[name="tab18-fill-mode"]:checked');
+      const mode = modeRadio ? modeRadio.value : 'filled_all';
+
+      const allStudents = getTab18AllStudents();
+      let classStudents = allStudents.filter(s => s && s.classCode === classCode);
+
+      classStudents.sort((a, b) => {
+        const rA = Number(a.rollNumber) || 999;
+        const rB = Number(b.rollNumber) || 999;
+        return rA - rB;
+      });
+
+      // Filter according to mode
+      if (mode === 'filled_absent_only') {
+        classStudents = classStudents.filter(s => getStudentAbsenceTotalHours(s, classCode) > 0);
+        if (classStudents.length === 0) {
+          showToast(`لم يسجل أي غياب لتلاميذ قسم ${classCode} لطباعته`, "info");
+          return;
+        }
+      }
+
+      if (classStudents.length === 0) {
+        showToast("لا يوجد تلاميذ مسجلين في هذا القسم", "warning");
+        return;
+      }
+
+      // Generate compact card for each student
+      const cardsList = classStudents.map(st => {
+        return generateSingleStudentAbsenceCardHtml(st, classCode, mode, false, true, "");
+      });
+
+      let titleLabel = `بطاقات_الغياب_قسم_${classCode}`;
+      if (mode === 'filled_absent_only') {
+        titleLabel = `بطاقات_المتغيبين_قسم_${classCode}_(${classStudents.length}_متغيب)`;
+      } else if (mode === 'blank') {
+        titleLabel = `نماذج_فارغة_قسم_${classCode}`;
+      }
+
+      const fullHtml = generateTwoCardsPerSheetPrintHtml(cardsList, titleLabel);
+
+      if (typeof printHtmlContent === 'function') {
+        printHtmlContent(fullHtml, titleLabel, 'portrait');
+      }
+    }
+    window.printTab18BatchClassCards = printTab18BatchClassCards;
+
+    // Seamless Transition from Student Dossier Modal to Tab 18
+    function openStudentAbsenceCardFromCard(studentId, classCode) {
+      if (typeof closeModal === 'function') {
+        closeModal('modal-att-student-card');
+        closeModal('modal-att-today-absentees');
+      }
+      currentTab18ClassCode = classCode;
+      currentTab18StudentId = studentId;
+
+      if (typeof switchTab === 'function') {
+        switchTab('tab-absence-card');
+      }
+
+      const applySelection = () => {
+        const classSel = document.getElementById('tab18-class-select');
+        if (classSel && classCode) {
+          classSel.value = classCode;
+        }
+        updateTab18AbsentBadge();
+        updateTab18BatchBtnLabel();
+        populateTab18StudentsDropdown(classCode, studentId);
+        renderTab18Card();
+      };
+
+      applySelection();
+      setTimeout(applySelection, 50);
+      setTimeout(applySelection, 200);
+    }
+    window.openStudentAbsenceCardFromCard = openStudentAbsenceCardFromCard;
+    window.openStudentAbsenceCardModal = openStudentAbsenceCardFromCard;
+</script>
 </body>
 </html>

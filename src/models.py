@@ -25,9 +25,9 @@ class InstitutionData:
     logo_base64: str = ""
     
     # Session / Period Timing Settings (Editable in Tab 2)
-    morning_start_hour: str = "08:30"
+    morning_start_hour: str = "08:00"
     morning_period_times: List[str] = field(default_factory=lambda: [
-        "08:30-09:30", "09:30-10:30", "10:30-11:30", "11:30-12:30"
+        "08:00-09:00", "09:00-10:00", "10:00-11:00", "11:00-12:00"
     ])
     afternoon_start_hour: str = "14:00"
     afternoon_period_times: List[str] = field(default_factory=lambda: [

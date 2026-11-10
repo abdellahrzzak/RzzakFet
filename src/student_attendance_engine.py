@@ -56,18 +56,78 @@ STATE_FILE = get_attendance_data_file('students_attendance_state.json')
 
 # فترات الحصص المدرسية المغربية القياسية
 DEFAULT_PERIODS = [
-    {"id": "M_ALL", "name": "الفترة الصباحية كاملة (4 ساعات)", "session": "morning", "hours": 4},
-    {"id": "M_1", "name": "الحصة 1 صباحاً (08:30 - 09:30)", "session": "morning", "hours": 1},
-    {"id": "M_2", "name": "الحصة 2 صباحاً (09:30 - 10:30)", "session": "morning", "hours": 1},
-    {"id": "M_3", "name": "الحصة 3 صباحاً (10:30 - 11:30)", "session": "morning", "hours": 1},
-    {"id": "M_4", "name": "الحصة 4 صباحاً (11:30 - 12:30)", "session": "morning", "hours": 1},
-    {"id": "A_ALL", "name": "الفترة المسائية كاملة (4 ساعات)", "session": "afternoon", "hours": 4},
-    {"id": "A_1", "name": "الحصة 1 مساءً (14:30 - 15:30)", "session": "afternoon", "hours": 1},
-    {"id": "A_2", "name": "الحصة 2 مساءً (15:30 - 16:30)", "session": "afternoon", "hours": 1},
-    {"id": "A_3", "name": "الحصة 3 مساءً (16:30 - 17:30)", "session": "afternoon", "hours": 1},
-    {"id": "A_4", "name": "الحصة 4 مساءً (17:30 - 18:30)", "session": "afternoon", "hours": 1},
-    {"id": "DAY_ALL", "name": "اليوم الدراسي كاملاً (8 ساعات)", "session": "full_day", "hours": 8}
+    {"id": "M_ALL", "name": "صباح كامل (4 س) [08:00 - 12:00]", "session": "morning", "hours": 4},
+    {"id": "M_1", "name": "ح 1 ص (08:00 - 09:00)", "session": "morning", "hours": 1},
+    {"id": "M_2", "name": "ح 2 ص (09:00 - 10:00)", "session": "morning", "hours": 1},
+    {"id": "M_3", "name": "ح 3 ص (10:00 - 11:00)", "session": "morning", "hours": 1},
+    {"id": "M_4", "name": "ح 4 ص (11:00 - 12:00)", "session": "morning", "hours": 1},
+    {"id": "A_ALL", "name": "مساء كامل (4 س) [14:00 - 18:00]", "session": "afternoon", "hours": 4},
+    {"id": "A_1", "name": "ح 1 م (14:00 - 15:00)", "session": "afternoon", "hours": 1},
+    {"id": "A_2", "name": "ح 2 م (15:00 - 16:00)", "session": "afternoon", "hours": 1},
+    {"id": "A_3", "name": "ح 3 م (16:00 - 17:00)", "session": "afternoon", "hours": 1},
+    {"id": "A_4", "name": "ح 4 م (17:00 - 18:00)", "session": "afternoon", "hours": 1},
+    {"id": "DAY_ALL", "name": "يوم كامل (8 س) [08:00 - 18:00]", "session": "full_day", "hours": 8}
 ]
+
+def get_institution_periods(institution_info=None):
+    inst = institution_info
+    m_times = []
+    a_times = []
+    if inst:
+        if hasattr(inst, "morning_period_times") and inst.morning_period_times:
+            m_times = list(inst.morning_period_times)
+        elif isinstance(inst, dict) and inst.get("morning_period_times"):
+            m_times = list(inst["morning_period_times"])
+        if hasattr(inst, "afternoon_period_times") and inst.afternoon_period_times:
+            a_times = list(inst.afternoon_period_times)
+        elif isinstance(inst, dict) and inst.get("afternoon_period_times"):
+            a_times = list(inst["afternoon_period_times"])
+
+    if not m_times or not a_times:
+        try:
+            import json, os
+            state_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'app_state.json')
+            if os.path.exists(state_path):
+                with open(state_path, 'r', encoding='utf-8') as f:
+                    app_st = json.load(f)
+                inst_d = app_st.get("institution", {})
+                if not m_times: m_times = inst_d.get("morning_period_times") or []
+                if not a_times: a_times = inst_d.get("afternoon_period_times") or []
+        except Exception:
+            pass
+
+    if not m_times or len(m_times) < 4:
+        m_times = ["08:00 - 09:00", "09:00 - 10:00", "10:00 - 11:00", "11:00 - 12:00"]
+    if not a_times or len(a_times) < 4:
+        a_times = ["14:00 - 15:00", "15:00 - 16:00", "16:00 - 17:00", "17:00 - 18:00"]
+
+    def pr(s, d1, d2):
+        p = s.split("-") if "-" in s else [d1, d2]
+        return p[0].strip(), p[1].strip()
+
+    m1_s, m1_e = pr(m_times[0], "08:00", "09:00")
+    m2_s, m2_e = pr(m_times[1], "09:00", "10:00")
+    m3_s, m3_e = pr(m_times[2], "10:00", "11:00")
+    m4_s, m4_e = pr(m_times[3], "11:00", "12:00")
+
+    a1_s, a1_e = pr(a_times[0], "14:00", "15:00")
+    a2_s, a2_e = pr(a_times[1], "15:00", "16:00")
+    a3_s, a3_e = pr(a_times[2], "16:00", "17:00")
+    a4_s, a4_e = pr(a_times[3], "17:00", "18:00")
+
+    return [
+        {"id": "M_ALL", "name": f"صباح كامل (4 س) [{m1_s} - {m4_e}]", "session": "morning", "hours": 4},
+        {"id": "M_1", "name": f"ح 1 ص ({m1_s} - {m1_e})", "session": "morning", "hours": 1},
+        {"id": "M_2", "name": f"ح 2 ص ({m2_s} - {m2_e})", "session": "morning", "hours": 1},
+        {"id": "M_3", "name": f"ح 3 ص ({m3_s} - {m3_e})", "session": "morning", "hours": 1},
+        {"id": "M_4", "name": f"ح 4 ص ({m4_s} - {m4_e})", "session": "morning", "hours": 1},
+        {"id": "A_ALL", "name": f"مساء كامل (4 س) [{a1_s} - {a4_e}]", "session": "afternoon", "hours": 4},
+        {"id": "A_1", "name": f"ح 1 م ({a1_s} - {a1_e})", "session": "afternoon", "hours": 1},
+        {"id": "A_2", "name": f"ح 2 م ({a2_s} - {a2_e})", "session": "afternoon", "hours": 1},
+        {"id": "A_3", "name": f"ح 3 م ({a3_s} - {a3_e})", "session": "afternoon", "hours": 1},
+        {"id": "A_4", "name": f"ح 4 م ({a4_s} - {a4_e})", "session": "afternoon", "hours": 1},
+        {"id": "DAY_ALL", "name": f"يوم كامل (8 س) [{m1_s} - {a4_e}]", "session": "full_day", "hours": 8}
+    ]
 
 import re
 

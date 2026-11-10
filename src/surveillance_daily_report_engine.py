@@ -11,8 +11,10 @@ from datetime import datetime
 
 DAYS_AR_MAP = {
     "الاثنين": ["الاثنين ص", "الاثنين م"],
+    "الإثنين": ["الاثنين ص", "الاثنين م"],
     "الثلاثاء": ["الثلاثاء ص", "الثلاثاء م"],
     "الاربعاء": ["الاربعاء ص", "الاربعاء م"],
+    "الأربعاء": ["الاربعاء ص", "الاربعاء م"],
     "الخميس": ["الخميس ص", "الخميس م"],
     "الجمعة": ["الجمعة ص", "الجمعة م"],
     "السبت": ["السبت ص", "السبت م"]
@@ -23,6 +25,87 @@ class SurveillanceDailyReportEngine:
     def __init__(self, timetable_result: Dict[str, Any] = None, institution_data: Any = None):
         self.timetable = timetable_result or {}
         self.institution = institution_data
+
+        # Automatically invert teacher_timetables to student_timetables if missing
+        if not self.timetable.get("student_timetables") and self.timetable.get("teacher_timetables"):
+            st = {}
+            for t_name, days in self.timetable["teacher_timetables"].items():
+                for d_name, hours in days.items():
+                    for h, cell in hours.items():
+                        if not cell or not isinstance(cell, dict):
+                            continue
+                        cls_name = cell.get("class") or cell.get("students")
+                        if not cls_name:
+                            continue
+                        if cls_name not in st:
+                            st[cls_name] = {}
+                        if d_name not in st[cls_name]:
+                            st[cls_name][d_name] = {}
+                        st[cls_name][d_name][str(h)] = {
+                            "subject": cell.get("subject", ""),
+                            "teacher": t_name,
+                            "room": cell.get("room", ""),
+                            "class": cls_name
+                        }
+            # Alias TCSEF-1 and TCSF-1
+            if "TCSEF-1" in st and "TCSF-1" not in st:
+                st["TCSF-1"] = st["TCSEF-1"]
+            elif "TCSF-1" in st and "TCSEF-1" not in st:
+                st["TCSEF-1"] = st["TCSF-1"]
+            self.timetable["student_timetables"] = st
+
+    
+    def get_slot_times(self):
+        inst = self.institution
+        m_times = []
+        a_times = []
+        if inst:
+            if hasattr(inst, "morning_period_times") and inst.morning_period_times:
+                m_times = list(inst.morning_period_times)
+            elif isinstance(inst, dict) and inst.get("morning_period_times"):
+                m_times = list(inst["morning_period_times"])
+            if hasattr(inst, "afternoon_period_times") and inst.afternoon_period_times:
+                a_times = list(inst.afternoon_period_times)
+            elif isinstance(inst, dict) and inst.get("afternoon_period_times"):
+                a_times = list(inst["afternoon_period_times"])
+
+        if not m_times or not a_times:
+            try:
+                import json
+                state_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'app_state.json')
+                if os.path.exists(state_path):
+                    with open(state_path, 'r', encoding='utf-8') as f:
+                        app_st = json.load(f)
+                    inst_d = app_st.get("institution", {})
+                    if not m_times and inst_d.get("morning_period_times"):
+                        m_times = list(inst_d["morning_period_times"])
+                    if not a_times and inst_d.get("afternoon_period_times"):
+                        a_times = list(inst_d["afternoon_period_times"])
+            except Exception:
+                pass
+
+        if not m_times or len(m_times) < 4:
+            m_times = ["08:00 - 09:00", "09:00 - 10:00", "10:00 - 11:00", "11:00 - 12:00"]
+        if not a_times or len(a_times) < 4:
+            a_times = ["14:00 - 15:00", "15:00 - 16:00", "16:00 - 17:00", "17:00 - 18:00"]
+
+        def parse_range(s, default_st, default_en):
+            parts = s.split("-") if "-" in s else [default_st, default_en]
+            return parts[0].strip(), parts[1].strip()
+
+        slot_times_m = {
+            "1": parse_range(m_times[0], "08:00", "09:00"),
+            "2": parse_range(m_times[1], "09:00", "10:00"),
+            "3": parse_range(m_times[2], "10:00", "11:00"),
+            "4": parse_range(m_times[3], "11:00", "12:00")
+        }
+        slot_times_a = {
+            "1": parse_range(a_times[0], "14:00", "15:00"),
+            "2": parse_range(a_times[1], "15:00", "16:00"),
+            "3": parse_range(a_times[2], "16:00", "17:00"),
+            "4": parse_range(a_times[3], "17:00", "18:00")
+        }
+        return slot_times_m, slot_times_a
 
     def get_scheduled_day_summary(self, day_base: str) -> Dict[str, Any]:
         """
@@ -80,6 +163,164 @@ class SurveillanceDailyReportEngine:
         all_teachers_today = sorted(list(active_teachers_m | active_teachers_a))
         all_classes_today = sorted(list(active_classes_m | active_classes_a))
 
+        # Generate intelligent scheduled blocks per class (pairing 2-hour blocks where subject/teacher match)
+        slot_times_m, slot_times_a = self.get_slot_times()
+
+        m_1_2 = f"{slot_times_m['1'][0]} - {slot_times_m['2'][1]}"
+        m_3_4 = f"{slot_times_m['3'][0]} - {slot_times_m['4'][1]}"
+        m_half = f"{slot_times_m['1'][0]} - {slot_times_m['4'][1]}"
+
+        a_1_2 = f"{slot_times_a['1'][0]} - {slot_times_a['2'][1]}"
+        a_2_3 = f"{slot_times_a['2'][0]} - {slot_times_a['3'][1]}"
+        a_3_4 = f"{slot_times_a['3'][0]} - {slot_times_a['4'][1]}"
+        a_half = f"{slot_times_a['1'][0]} - {slot_times_a['4'][1]}"
+
+        full_day = f"{slot_times_m['1'][0]} - {slot_times_a['4'][1]}"
+
+        class_sessions_map = {}
+        for c_name, days_data in student_timetables.items():
+            blocks = []
+            m_hours = days_data.get(morning_day, {})
+            a_hours = days_data.get(afternoon_day, {})
+
+            # Morning 2-hour blocks
+            h1 = m_hours.get("1") or m_hours.get(1)
+            h2 = m_hours.get("2") or m_hours.get(2)
+            h3 = m_hours.get("3") or m_hours.get(3)
+            h4 = m_hours.get("4") or m_hours.get(4)
+
+            if h1 and h2 and h1.get("subject") and h1.get("subject") == h2.get("subject") and h1.get("teacher") == h2.get("teacher"):
+                blocks.append({
+                    "value": f"ح 1 و 2 ص ({m_1_2})",
+                    "label": f"ح 1 و 2 ص ({m_1_2}) — ساعتان",
+                    "hours": 2,
+                    "period": "صباحية",
+                    "time_range": m_1_2,
+                    "subject": h1.get("subject", ""),
+                    "teacher": h1.get("teacher", ""),
+                    "room": h1.get("room", "")
+                })
+
+            if h3 and h4 and h3.get("subject") and h3.get("subject") == h4.get("subject") and h3.get("teacher") == h4.get("teacher"):
+                blocks.append({
+                    "value": f"ح 3 و 4 ص ({m_3_4})",
+                    "label": f"ح 3 و 4 ص ({m_3_4}) — ساعتان",
+                    "hours": 2,
+                    "period": "صباحية",
+                    "time_range": m_3_4,
+                    "subject": h3.get("subject", ""),
+                    "teacher": h3.get("teacher", ""),
+                    "room": h3.get("room", "")
+                })
+
+            # Morning individual hours
+            for hk in ["1", "2", "3", "4"]:
+                cell = m_hours.get(hk) or m_hours.get(int(hk))
+                if cell and cell.get("subject"):
+                    t_st, t_en = slot_times_m[hk]
+                    blocks.append({
+                        "value": f"ح {hk} ص ({t_st} - {t_en})",
+                        "label": f"ح {hk} ص ({t_st} - {t_en}) — ساعة واحدة",
+                        "hours": 1,
+                        "period": "صباحية",
+                        "time_range": f"{t_st} - {t_en}",
+                        "subject": cell.get("subject", ""),
+                        "teacher": cell.get("teacher", ""),
+                        "room": cell.get("room", "")
+                    })
+
+            # Afternoon 2-hour blocks
+            ah1 = a_hours.get("1") or a_hours.get(1)
+            ah2 = a_hours.get("2") or a_hours.get(2)
+            ah3 = a_hours.get("3") or a_hours.get(3)
+            ah4 = a_hours.get("4") or a_hours.get(4)
+
+            if ah1 and ah2 and ah1.get("subject") and ah1.get("subject") == ah2.get("subject") and ah1.get("teacher") == ah2.get("teacher"):
+                blocks.append({
+                    "value": f"ح 1 و 2 م ({a_1_2})",
+                    "label": f"ح 1 و 2 م ({a_1_2}) — ساعتان",
+                    "hours": 2,
+                    "period": "مسائية",
+                    "time_range": a_1_2,
+                    "subject": ah1.get("subject", ""),
+                    "teacher": ah1.get("teacher", ""),
+                    "room": ah1.get("room", "")
+                })
+            elif ah2 and ah3 and ah2.get("subject") and ah2.get("subject") == ah3.get("subject") and ah2.get("teacher") == ah3.get("teacher"):
+                blocks.append({
+                    "value": f"ح 2 و 3 م ({a_2_3})",
+                    "label": f"ح 2 و 3 م ({a_2_3}) — ساعتان",
+                    "hours": 2,
+                    "period": "مسائية",
+                    "time_range": a_2_3,
+                    "subject": ah2.get("subject", ""),
+                    "teacher": ah2.get("teacher", ""),
+                    "room": ah2.get("room", "")
+                })
+            elif ah3 and ah4 and ah3.get("subject") and ah3.get("subject") == ah4.get("subject") and ah3.get("teacher") == ah4.get("teacher"):
+                blocks.append({
+                    "value": f"ح 3 و 4 م ({a_3_4})",
+                    "label": f"ح 3 و 4 م ({a_3_4}) — ساعتان",
+                    "hours": 2,
+                    "period": "مسائية",
+                    "time_range": a_3_4,
+                    "subject": ah3.get("subject", ""),
+                    "teacher": ah3.get("teacher", ""),
+                    "room": ah3.get("room", "")
+                })
+
+            # Afternoon individual hours
+            for hk in ["1", "2", "3", "4"]:
+                cell = a_hours.get(hk) or a_hours.get(int(hk))
+                if cell and cell.get("subject"):
+                    t_st, t_en = slot_times_a[hk]
+                    blocks.append({
+                        "value": f"ح {hk} م ({t_st} - {t_en})",
+                        "label": f"ح {hk} م ({t_st} - {t_en}) — ساعة واحدة",
+                        "hours": 1,
+                        "period": "مسائية",
+                        "time_range": f"{t_st} - {t_en}",
+                        "subject": cell.get("subject", ""),
+                        "teacher": cell.get("teacher", ""),
+                        "room": cell.get("room", "")
+                    })
+
+            # Standard multi-hour periods
+            blocks.append({
+                "value": "نصف يوم صباحي (4س)",
+                "label": f"نصف يوم صباحي ({m_half}) — 4 ساعات",
+                "hours": 4,
+                "period": "صباحية",
+                "time_range": m_half,
+                "subject": "حصص الفترة الصباحية",
+                "teacher": ""
+            })
+            blocks.append({
+                "value": "نصف يوم مسائي (4س)",
+                "label": f"نصف يوم مسائي ({a_half}) — 4 ساعات",
+                "hours": 4,
+                "period": "مسائية",
+                "time_range": a_half,
+                "subject": "حصص الفترة المسائية",
+                "teacher": ""
+            })
+            blocks.append({
+                "value": "يوم كامل (8س)",
+                "label": f"يوم كامل ({full_day}) — 8 ساعات",
+                "hours": 8,
+                "period": "يوم كامل",
+                "time_range": full_day,
+                "subject": "حصص اليوم كاملة",
+                "teacher": ""
+            })
+
+            class_sessions_map[c_name] = blocks
+            # Also alias TCSF-1 and TCSEF-1
+            if c_name == "TCSEF-1":
+                class_sessions_map["TCSF-1"] = blocks
+            elif c_name == "TCSF-1":
+                class_sessions_map["TCSEF-1"] = blocks
+
         return {
             "day_base": day_base,
             "morning_day_key": morning_day,
@@ -92,7 +333,8 @@ class SurveillanceDailyReportEngine:
             "all_teachers_today": all_teachers_today,
             "all_classes_today": all_classes_today,
             "morning_sessions": morning_sessions,
-            "afternoon_sessions": afternoon_sessions
+            "afternoon_sessions": afternoon_sessions,
+            "class_sessions_map": class_sessions_map
         }
 
     def generate_full_report(
@@ -114,6 +356,26 @@ class SurveillanceDailyReportEngine:
         """
         توليد التقرير اليومي الكامل مع المؤشرات الرياضية والإدارية وسجل غيابات وتأخرات التلاميذ
         """
+        if student_stats is None:
+            student_stats = {}
+        if not student_stats.get("entry_tickets_count"):
+            try:
+                from .desktop_server import load_attendance_mobile_db
+                mdb = load_attendance_mobile_db()
+                passes = mdb.get("entryPasses", {})
+                d_target = date_str or datetime.now().strftime("%Y-%m-%d")
+                valid_passes = [
+                    p for p in passes.values()
+                    if p and p.get("status") != "REVOKED" and (
+                        p.get("validForDate") == d_target or
+                        p.get("issuedDate") == d_target or
+                        p.get("absentDate") == d_target
+                    )
+                ]
+                if valid_passes:
+                    student_stats["entry_tickets_count"] = len(valid_passes)
+            except Exception:
+                pass
         if absent_teachers is None:
             absent_teachers = []
         sched = self.get_scheduled_day_summary(day_base)
@@ -129,7 +391,11 @@ class SurveillanceDailyReportEngine:
             class_name = ab.get("class_name", "")
             inferred_teacher = ab.get("inferred_teacher", "").strip()
             subject = ab.get("subject", "").strip()
-            t_name = ab.get("teacher_name", "").strip() or inferred_teacher
+            if entry_type == "class":
+                t_name = f"قسم {class_name}" if class_name else "عدم استفادة قسم"
+                inferred_teacher = ""
+            else:
+                t_name = ab.get("teacher_name", "").strip() or inferred_teacher
             if not t_name and class_name:
                 t_name = f"أستاذ(ة) قسم {class_name}"
             session_hour = ab.get("session_hour", "")

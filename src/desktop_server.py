@@ -128,7 +128,7 @@ from .student_mobility_engine import mobility_engine
 
 
 
-from .student_attendance_engine import attendance_engine, DEFAULT_PERIODS
+from .student_attendance_engine import attendance_engine, DEFAULT_PERIODS, get_institution_periods
 
 
 
@@ -7837,823 +7837,319 @@ def cancel_student_absence_records(student_id="", class_code="", date_str="", se
 
 
 def get_unified_daily_students_attendance(date_str):
-
-
-
-
     """
-
-
-
-
     استخراج تقرير تركيبي شامل لغيابات وتأخرات المتعلمين لليوم المحدد،
-
-
-
-
     يجمع بين جلسات مسك الغياب عبر الهاتف (mobile attendance) والمسك المكتبي،
-
-
-
-
-    ويغذي تقرير الحراسة العامة اليومية بشكل متكامل ولحظي.
-
-
-
-
+    ويغذي تقرير الحراسة العامة اليومية بشكل متكامل ولحظي مع تمييز دقيق للتبريرات.
     """
-
-
-
-
     if not date_str:
-
-
-
-
         date_str = datetime.now().strftime("%Y-%m-%d")
 
-
-
-
-
-
-
-
-
     # 1. Base results from attendance_engine
-
-
-
-
     base_res = {}
-
-
-
-
     try:
-
-
-
-
         base_res = attendance_engine.get_daily_students_attendance(date_str)
-
-
-
-
     except Exception as e:
-
-
-
-
         base_res = {"success": True, "date": date_str, "students": []}
 
-
-
-
-
-
-
-
-
     students_map = {}
-
-
-
-
     for s in base_res.get("students", []):
-
-
-
-
         key = (s.get("class_name", ""), s.get("id") or s.get("massar_code") or s.get("full_name"))
-
-
-
-
         students_map[key] = copy.deepcopy(s)
 
+    def is_val_justified(val):
+        if not val:
+            return False
+        if isinstance(val, bool):
+            return val
+        if isinstance(val, dict):
+            if val.get("justified") is False:
+                return False
+            return True
+        return True
 
-
-
-
-
-
-
+    def extract_reason_text(val, fallback="تسوية الوضعية الإدارية بالحراسة العامة"):
+        if not val:
+            return fallback
+        if isinstance(val, dict):
+            r = val.get("reason") or val.get("adminAction") or val.get("notes") or ""
+            return r.strip() if r and r.strip() else fallback
+        if isinstance(val, str) and val.strip():
+            return val.strip()
+        return fallback
 
     # 2. Merge from attendance_mobile_db.json
-
-
-
-
     try:
-
-
-
-
         mobile_db = load_attendance_mobile_db()
-
-
-
-
         sessions = mobile_db.get("attendanceSessions", {})
-
-
-
-
         db_students = mobile_db.get("students", [])
-
-
-
-
         teachers = mobile_db.get("teachers", [])
-
-
-
-
         time_slots = mobile_db.get("timeSlots", [])
-
-
-
-
         justified_map = mobile_db.get("justifiedAbsences", {})
 
-
-
-
-
-
-
-
-
         st_lookup = {}
-
-
-
-
         for st in db_students:
-
-
-
-
             if st.get("studentId"): st_lookup[st["studentId"]] = st
-
-
-
-
             if st.get("massarCode"): st_lookup[st["massarCode"]] = st
-
-
-
-
         t_lookup = {t.get("teacherId"): t for t in teachers if t.get("teacherId")}
-
-
-
-
         slot_lookup = {sl.get("slotIndex"): sl for sl in time_slots if sl.get("slotIndex") is not None}
 
-
-
-
-
-
-
-
-
         for sess_key, sess in sessions.items():
-
-
-
-
             if not sess or sess.get("date") != date_str:
-
-
-
-
                 continue
-
-
-
-
             absent_ids = sess.get("absentStudentIds", [])
-
-
-
-
             attendance_map = sess.get("attendanceMap", {})
-
-
-
-
             class_name = sess.get("classCode", "")
-
-
-
-
             t_obj = t_lookup.get(sess.get("teacherId"), {"fullName": sess.get("teacherId", ""), "subject": "-"})
-
-
-
-
             s_obj = slot_lookup.get(sess.get("slotIndex"), {"label": f"حصة {sess.get('slotIndex')}", "startTime": "08:00", "endTime": "09:00"})
 
-
-
-
-
-
-
-
-
-            slot_label = f"{s_obj.get('label', '')} ({s_obj.get('startTime', '')}–{s_obj.get('endTime', '')}) [{t_obj.get('subject', '')}]"
-
-
-
-
-
-
-
-
+            s_idx = sess.get("slotIndex", 1)
+            p_num = s_obj.get("periodNumber") or (((int(s_idx) - 1) % 4) + 1 if str(s_idx).isdigit() else s_idx)
+            p_type = "ص" if (s_obj.get("period") == "MORNING" or (str(s_idx).isdigit() and int(s_idx) <= 4)) else "م"
+            st_time = s_obj.get("startTime") or s_obj.get("start") or "08:00"
+            en_time = s_obj.get("endTime") or s_obj.get("end") or "09:00"
+            slot_label = f"ح {p_num} {p_type} ({st_time} - {en_time})" 
 
             all_marked_absent = set(absent_ids)
-
-
-
-
             all_marked_late = set()
-
-
-
-
             for sid, status in attendance_map.items():
-
-
-
-
                 if status == 'A':
-
-
-
-
                     all_marked_absent.add(sid)
-
-
-
-
                 elif status == 'L':
-
-
-
-
                     all_marked_late.add(sid)
 
-
-
-
-
-
-
-
-
             for sid in all_marked_absent:
-
-
-
-
                 st = st_lookup.get(sid)
-
-
-
-
                 if not st:
-
-
-
-
                     parts = str(sid).split('_')
-
-
-
-
                     if len(parts) >= 2 and parts[-1] in st_lookup:
-
-
-
-
                         st = st_lookup[parts[-1]]
-
-
-
-
                 if not st:
-
-
-
-
                     st = {
-
-
-
-
                         "studentId": sid,
-
-
-
-
                         "fullName": sid,
-
-
-
-
                         "massarCode": str(sid).split('_')[-1],
-
-
-
-
                         "classCode": class_name,
-
-
-
-
                         "rollNumber": "-"
-
-
-
-
                     }
-
-
-
-
-
-
-
-
 
                 st_id = st.get("studentId", sid)
-
-
-
-
                 m_code = st.get("massarCode", "")
-
-
-
-
                 full_name = st.get("fullName", sid)
-
-
-
-
                 order_val = st.get("rollNumber", "-")
-
-
-
-
                 c_code = st.get("classCode") or class_name
 
-
-
-
-
-
-
-
-
                 skey = (c_code, st_id)
-
-
-
-
                 if skey not in students_map:
-
-
-
-
                     found_existing = False
-
-
-
-
                     for existing_k, existing_val in students_map.items():
-
-
-
-
                         if m_code and existing_val.get("massar_code") == m_code and existing_val.get("class_name") == c_code:
-
-
-
-
                             skey = existing_k
-
-
-
-
                             found_existing = True
-
-
-
-
                             break
-
-
-
-
                     if not found_existing:
-
-
-
-
                         students_map[skey] = {
-
-
-
-
                             "id": st_id,
-
-
-
-
                             "order": order_val,
-
-
-
-
                             "class_name": c_code,
-
-
-
-
                             "full_name": full_name,
-
-
-
-
                             "massar_code": m_code,
-
-
-
-
                             "absent_sessions_count": 0,
-
-
-
-
                             "absent_hours": 0,
-
-
-
-
                             "absent_periods": [],
-
-
-
-
                             "late_sessions_count": 0,
-
-
-
-
                             "late_periods": [],
-
-
-
-
                             "justified_count": 0,
-
-
-
-
                             "unjustified_count": 0,
-
-
-
-
                             "reasons": []
-
-
-
-
                         }
 
-
-
-
-
-
-
-
-
                 entry = students_map[skey]
-
-
-
-
                 if slot_label not in entry["absent_periods"]:
-
-
-
-
                     entry["absent_periods"].append(slot_label)
-
-
-
-
                     entry["absent_sessions_count"] += 1
-
-
-
-
                     entry["absent_hours"] += 1
 
+                    # Candidate justification keys
+                    candidate_keys = [
+                        f"{sess.get('sessionId')}_{sid}",
+                        f"{sess.get('sessionId')}_{st_id}",
+                        f"{sess.get('sessionId')}_{m_code}",
+                        f"{sess.get('sessionId')}_{full_name}",
+                        f"{sess_key}_{sid}",
+                        f"{sess_key}_{st_id}",
+                        f"{sess_key}_{m_code}"
+                    ]
+                    j_info = None
+                    for k in candidate_keys:
+                        if k and k in justified_map:
+                            j_info = justified_map[k]
+                            break
 
-
-
-                    j_key = f"{sess.get('sessionId')}_{sid}"
-
-
-
-
-                    j_key2 = f"{sess.get('sessionId')}_{st_id}"
-
-
-
-
-                    if justified_map.get(j_key) or justified_map.get(j_key2):
-
-
-
-
+                    if is_val_justified(j_info):
                         entry["justified_count"] += 1
-
-
-
-
+                        r_text = extract_reason_text(j_info, "تسوية الوضعية الإدارية بالحراسة العامة")
+                        if r_text and r_text not in entry["reasons"]:
+                            entry["reasons"].append(r_text)
                     else:
-
-
-
-
                         entry["unjustified_count"] += 1
 
-
-
-
-
-
-
-
-
             for sid in all_marked_late:
+                st = st_lookup.get(sid)
+                if not st:
+                    parts = str(sid).split('_')
+                    if len(parts) >= 2 and parts[-1] in st_lookup:
+                        st = st_lookup[parts[-1]]
+                if not st:
+                    st = {"studentId": sid, "fullName": sid, "massarCode": str(sid).split('_')[-1], "classCode": class_name, "rollNumber": "-"}
 
+                st_id = st.get("studentId", sid)
+                m_code = st.get("massarCode", "")
+                full_name = st.get("fullName", sid)
+                order_val = st.get("rollNumber", "-")
+                c_code = st.get("classCode") or class_name
 
-
-
-                st = st_lookup.get(sid, {"studentId": sid, "fullName": sid, "massarCode": sid, "classCode": class_name, "rollNumber": "-"})
-
-
-
-
-                skey = (class_name, st.get("studentId", sid))
-
-
-
-
+                skey = (c_code, st_id)
                 if skey not in students_map:
-
-
-
-
-                    students_map[skey] = {
-
-
-
-
-                        "id": st.get("studentId", sid),
-
-
-
-
-                        "order": st.get("rollNumber", "-"),
-
-
-
-
-                        "class_name": class_name,
-
-
-
-
-                        "full_name": st.get("fullName", sid),
-
-
-
-
-                        "massar_code": st.get("massarCode", ""),
-
-
-
-
-                        "absent_sessions_count": 0,
-
-
-
-
-                        "absent_hours": 0,
-
-
-
-
-                        "absent_periods": [],
-
-
-
-
-                        "late_sessions_count": 0,
-
-
-
-
-                        "late_periods": [],
-
-
-
-
-                        "justified_count": 0,
-
-
-
-
-                        "unjustified_count": 0,
-
-
-
-
-                        "reasons": []
-
-
-
-
-                    }
-
-
-
+                    found_existing = False
+                    for existing_k, existing_val in students_map.items():
+                        if m_code and existing_val.get("massar_code") == m_code and existing_val.get("class_name") == c_code:
+                            skey = existing_k
+                            found_existing = True
+                            break
+                    if not found_existing:
+                        students_map[skey] = {
+                            "id": st_id,
+                            "order": order_val,
+                            "class_name": c_code,
+                            "full_name": full_name,
+                            "massar_code": m_code,
+                            "absent_sessions_count": 0,
+                            "absent_hours": 0,
+                            "absent_periods": [],
+                            "late_sessions_count": 0,
+                            "late_periods": [],
+                            "justified_count": 0,
+                            "unjustified_count": 0,
+                            "reasons": []
+                        }
 
                 entry = students_map[skey]
-
-
-
-
                 if slot_label not in entry["late_periods"]:
-
-
-
-
                     entry["late_periods"].append(slot_label)
-
-
-
-
                     entry["late_sessions_count"] += 1
 
+                    if "late_justified_count" not in entry:
+                        entry["late_justified_count"] = 0
+                    if "late_unjustified_count" not in entry:
+                        entry["late_unjustified_count"] = 0
 
+                    candidate_keys = [
+                        f"{sess.get('sessionId')}_{sid}",
+                        f"{sess.get('sessionId')}_{st_id}",
+                        f"{sess.get('sessionId')}_{m_code}",
+                        f"{sess.get('sessionId')}_{full_name}",
+                        f"{sess_key}_{sid}",
+                        f"{sess_key}_{st_id}",
+                        f"{sess_key}_{m_code}"
+                    ]
+                    j_info = None
+                    for k in candidate_keys:
+                        if k and k in justified_map:
+                            j_info = justified_map[k]
+                            break
 
-
-
-
-
-
+                    if is_val_justified(j_info):
+                        entry["late_justified_count"] += 1
+                        r_text = extract_reason_text(j_info, "تأخر مبرر إدارياً")
+                        if r_text and r_text not in entry["reasons"]:
+                            entry["reasons"].append(r_text)
+                    else:
+                        entry["late_unjustified_count"] += 1
 
     except Exception as err:
-
-
-
-
         print("[Unified Attendance Error]:", err)
 
+    # 3. Finalize justification flags and labels for every student
+    for entry in students_map.values():
+        abs_c = entry.get("absent_sessions_count", 0)
+        just_c = entry.get("justified_count", 0)
+        unjust_c = entry.get("unjustified_count", 0)
 
+        late_c = entry.get("late_sessions_count", 0)
+        late_just_c = entry.get("late_justified_count", 0)
+        late_unjust_c = entry.get("late_unjustified_count", 0)
 
+        # Absence status nature
+        if abs_c > 0:
+            if unjust_c == 0 and just_c > 0:
+                entry["justified"] = True
+                entry["status_nature"] = "مبرر"
+            elif just_c > 0 and unjust_c > 0:
+                entry["justified"] = False
+                entry["status_nature"] = f"مبرر جزئياً ({just_c}/{abs_c})"
+            else:
+                entry["justified"] = False
+                entry["status_nature"] = "غير مبرر"
+        else:
+            entry["justified"] = False
+            entry["status_nature"] = "-"
 
-
-
-
-
+        # Late status nature
+        if late_c > 0:
+            if late_unjust_c == 0 and late_just_c > 0:
+                entry["late_justified"] = True
+                entry["late_status_nature"] = "تأخر مبرر"
+            else:
+                entry["late_justified"] = False
+                entry["late_status_nature"] = "تأخر غير مبرر"
+        else:
+            entry["late_justified"] = False
+            entry["late_status_nature"] = "-"
 
     sorted_students = sorted(
-
-
-
-
         students_map.values(),
-
-
-
-
         key=lambda x: (x["class_name"], -x["absent_hours"], -x["late_sessions_count"])
-
-
-
-
     )
 
-
-
-
-
-
-
-
-
     abs_st_count = len([s for s in sorted_students if s["absent_sessions_count"] > 0])
-
-
-
-
     late_st_count = len([s for s in sorted_students if s["late_sessions_count"] > 0])
-
-
-
-
     total_abs_h = sum(s["absent_hours"] for s in sorted_students)
 
+    # Calculate delivered entry passes for today
+    entry_passes_count = 0
+    try:
+        mobile_db_passes = mobile_db.get("entryPasses", {}) if isinstance(mobile_db, dict) else {}
+        for p in mobile_db_passes.values():
+            if not isinstance(p, dict):
+                continue
+            p_date = p.get("issuedDate") or p.get("validForDate") or p.get("absentDate")
+            if p_date == date_str:
+                entry_passes_count += 1
+    except Exception:
+        pass
 
-
-
-
-
-
-
+    # Also count any student with an entry pass mentioned in reasons
+    reasons_tickets = len([
+        s for s in sorted_students
+        if any("ورقة السماح" in r or "إذن" in r or "السماح بالدخول" in r for r in s.get("reasons", []))
+    ])
+    final_entry_passes = max(entry_passes_count, reasons_tickets)
 
     return {
-
-
-
-
         "success": True,
-
-
-
-
         "date": date_str,
-
-
-
-
         "students": sorted_students,
-
-
-
-
         "total_students_absent": abs_st_count,
-
-
-
-
         "total_absent_students": abs_st_count,
-
-
-
-
         "total_students_late": late_st_count,
-
-
-
-
         "total_late_students": late_st_count,
-
-
-
-
         "total_absent_hours": total_abs_h,
-
-
-
-
         "total_absent_sessions": total_abs_h,
-
-
-
-
+        "total_entry_passes": final_entry_passes,
+        "entry_tickets_count": final_entry_passes,
         "classes_affected": sorted(list(set(s["class_name"] for s in sorted_students)))
-
-
-
-
     }
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 class RzzakFetAppState:
@@ -27483,30 +26979,12 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
 
 
         elif parsed.path == "/api/surveillance/day_summary":
-
-
-
-
-            day_name = query_params.get("day", ["الاثنين"])[0]
-
-
-
-
-            tt_data = APP_STATE.timetable_engine.get_cached_timetable() or {}
-
-
-
-
+            day_name = query_params.get("day", ["الإثنين"])[0]
+            tt_data = get_cached_timetable_data()
+            if not tt_data:
+                tt_data = APP_STATE.timetable_engine.get_cached_timetable() or {}
             engine = SurveillanceDailyReportEngine(tt_data, APP_STATE.institution)
-
-
-
-
             res = engine.get_scheduled_day_summary(day_name)
-
-
-
-
             self.send_json_data({"success": True, "data": res})
 
 
@@ -28127,7 +27605,7 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
 
 
 
-                    "periods": DEFAULT_PERIODS
+                    "periods": get_institution_periods(APP_STATE.institution)
 
 
 
@@ -28182,7 +27660,7 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
 
 
 
-                    "periods": DEFAULT_PERIODS
+                    "periods": get_institution_periods(APP_STATE.institution)
 
 
 
@@ -36139,110 +35617,35 @@ class RzzakFetHandler(http.server.SimpleHTTPRequestHandler):
 
 
         elif parsed.path == "/api/attendance/save_justification":
-
-
-
-
             db = load_attendance_mobile_db()
-
-
-
-
             j_key = data.get("key")
-
-
-
-
             justified_val = data.get("justified", True)
-
-
-
-
             admin_action = data.get("admin_action") or data.get("adminAction") or ""
-
-
-
-
             notes = data.get("notes") or ""
 
-
-
-
-
-
-
-
-
             if "justifiedAbsences" not in db or not isinstance(db["justifiedAbsences"], dict):
-
-
-
-
                 db["justifiedAbsences"] = {}
 
+            keys_to_set = [j_key] if j_key else []
+            if j_key and "_" in j_key:
+                parts = j_key.split("_")
+                if len(parts) >= 5:
+                    sess_prefix = "_".join(parts[:3])
+                    massar = parts[-1]
+                    keys_to_set.append(f"{sess_prefix}_{massar}")
 
-
-
-
-
-
-
-
-            if isinstance(justified_val, bool) and not justified_val:
-
-
-
-
-                db["justifiedAbsences"][j_key] = False
-
-
-
-
-            else:
-
-
-
-
-                db["justifiedAbsences"][j_key] = {
-
-
-
-
-                    "justified": True,
-
-
-
-
-                    "adminAction": admin_action or "تسوية الوضعية الإدارية بالحراسة العامة",
-
-
-
-
-                    "notes": notes,
-
-
-
-
-                    "updatedAt": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-
-
-
-                }
-
-
-
-
+            for k in keys_to_set:
+                if isinstance(justified_val, bool) and not justified_val:
+                    db["justifiedAbsences"][k] = False
+                else:
+                    db["justifiedAbsences"][k] = {
+                        "justified": True,
+                        "adminAction": admin_action or "تسوية الوضعية الإدارية بالحراسة العامة",
+                        "notes": notes,
+                        "updatedAt": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    }
             db["updatedAt"] = int(time.time() * 1000)
-
-
-
-
             save_attendance_mobile_db(db)
-
-
-
-
             self.send_json_data({"success": True, "justifiedAbsences": db["justifiedAbsences"]})
 
 

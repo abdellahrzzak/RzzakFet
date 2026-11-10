@@ -1,3 +1,22 @@
+
+function getRecordDisplayTime(rec) {
+  if (!rec) return '';
+  const s = rec.submittedAt || rec.submittedTime;
+  if (s && s !== 'undefined' && s !== 'null') return s;
+  const ts = rec.updatedAt || rec.updatedAtTs;
+  if (ts) {
+    try {
+      const d = new Date(Number(ts));
+      if (!isNaN(d.getTime())) {
+        const hh = String(d.getHours()).padStart(2, '0');
+        const mm = String(d.getMinutes()).padStart(2, '0');
+        return `${hh}:${mm}`;
+      }
+    } catch (e) {}
+  }
+  return '';
+}
+
 // Strict Chronological Sorting for Exams
 function sortExamsChronologically(examsList) {
   if (!Array.isArray(examsList)) return [];
@@ -3825,16 +3844,12 @@ function renderTeacherView() {
           ${
 
             savedRecord
-
-              ? `<span class="badge ${savedRecord.status === 'ON_TIME' ? 'badge-ontime' : 'badge-late'}">
-
-                  ${savedRecord.status === 'ON_TIME' ? '✅ تم في الوقت' : '🟡 مسك متأخر'}${
-                    savedRecord.submittedAt || savedRecord.submittedTime
-                      ? ` (${savedRecord.submittedAt || savedRecord.submittedTime})`
-                      : (savedRecord.updatedAt ? ` (${new Date(savedRecord.updatedAt).toLocaleTimeString('ar-MA', {hour:'2-digit', minute:'2-digit'})})` : '')
-                  }
-
-                </span>`
+              ? (() => {
+                  const rTime = getRecordDisplayTime(savedRecord);
+                  return `<span class="badge ${savedRecord.status === 'ON_TIME' ? 'badge-ontime' : 'badge-late'}">
+                    ${savedRecord.status === 'ON_TIME' ? '✅ تم في الوقت' : '🟡 مسك متأخر'}${rTime ? ` (${rTime})` : ''}
+                  </span>`;
+                })()
 
               : `<span class="badge badge-pending">حدد الغائبين 🔴 والمتأخرين 🟡</span>`
 
@@ -3977,12 +3992,10 @@ function renderTeacherView() {
             ${
 
               savedRecord
-
-                ? `✅ تم الحفظ${
-                    savedRecord.submittedAt || savedRecord.submittedTime
-                      ? ` (${savedRecord.submittedAt || savedRecord.submittedTime})`
-                      : (savedRecord.updatedAt ? ` (${new Date(savedRecord.updatedAt).toLocaleTimeString('ar-MA', {hour:'2-digit', minute:'2-digit'})})` : '')
-                  } • تحديث`
+                ? (() => {
+                    const rTime = getRecordDisplayTime(savedRecord);
+                    return `✅ تم الحفظ${rTime ? ` (${rTime})` : ''} • تحديث`;
+                  })()
 
                 : '💾 حفظ وإرسال الغياب'
 

@@ -686,8 +686,8 @@ class ExportEngine:
                 <thead>
                     <tr>
                         <th style="width:9%;">اليوم</th>
-                        {"".join([f'<th>{t}</th>' for t in (inst_info.get("morning_period_times") or ["08:30-09:30", "09:30-10:30", "10:30-11:30", "11:30-12:30"])[:4]])}
-                        {"".join([f'<th>{t}</th>' for t in (inst_info.get("afternoon_period_times") or ["14:30-15:30", "15:30-16:30", "16:30-17:30", "17:30-18:30"])[:4]])}
+                        {"".join([f'<th>{t}</th>' for t in (inst_info.get("morning_period_times") or ["08:00-09:00", "09:00-10:00", "10:00-11:00", "11:00-12:00"])[:4]])}
+                        {"".join([f'<th>{t}</th>' for t in (inst_info.get("afternoon_period_times") or ["14:00-15:00", "15:00-16:00", "16:00-17:00", "17:00-18:00"])[:4]])}
                     </tr>
                 </thead>
                 <tbody>
